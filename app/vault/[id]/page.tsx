@@ -10,7 +10,7 @@ export default async function VaultAssetPage({
   const { id } = await params;
 
   return (
-    <main className="mx-auto max-w-[1600px] px-6 pb-16 pt-8 sm:px-8">
+    <main className="mx-auto max-w-[1600px] px-6 pb-16 sm:px-8" style={{ paddingTop: 80 }}>
       <VaultAssetClient vaultAssetId={id} />
     </main>
   );

@@ -6,7 +6,7 @@ export default async function SettingsPage() {
   const settings = getSettingsSnapshot();
 
   return (
-    <main className="mx-auto max-w-5xl px-6 pb-16 pt-10 sm:px-8">
+    <main className="mx-auto max-w-5xl px-6 pb-16 sm:px-8" style={{ paddingTop: 80 }}>
       <div className="rounded-[2rem] bg-[#111] p-8">
         <p className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
           Settings

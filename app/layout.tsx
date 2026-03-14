@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import { DM_Mono, Bebas_Neue, Playfair_Display, Space_Grotesk } from "next/font/google";
 
+import { Navbar } from "@/components/navbar";
 import { Providers } from "@/components/providers";
 import "./globals.css";
+
+function NavbarWrapper() {
+  return <Navbar />;
+}
 
 const dmMono = DM_Mono({
   variable: "--font-dm-mono",
@@ -43,7 +48,10 @@ export default function RootLayout({
       <body
         className={`${dmMono.variable} ${bebasNeue.variable} ${playfairDisplay.variable} ${spaceGrotesk.variable} antialiased`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <NavbarWrapper />
+          {children}
+        </Providers>
       </body>
     </html>
   );

@@ -1,28 +1,12 @@
 "use client";
 
-import {
-  AudioLines,
-  CirclePlay,
-  Copy,
-  FileArchive,
-  FileText,
-  FolderOpen,
-  ImageIcon,
-  KeyRound,
-  Link2,
-  Lock,
-  Search,
-  Settings2,
-  Trash2,
-} from "lucide-react";
 import Link from "next/link";
-import { useDeferredValue, useMemo, useState, useTransition } from "react";
+import { useCallback, useDeferredValue, useMemo, useState, useTransition } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useDropzone } from "react-dropzone";
 
 import { FilePreview } from "@/components/file-preview";
-import { UploadDropzone } from "@/components/upload-dropzone";
-import { WalletStatus, useWorkspaceWallet } from "@/components/wallet-status";
-import { WorkspaceNav } from "@/components/workspace-nav";
+import { useWorkspaceWallet } from "@/components/wallet-status";
 import { apiFetch } from "@/lib/client/api";
 import { useCurrentUser } from "@/lib/client/hooks";
 import {
@@ -33,25 +17,37 @@ import {
 import type { FileRecord, FolderRecord, ShareRecord } from "@/lib/types";
 import { formatBytes, formatDate, shortenWallet } from "@/lib/utils";
 
+function fileIconClass(type: PreviewTypeValue) {
+  switch (type) {
+    case PREVIEW_TYPES.IMAGE:
+      return "img";
+    case PREVIEW_TYPES.VIDEO:
+      return "vid";
+    case PREVIEW_TYPES.PDF:
+    case PREVIEW_TYPES.TEXT:
+      return "doc";
+    default:
+      return "zip";
+  }
+}
+
+function fileIconEmoji(type: PreviewTypeValue) {
+  switch (type) {
+    case PREVIEW_TYPES.IMAGE:
+      return "\u{1F5BC}";
+    case PREVIEW_TYPES.VIDEO:
+      return "\u25B6";
+    case PREVIEW_TYPES.PDF:
+    case PREVIEW_TYPES.TEXT:
+      return "\u{1F4C4}";
+    default:
+      return "\u{1F4E6}";
+  }
+}
+
 type DashboardClientProps = {
   initialFolderId?: string;
 };
-
-function previewIcon(type: PreviewTypeValue) {
-  switch (type) {
-    case PREVIEW_TYPES.IMAGE:
-      return <ImageIcon className="h-4 w-4" />;
-    case PREVIEW_TYPES.VIDEO:
-      return <CirclePlay className="h-4 w-4" />;
-    case PREVIEW_TYPES.AUDIO:
-      return <AudioLines className="h-4 w-4" />;
-    case PREVIEW_TYPES.TEXT:
-    case PREVIEW_TYPES.PDF:
-      return <FileText className="h-4 w-4" />;
-    default:
-      return <FileArchive className="h-4 w-4" />;
-  }
-}
 
 export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const { walletAddress } = useWorkspaceWallet();
@@ -71,6 +67,18 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const [sharePassword, setSharePassword] = useState("");
   const [selectedUpload, setSelectedUpload] = useState<File | null>(null);
   const deferredSearch = useDeferredValue(search);
+
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      setSelectedUpload(acceptedFiles[0] ?? null);
+    },
+    [],
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    multiple: false,
+    onDrop,
+  });
 
   const foldersQuery = useQuery({
     queryKey: ["folders", walletAddress],
@@ -208,395 +216,339 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
     };
   }, [files]);
 
+  const storageMode = settingsQuery.data?.settings.activeStorageMode ?? "local";
+
   return (
-    <div className="grid gap-8 xl:grid-cols-[280px_minmax(0,1fr)_360px]">
-      <aside className="space-y-6 rounded-[2rem] border border-[rgba(255,255,255,0.07)] bg-[#111] p-6 backdrop-blur">
+    <div className="dashboard">
+      {/* LEFT SIDEBAR */}
+      <aside className="sidebar">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-[rgba(240,237,230,0.35)]">
-            Workspace
-          </p>
-          <h2 className="mt-3 font-[family-name:var(--font-bebas-neue)] text-3xl tracking-[0.06em] font-semibold text-[#f0ede6]">
-            {shortenWallet(walletAddress)}
-          </h2>
-          <p className="mt-2 text-sm text-[rgba(240,237,230,0.35)]">
-            Hot-storage UX on top of a Shelby-ready adapter.
-          </p>
-        </div>
-
-        <WorkspaceNav />
-
-        <div className="rounded-3xl bg-[rgba(255,255,255,0.05)] p-5 text-[#f0ede6]">
-          <p className="text-xs uppercase tracking-[0.3em] text-[rgba(240,237,230,0.35)]">
-            Storage
-          </p>
-          <p className="mt-3 text-3xl font-semibold">
-            {settingsQuery.data?.settings.activeStorageMode ?? "local"}
-          </p>
-          <p className="mt-2 text-sm text-[rgba(240,237,230,0.55)]">
-            {settingsQuery.data?.settings.storageFallbackReason ??
-              "Local mock mode is active until Shelby credentials are approved."}
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-sm font-semibold uppercase text-[rgba(240,237,230,0.35)]">
-              Folders
-            </h3>
-            <FolderOpen className="h-4 w-4 text-[rgba(240,237,230,0.25)]" />
-          </div>
-          <button
-            className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-medium ${
-              activeFolderId === null
-                ? "bg-[#c8392b] text-[#f0ede6]"
-                : "bg-[rgba(255,255,255,0.03)] text-[rgba(240,237,230,0.55)]"
-            }`}
-            onClick={() => startTransition(() => setActiveFolderId(null))}
-            type="button"
-          >
-            All files
-          </button>
-          {folders.map((folder) => (
-            <button
-              key={folder.id}
-              className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-medium ${
-                activeFolderId === folder.id
-                  ? "bg-[#c8392b] text-[#f0ede6]"
-                  : "bg-[rgba(255,255,255,0.03)] text-[rgba(240,237,230,0.55)]"
-              }`}
-              onClick={() => startTransition(() => setActiveFolderId(folder.id))}
-              type="button"
+          <div className="sidebar-section-label">Workspace</div>
+          <nav className="sidebar-nav">
+            <a
+              href="#"
+              className="active"
+              onClick={(e) => {
+                e.preventDefault();
+                startTransition(() => setActiveFolderId(null));
+              }}
             >
-              {folder.name}
-            </button>
-          ))}
+              <span className="icon">&#x1F4C1;</span> My Files
+            </a>
+            <Link href="/vault">
+              <span className="icon">&#x1F512;</span> Vault
+            </Link>
+            <Link href="/settings">
+              <span className="icon">&#x2699;</span> Settings
+            </Link>
+          </nav>
         </div>
-
-        <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-4">
-          <label className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
-            New folder
-          </label>
-          <input
-            className="mt-3 w-full rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#161616] px-4 py-3 text-sm text-[#f0ede6] outline-none"
-            onChange={(event) => setFolderName(event.target.value)}
-            placeholder="Campaign Assets"
-            value={folderName}
-          />
-          <button
-            className="mt-3 w-full rounded-2xl bg-[#c8392b] px-4 py-3 text-sm font-medium text-[#f0ede6]"
-            disabled={createFolderMutation.isPending}
-            onClick={() => createFolderMutation.mutate()}
-            type="button"
-          >
-            Create folder
-          </button>
+        <div>
+          <div className="sidebar-section-label">Folders</div>
+          <div className="folder-tree">
+            {folders.map((folder) => (
+              <div
+                key={folder.id}
+                className="folder-item"
+                onClick={() => startTransition(() => setActiveFolderId(folder.id))}
+                style={activeFolderId === folder.id ? { color: "var(--accent-red)" } : undefined}
+              >
+                &#x1F4C2; {folder.name}
+              </div>
+            ))}
+            <div
+              className="folder-item"
+              style={{ color: "var(--accent-red)" }}
+              onClick={() => createFolderMutation.mutate()}
+            >
+              + New Folder
+            </div>
+          </div>
         </div>
-
-        <Link
-          className="block rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-5"
-          href="/vault"
-        >
-          <p className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
-            FlashVault
-          </p>
-          <p className="mt-3 text-lg font-semibold text-[#f0ede6]">
-            {profileQuery.data?.stats.vaultAssetCount ?? 0} vault assets
-          </p>
-          <p className="mt-2 text-sm text-[rgba(240,237,230,0.55)]">
-            Private vault for Aptos NFT content, owner-gated media, and unlockables.
-          </p>
-        </Link>
+        <div>
+          <div className="sidebar-section-label">Storage</div>
+          <div className="storage-bar">
+            <div
+              className="storage-fill"
+              style={{
+                width: `${Math.min(100, (metrics.totalStorage / (100 * 1024 * 1024)) * 100)}%`,
+              }}
+            />
+          </div>
+          <div className="storage-text">
+            {formatBytes(metrics.totalStorage)} / 100 MB
+          </div>
+          <div className="storage-text" style={{ marginTop: 12, color: "var(--accent-gold)" }}>
+            Mode: {storageMode}
+          </div>
+        </div>
       </aside>
 
-      <section className="space-y-6">
-        <div className="rounded-[2rem] bg-[linear-gradient(135deg,#111_0%,#1a1a1a_60%,rgba(200,57,43,0.15)_100%)] p-8 text-[#f0ede6]">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-sm uppercase tracking-[0.3em] text-[rgba(240,237,230,0.35)]">
-                FlashFolder
-              </p>
-              <h1 className="mt-4 font-[family-name:var(--font-bebas-neue)] text-5xl tracking-[0.06em] font-semibold sm:text-6xl">
-                A decentralized file workspace for the files you actually open.
-              </h1>
-              <p className="mt-4 max-w-xl text-base text-[rgba(240,237,230,0.55)]">
-                Upload once, preview instantly, and keep Shelby isolated behind a
-                storage adapter until real network credentials arrive.
-              </p>
+      {/* MAIN CONTENT */}
+      <main className="main-content">
+        <div className="dash-hero">
+          <h2>GOOD EVENING</h2>
+          <p>Welcome back to your workspace. Here&apos;s your overview.</p>
+          <div className="metrics-row">
+            <div className="metric">
+              <div className="metric-value">{files.length}</div>
+              <div className="metric-label">Files</div>
             </div>
-            <WalletStatus />
-          </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-4">
-            <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-4">
-              <p className="text-sm text-[rgba(240,237,230,0.35)]">Files</p>
-              <p className="mt-2 text-3xl font-semibold">{files.length}</p>
+            <div className="metric">
+              <div className="metric-value">{formatBytes(metrics.totalStorage)}</div>
+              <div className="metric-label">Storage</div>
             </div>
-            <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-4">
-              <p className="text-sm text-[rgba(240,237,230,0.35)]">Storage</p>
-              <p className="mt-2 text-3xl font-semibold">
-                {formatBytes(metrics.totalStorage)}
-              </p>
+            <div className="metric">
+              <div className="metric-value">{metrics.totalShares}</div>
+              <div className="metric-label">Shares</div>
             </div>
-            <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-4">
-              <p className="text-sm text-[rgba(240,237,230,0.35)]">Shares</p>
-              <p className="mt-2 text-3xl font-semibold">{metrics.totalShares}</p>
-            </div>
-            <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-4">
-              <p className="text-sm text-[rgba(240,237,230,0.35)]">Vaults</p>
-              <p className="mt-2 text-3xl font-semibold">
+            <div className="metric">
+              <div className="metric-value">
                 {profileQuery.data?.stats.vaultAssetCount ?? 0}
-              </p>
+              </div>
+              <div className="metric-label">Vaults</div>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
-          <div className="rounded-[2rem] border border-[rgba(255,255,255,0.07)] bg-[#111] p-6 backdrop-blur">
-            <div className="flex items-center gap-3 rounded-2xl border border-[rgba(255,255,255,0.07)] px-4 py-3">
-              <Search className="h-4 w-4 text-[rgba(240,237,230,0.25)]" />
-              <input
-                className="w-full bg-transparent text-sm text-[#f0ede6] outline-none"
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search files or descriptions"
-                value={search}
-              />
-            </div>
+        <div
+          {...getRootProps()}
+          className={`upload-zone${isDragActive ? " active" : ""}`}
+        >
+          <input {...getInputProps()} />
+          <div className="upload-icon">&#x2191;</div>
+          <p>
+            {selectedUpload ? (
+              <>Selected: {selectedUpload.name}</>
+            ) : (
+              <>
+                Drag files here or <span className="highlight">browse</span>
+              </>
+            )}
+          </p>
+        </div>
 
-            <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-[rgba(255,255,255,0.07)]">
-              <table className="w-full text-left">
-                <thead className="bg-[#111] text-sm text-[rgba(240,237,230,0.35)]">
-                  <tr>
-                    <th className="px-4 py-3 font-medium">File</th>
-                    <th className="px-4 py-3 font-medium">Folder</th>
-                    <th className="px-4 py-3 font-medium">Updated</th>
-                    <th className="px-4 py-3 font-medium">Size</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.01)] text-sm">
-                  {filteredFiles.map((file) => (
-                    <tr
-                      key={file.id}
-                      className="cursor-pointer transition hover:bg-[#161616]"
-                      onClick={() => setSelectedFileId(file.id)}
-                    >
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          <span className="rounded-xl bg-[rgba(255,255,255,0.05)] p-2 text-[rgba(240,237,230,0.55)]">
-                            {previewIcon(file.previewType)}
-                          </span>
-                          <div>
-                            <p className="font-medium text-[#f0ede6]">{file.filename}</p>
-                            <p className="text-[rgba(240,237,230,0.35)]">
-                              {file.description ?? "No description"}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-[rgba(240,237,230,0.55)]">
-                        {file.folder?.name ?? "Root"}
-                      </td>
-                      <td className="px-4 py-4 text-[rgba(240,237,230,0.55)]">
-                        {formatDate(file.updatedAt)}
-                      </td>
-                      <td className="px-4 py-4 text-[rgba(240,237,230,0.55)]">
-                        {formatBytes(file.size)}
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredFiles.length === 0 ? (
-                    <tr>
-                      <td className="px-4 py-10 text-center text-[rgba(240,237,230,0.35)]" colSpan={4}>
-                        No files yet. Upload a sample asset to make the workspace feel real.
-                      </td>
-                    </tr>
-                  ) : null}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="rounded-[2rem] border border-[rgba(255,255,255,0.07)] bg-[#111] p-6 backdrop-blur">
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
-              Upload
-            </p>
-            <div className="mt-4">
-              <UploadDropzone
-                onSelectFile={setSelectedUpload}
-                selectedFile={selectedUpload}
-              />
-            </div>
-            <textarea
-              className="mt-4 h-28 w-full rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[#161616] px-4 py-3 text-sm text-[#f0ede6] outline-none"
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="Add a quick note for the file detail page"
+        {selectedUpload && (
+          <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+            <input
+              className="search-input"
+              style={{ flex: 1, width: "auto" }}
+              placeholder="Description (optional)"
               value={description}
+              onChange={(e) => setDescription(e.target.value)}
             />
             <button
-              className="mt-4 w-full rounded-2xl bg-[#c8392b] px-4 py-3 text-sm font-semibold text-[#f0ede6]"
+              className="btn-primary"
+              style={{ padding: "10px 24px", fontSize: 10 }}
               disabled={uploadMutation.isPending}
               onClick={() => uploadMutation.mutate()}
               type="button"
             >
-              {uploadMutation.isPending ? "Uploading..." : "Upload to workspace"}
+              {uploadMutation.isPending ? "Uploading..." : "Upload"}
             </button>
-          </div>
-        </div>
-      </section>
-
-      <aside className="space-y-6 rounded-[2rem] border border-[rgba(255,255,255,0.07)] bg-[#111] p-6 backdrop-blur">
-        {selectedFile ? (
-          <>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
-                  File detail
-                </p>
-                <h2 className="mt-3 font-[family-name:var(--font-bebas-neue)] text-3xl tracking-[0.06em] font-semibold text-[#f0ede6]">
-                  {selectedFile.filename}
-                </h2>
-              </div>
-              <button
-                className="rounded-2xl bg-[rgba(255,255,255,0.05)] p-3 text-[rgba(240,237,230,0.55)] transition hover:bg-[rgba(255,255,255,0.08)]"
-                onClick={() => deleteFileMutation.mutate(selectedFile.id)}
-                type="button"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-
-            <FilePreview
-              fileId={selectedFile.id}
-              originalName={selectedFile.originalName}
-              previewType={selectedFile.previewType}
-            />
-
-            <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-[rgba(240,237,230,0.35)]">
-                  Size
-                </p>
-                <p className="mt-2 text-lg font-semibold text-[#f0ede6]">
-                  {formatBytes(selectedFile.size)}
-                </p>
-              </div>
-              <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-[rgba(240,237,230,0.35)]">
-                  Views
-                </p>
-                <p className="mt-2 text-lg font-semibold text-[#f0ede6]">
-                  {selectedFile.views.length}
-                </p>
-              </div>
-              <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-[rgba(240,237,230,0.35)]">
-                  Shares
-                </p>
-                <p className="mt-2 text-lg font-semibold text-[#f0ede6]">
-                  {selectedFile.shares.length}
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-5">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
-                  Share
-                </p>
-                <Link
-                  className="inline-flex items-center gap-2 text-sm font-medium text-[rgba(240,237,230,0.55)]"
-                  href={`/files/${selectedFile.id}`}
-                >
-                  <Settings2 className="h-4 w-4" />
-                  Full page
-                </Link>
-              </div>
-
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                {(["PUBLIC", "PRIVATE", "PASSWORD"] as const).map((type) => (
-                  <button
-                    key={type}
-                    className={`rounded-2xl px-3 py-3 text-xs font-semibold ${
-                      shareType === type
-                        ? "bg-[#c8392b] text-[#f0ede6]"
-                        : "bg-[rgba(255,255,255,0.05)] text-[rgba(240,237,230,0.55)]"
-                    }`}
-                    onClick={() => setShareType(type)}
-                    type="button"
-                  >
-                    {type.toLowerCase()}
-                  </button>
-                ))}
-              </div>
-
-              {shareType === "PASSWORD" ? (
-                <input
-                  className="mt-3 w-full rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#161616] px-4 py-3 text-sm text-[#f0ede6] outline-none"
-                  onChange={(event) => setSharePassword(event.target.value)}
-                  placeholder="Password for the share link"
-                  value={sharePassword}
-                />
-              ) : null}
-
-              <button
-                className="mt-4 w-full rounded-2xl bg-[#c8392b] px-4 py-3 text-sm font-semibold text-[#f0ede6]"
-                onClick={() => createShareMutation.mutate(selectedFile.id)}
-                type="button"
-              >
-                Create share link
-              </button>
-
-              <div className="mt-4 space-y-2">
-                {selectedFile.shares.map((share) => (
-                  <div
-                    key={share.id}
-                    className="flex items-center justify-between rounded-2xl bg-[#161616] px-4 py-3 text-sm"
-                  >
-                    <div className="flex items-center gap-2">
-                      {share.shareType === SHARE_TYPES.PASSWORD ? (
-                        <KeyRound className="h-4 w-4 text-[rgba(240,237,230,0.35)]" />
-                      ) : share.shareType === SHARE_TYPES.PRIVATE ? (
-                        <Lock className="h-4 w-4 text-[rgba(240,237,230,0.35)]" />
-                      ) : (
-                        <Link2 className="h-4 w-4 text-[rgba(240,237,230,0.35)]" />
-                      )}
-                      <Link className="font-medium text-[#f0ede6]" href={`/share/${share.token}`}>
-                        {share.shareType.toLowerCase()}
-                      </Link>
-                    </div>
-                    <button
-                      className="rounded-full bg-[rgba(255,255,255,0.05)] p-2 text-[rgba(240,237,230,0.55)]"
-                      onClick={() =>
-                        void navigator.clipboard.writeText(
-                          `${window.location.origin}/share/${share.token}`,
-                        )
-                      }
-                      type="button"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-6 text-sm text-[rgba(240,237,230,0.35)]">
-            Select a file to preview it, create a share link, and inspect analytics.
           </div>
         )}
 
-        <div className="rounded-3xl bg-[rgba(255,255,255,0.05)] p-6 text-[#f0ede6]">
-          <p className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
-            Next step
-          </p>
-          <p className="mt-3 text-lg font-semibold">
-            Ask Shelby for test tokens once the UI and metadata flow feel right.
-          </p>
-          <Link
-            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#b8a06a]"
-            href="/settings"
-          >
-            Open storage settings
-          </Link>
+        <div style={{ marginTop: 32 }}>
+          <div className="file-table-header">
+            <h3>ALL FILES</h3>
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search files..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="file-table">
+            <div className="file-table-row header">
+              <span>Name</span>
+              <span>Size</span>
+              <span>Modified</span>
+              <span>Status</span>
+            </div>
+            {filteredFiles.map((file) => (
+              <div
+                key={file.id}
+                className="file-table-row"
+                onClick={() => setSelectedFileId(file.id)}
+              >
+                <div className="file-table-name">
+                  <div className={`file-icon sm ${fileIconClass(file.previewType)}`}>
+                    {fileIconEmoji(file.previewType)}
+                  </div>
+                  <span>{file.filename}</span>
+                </div>
+                <span className="file-size">{formatBytes(file.size)}</span>
+                <span className="file-meta">{formatDate(file.updatedAt)}</span>
+                <span
+                  className="file-meta"
+                  style={
+                    file.shares.length > 0
+                      ? { color: "var(--accent-red)" }
+                      : undefined
+                  }
+                >
+                  {file.shares.length > 0 ? "Shared" : "Stored"}
+                </span>
+              </div>
+            ))}
+            {filteredFiles.length === 0 && (
+              <div className="file-table-row" style={{ cursor: "default" }}>
+                <span style={{ color: "var(--text-muted)", gridColumn: "1 / -1", textAlign: "center" }}>
+                  No files yet. Upload something to get started.
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* RIGHT PANEL */}
+      <aside className="right-panel">
+        {selectedFile ? (
+          <>
+            <div className="detail-preview">
+              {selectedFile.previewType === PREVIEW_TYPES.VIDEO ? (
+                <div className="play-btn">&#x25B6;</div>
+              ) : selectedFile.previewType === PREVIEW_TYPES.IMAGE ? (
+                <FilePreview
+                  fileId={selectedFile.id}
+                  originalName={selectedFile.originalName}
+                  previewType={selectedFile.previewType}
+                />
+              ) : (
+                <div style={{ fontSize: 32, opacity: 0.15 }}>&#x1F4C4;</div>
+              )}
+            </div>
+            <h3 style={{ fontFamily: "var(--font-bebas-neue)", fontSize: 18, letterSpacing: "0.1em" }}>
+              {selectedFile.filename}
+            </h3>
+            <dl className="detail-meta">
+              <dt>Type</dt>
+              <dd>{selectedFile.mimeType}</dd>
+              <dt>Size</dt>
+              <dd>{formatBytes(selectedFile.size)}</dd>
+              <dt>Storage</dt>
+              <dd>{storageMode}</dd>
+              <dt>Shares</dt>
+              <dd>{selectedFile.shares.length}</dd>
+            </dl>
+            <div className="detail-actions">
+              <button
+                className="action-share"
+                onClick={() => createShareMutation.mutate(selectedFile.id)}
+                type="button"
+              >
+                Share
+              </button>
+              <Link
+                href={`/api/files/${selectedFile.id}/download`}
+                className="action-dl"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textDecoration: "none",
+                }}
+              >
+                Download
+              </Link>
+            </div>
+
+            {selectedFile.shares.length > 0 && (
+              <div style={{ marginTop: 24 }}>
+                <div className="sidebar-section-label">Share Links</div>
+                <div className="activity-list">
+                  {selectedFile.shares.map((share) => (
+                    <div key={share.id} className="activity-item">
+                      <div className={`activity-dot${share.shareType === SHARE_TYPES.PASSWORD ? " gold" : ""}`} />
+                      <div>
+                        <Link
+                          href={`/share/${share.token}`}
+                          className="activity-text"
+                          style={{ textDecoration: "none" }}
+                        >
+                          {share.shareType.toLowerCase()} link
+                        </Link>
+                        <div
+                          className="activity-time"
+                          style={{ cursor: "pointer" }}
+                          onClick={() =>
+                            void navigator.clipboard.writeText(
+                              `${window.location.origin}/share/${share.token}`,
+                            )
+                          }
+                        >
+                          Click to copy
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div style={{ marginTop: 24 }}>
+              <button
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  fontSize: 10,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  background: "transparent",
+                  color: "var(--accent-red)",
+                  border: "1px solid var(--border-hover)",
+                  borderRadius: "var(--radius-sm)",
+                  cursor: "pointer",
+                }}
+                onClick={() => deleteFileMutation.mutate(selectedFile.id)}
+                type="button"
+              >
+                Delete File
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="detail-preview">
+              <div style={{ fontSize: 32, opacity: 0.15 }}>&#x1F4C1;</div>
+            </div>
+            <h3 style={{ fontFamily: "var(--font-bebas-neue)", fontSize: 18, letterSpacing: "0.1em" }}>
+              Select a file
+            </h3>
+            <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 8 }}>
+              Click a file from the table to preview details, share, or download.
+            </p>
+          </>
+        )}
+
+        <div style={{ marginTop: 32 }}>
+          <div className="sidebar-section-label">Recent Activity</div>
+          <div className="activity-list">
+            {files.slice(0, 3).map((file) => (
+              <div key={file.id} className="activity-item">
+                <div className={`activity-dot${file.shares.length > 0 ? " gold" : ""}`} />
+                <div>
+                  <div className="activity-text">
+                    {file.filename}{" "}
+                    {file.shares.length > 0 ? "shared via link" : "uploaded"}
+                  </div>
+                  <div className="activity-time">{formatDate(file.updatedAt)}</div>
+                </div>
+              </div>
+            ))}
+            {files.length === 0 && (
+              <div className="activity-item">
+                <div className="activity-dot" />
+                <div>
+                  <div className="activity-text">No activity yet</div>
+                  <div className="activity-time">Upload a file to get started</div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </aside>
     </div>
