@@ -98,6 +98,7 @@ Current adapters:
 - [`lib/storage/blob-storage.ts`](/c:/FlashFolder/lib/storage/blob-storage.ts): Vercel Blob adapter for temporary production-safe storage
 - [`lib/storage/shelby-storage.ts`](/c:/FlashFolder/lib/storage/shelby-storage.ts): scaffolded Shelby adapter entrypoint
 - [`lib/storage/shelby/adapter.ts`](/c:/FlashFolder/lib/storage/shelby/adapter.ts): provider-specific Shelby implementation boundary
+- [`docs/developer-handoff.md`](/c:/FlashFolder/docs/developer-handoff.md): current project state, links, blockers, and onboarding notes
 - [`docs/vercel-blob-integration.md`](/c:/FlashFolder/docs/vercel-blob-integration.md): temporary production storage notes
 - [`docs/shelby-integration.md`](/c:/FlashFolder/docs/shelby-integration.md): implementation handoff notes for real Shelby work
 
