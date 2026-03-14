@@ -1,0 +1,35 @@
+import { NextResponse } from "next/server";
+
+import { getRequestWalletAddress, uploadFile } from "@/lib/server/workspace";
+
+export const runtime = "nodejs";
+
+export async function POST(request: Request) {
+  try {
+    const formData = await request.formData();
+    const file = formData.get("file");
+    const folderId = formData.get("folderId");
+    const description = formData.get("description");
+
+    if (!(file instanceof File)) {
+      return NextResponse.json(
+        { error: "A file upload is required." },
+        { status: 400 },
+      );
+    }
+
+    const created = await uploadFile(getRequestWalletAddress(request), {
+      file,
+      folderId: typeof folderId === "string" && folderId.length ? folderId : null,
+      description:
+        typeof description === "string" && description.length ? description : null,
+    });
+
+    return NextResponse.json({ file: created }, { status: 201 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Upload failed." },
+      { status: 400 },
+    );
+  }
+}

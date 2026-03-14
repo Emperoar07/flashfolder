@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  walletAddress String   @unique
+  username      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  folders       Folder[]
+  files         File[]
+}
+
+model Folder {
+  id             String   @id @default(cuid())
+  userId         String
+  parentFolderId String?
+  name           String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent         Folder?  @relation("FolderTree", fields: [parentFolderId], references: [id], onDelete: SetNull)
+  children       Folder[] @relation("FolderTree")
+  files          File[]
+
+  @@index([userId])
+  @@index([parentFolderId])
+}
+
+model File {
+  id           String      @id @default(cuid())
+  userId       String
+  folderId     String?
+  filename     String
+  originalName String
+  blobKey      String
+  size         Int
+  mimeType     String
+  previewType  PreviewType
+  status       FileStatus  @default(READY)
+  description  String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder       Folder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  shares       Share[]
+  views        FileView[]
+
+  @@index([userId])
+  @@index([folderId])
+}
+
+model Share {
+  id           String    @id @default(cuid())
+  fileId       String
+  token        String    @unique
+  shareType    ShareType
+  passwordHash String?
+  expiresAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  file         File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([fileId])
+}
+
+model FileView {
+  id        String        @id @default(cuid())
+  fileId    String
+  viewerIp  String?
+  userAgent String?
+  eventType ViewEventType @default(VIEW)
+  viewedAt  DateTime      @default(now())
+  file      File          @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([fileId])
+  @@index([eventType])
+}
+
+enum FileStatus {
+  READY
+  PROCESSING
+}
+
+enum ShareType {
+  PUBLIC
+  PRIVATE
+  PASSWORD
+}
+
+enum ViewEventType {
+  VIEW
+  DOWNLOAD
+}
+
+enum PreviewType {
+  IMAGE
+  VIDEO
+  AUDIO
+  PDF
+  TEXT
+  OTHER
+}
