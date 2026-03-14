@@ -1,325 +1,267 @@
 # FlashFolder
 
-FlashFolder is a decentralized hot-storage workspace for instant file access, sharing, and streaming.
+Decentralized hot-storage workspace for instant file access, sharing, and streaming — built on Aptos with Shelby protocol as the blob layer.
 
-It also includes FlashVault, an optional premium mode for private Aptos NFT content. FlashVault does not hide NFT ownership from the blockchain. It protects owner-gated media, unlockables, and collector access while preserving onchain ownership records.
+**Live:** [flashfolder.vercel.app](https://flashfolder.vercel.app)
 
-It is built as a Shelby-ready MVP:
+---
 
-- PostgreSQL + Prisma store all product metadata
-- local storage keeps development simple and Vercel Blob can keep production uploads durable today
-- a Shelby adapter scaffold is already isolated behind the same storage interface
-- Aptos wallet login is wired in with a demo-wallet fallback for local UX
-- FlashVault uses a separate Aptos ownership verification layer and optional encrypted vault uploads
+## What it does
 
-## Current status
+- **File workspace** — Upload, organize into folders, preview (images, video, audio, PDF), and share with expiring or password-protected links
+- **FlashVault** — NFT-gated content vaults. Import an Aptos NFT, attach owner-only media and unlockables, and generate collector share links. Ownership verification controls access; transfer the NFT to transfer access
+- **Wallet-first auth** — Aptos wallet login with demo-wallet fallback for local dev
 
-- latest production deployment alias: `https://flashfolder.vercel.app`
-- Neon-backed `DATABASE_URL` works once envs are pulled locally
+> FlashVault protects *content access*, not chain visibility. NFT ownership and transfers remain fully public on Aptos.
+
+---
 
 ## Stack
 
-- Next.js 16
-- TypeScript
-- Tailwind CSS 4
-- Prisma + PostgreSQL
-- React Query
-- Aptos wallet adapter
-- Local filesystem storage adapter
+| Layer | Tech |
+|---|---|
+| Framework | Next.js 16, React 19, TypeScript |
+| Styling | Tailwind CSS 4 (dark theme, DM Mono + Bebas Neue + Playfair Display) |
+| Database | PostgreSQL via Prisma ORM (Neon on Vercel) |
+| State | TanStack React Query |
+| Wallet | `@aptos-labs/wallet-adapter-react` + `@aptos-labs/ts-sdk` |
+| Storage | Pluggable adapter — local / Vercel Blob / Shelby protocol |
+| Icons | Lucide React |
+| Upload | react-dropzone |
 
-## Product scope
+---
 
-FlashFolder focuses on active files rather than archival backup. The storage layer only holds blobs. Everything users care about in the product layer stays in the database:
+## Project structure
 
-- virtual folders
-- file metadata
-- share links
-- analytics
-- wallet-linked ownership
-- vault assets, vault files, and vault access logs
+```
+app/
+├── page.tsx                    # Landing page
+├── layout.tsx                  # Root layout + font providers
+├── globals.css                 # Dark theme tokens + grain overlay
+├── dashboard/                  # File workspace
+│   ├── page.tsx
+│   └── folders/[id]/page.tsx
+├── vault/                      # FlashVault
+│   ├── page.tsx
+│   └── [id]/page.tsx
+├── files/[id]/page.tsx         # File detail
+├── share/[token]/page.tsx      # Public share viewer
+├── settings/page.tsx           # Runtime config display
+└── api/                        # API routes
+    ├── auth/                   #   Wallet auth + challenge
+    ├── files/                  #   CRUD, upload, download, share, view
+    ├── folders/                #   CRUD
+    ├── vault/                  #   Assets, upload, content, shares, logs
+    ├── share/                  #   Public share + password verify
+    ├── me/                     #   Current user profile
+    └── settings/               #   Runtime settings
 
-## Key routes
+components/
+├── dashboard-client.tsx        # Main workspace (files, folders, metrics, upload)
+├── vault-dashboard-client.tsx  # Vault overview (NFT imports, asset cards)
+├── vault-asset-client.tsx      # Individual vault (preview, upload, share)
+├── share-client.tsx            # Public share viewer
+├── file-detail-client.tsx      # Single file page
+├── file-preview.tsx            # Image/video/audio/PDF renderer
+├── upload-dropzone.tsx         # Drag-and-drop file input
+├── wallet-status.tsx           # Connect/disconnect + address display
+├── workspace-nav.tsx           # Sidebar navigation
+└── providers.tsx               # Aptos wallet + React Query
 
-Pages:
+lib/
+├── storage/                    # Pluggable storage layer
+│   ├── types.ts                #   StorageAdapter interface
+│   ├── index.ts                #   Adapter resolution
+│   ├── local-storage.ts        #   Filesystem adapter (dev)
+│   ├── blob-storage.ts         #   Vercel Blob adapter (staging)
+│   ├── shelby-storage.ts       #   Shelby adapter entrypoint
+│   └── shelby/                 #   Shelby SDK boundary
+│       ├── adapter.ts
+│       └── client.ts
+├── server/
+│   ├── aptos/                  # Aptos integration boundary
+│   │   ├── auth.ts             #   Wallet auth + challenge
+│   │   ├── service.ts          #   NFT discovery + ownership verification
+│   │   └── mock-provider.ts    #   Mock data for local dev
+│   ├── flashvault.ts           # Vault business logic
+│   ├── workspace.ts            # Settings + workspace helpers
+│   └── crypto.ts               # Encryption for vault uploads
+├── client/
+│   ├── api.ts                  # Fetch wrapper
+│   ├── hooks.ts                # React Query hooks
+│   └── wallet.ts               # Wallet adapter helpers
+├── file-kinds.ts               # MIME → preview type mapping
+├── types.ts                    # Shared TypeScript types
+├── utils.ts                    # Formatting helpers
+├── validation.ts               # Zod schemas
+├── config.ts                   # Env config
+└── prisma.ts                   # Prisma client singleton
 
-- `/`
-- `/dashboard`
-- `/dashboard/folders/:id`
-- `/files/:id`
-- `/share/:token`
-- `/vault`
-- `/vault/:id`
-- `/settings`
+docs/
+├── developer-handoff.md        # Onboarding, blockers, next steps
+├── shelby-integration.md       # Shelby adapter implementation notes
+├── aptos-integration.md        # Real Aptos wiring guide
+├── flashvault-onchain-architecture.md  # Phase 2/3 on-chain proposal
+└── vercel-blob-integration.md  # Blob bridge documentation
 
-API:
+prisma/
+├── schema.prisma               # Database schema
+└── seed.ts                     # Demo data seeder
+```
 
-- `POST /api/auth/wallet`
-- `POST /api/auth/challenge`
-- `POST /api/auth/verify`
-- `GET /api/folders`
-- `POST /api/folders`
-- `PATCH /api/folders/:id`
-- `DELETE /api/folders/:id`
-- `GET /api/files`
-- `POST /api/files/upload`
-- `GET /api/files/:id`
-- `DELETE /api/files/:id`
-- `POST /api/files/:id/share`
-- `POST /api/files/:id/view`
-- `GET /api/files/:id/download`
-- `GET /api/share/:token`
-- `POST /api/share/:token/verify-password`
-- `GET /api/settings`
-- `GET /api/me`
-- `GET /api/vault/nfts`
-- `GET /api/vault/assets`
-- `POST /api/vault/assets`
-- `GET /api/vault/assets/:id`
-- `POST /api/vault/assets/:id/upload`
-- `POST /api/vault/assets/:id/verify-ownership`
-- `GET /api/vault/assets/:id/content`
-- `POST /api/vault/assets/:id/share`
-- `GET /api/vault/assets/:id/access-logs`
-
-## Storage architecture
-
-The app uses a storage interface in [`lib/storage/types.ts`](/c:/FlashFolder/lib/storage/types.ts):
-
-- `uploadFile`
-- `downloadFile`
-- `getFileStream`
-- `getFileRange`
-- `deleteFile`
-- `listFiles`
-
-Current adapters:
-
-- [`lib/storage/local-storage.ts`](/c:/FlashFolder/lib/storage/local-storage.ts): working mock adapter that writes to `.flashfolder/storage`
-- [`lib/storage/blob-storage.ts`](/c:/FlashFolder/lib/storage/blob-storage.ts): Vercel Blob adapter for temporary production-safe storage
-- [`lib/storage/shelby-storage.ts`](/c:/FlashFolder/lib/storage/shelby-storage.ts): scaffolded Shelby adapter entrypoint
-- [`lib/storage/shelby/adapter.ts`](/c:/FlashFolder/lib/storage/shelby/adapter.ts): provider-specific Shelby implementation boundary
-- [`docs/developer-handoff.md`](/c:/FlashFolder/docs/developer-handoff.md): current project state, links, blockers, and onboarding notes
-- [`docs/vercel-blob-integration.md`](/c:/FlashFolder/docs/vercel-blob-integration.md): temporary production storage notes
-- [`docs/shelby-integration.md`](/c:/FlashFolder/docs/shelby-integration.md): implementation handoff notes for real Shelby work
-
-## Aptos architecture
-
-Real Aptos integration is prepared behind service boundaries instead of being embedded directly in routes or UI:
-
-- [`lib/server/aptos/auth.ts`](/c:/FlashFolder/lib/server/aptos/auth.ts): wallet auth and challenge scaffolding
-- [`lib/server/aptos/service.ts`](/c:/FlashFolder/lib/server/aptos/service.ts): NFT discovery and ownership verification provider selection
-- [`lib/server/aptos/mock-provider.ts`](/c:/FlashFolder/lib/server/aptos/mock-provider.ts): mock NFT provider for development
-- [`docs/aptos-integration.md`](/c:/FlashFolder/docs/aptos-integration.md): implementation handoff notes for real Aptos wiring
-- [`docs/flashvault-onchain-architecture.md`](/c:/FlashFolder/docs/flashvault-onchain-architecture.md): optional phase-2/3 onchain architecture proposal
+---
 
 ## Database models
 
-Prisma schema lives in [`prisma/schema.prisma`](/c:/FlashFolder/prisma/schema.prisma).
+| Model | Purpose |
+|---|---|
+| `User` | Wallet-linked identity |
+| `Folder` | Virtual folder tree |
+| `File` | Upload metadata + blob pointer |
+| `Share` | Public/private/password links |
+| `FileView` | Download + preview analytics |
+| `VaultAsset` | NFT-linked vault container |
+| `VaultFile` | Gated file (primary, unlockable, teaser, attachment) |
+| `VaultAccessLog` | Ownership checks + access events |
 
-Models:
+---
 
-- `User`
-- `Folder`
-- `File`
-- `Share`
-- `FileView`
-- `VaultAsset`
-- `VaultFile`
-- `VaultAccessLog`
+## Storage architecture
 
-Important file storage fields:
+All file I/O goes through a `StorageAdapter` interface (`lib/storage/types.ts`):
 
-- `blobKey`
-- `storageProvider`
-- `storageMetadata`
-- `mimeType`
-- `size`
-- `isEncrypted`
+```
+uploadFile · downloadFile · getFileStream · getFileRange · deleteFile · listFiles
+```
 
-Important vault metadata fields:
+Three adapters exist behind one config switch:
 
-- `nftObjectId`
-- `nftOwnerAddress`
-- `nftMetadataSnapshot`
+| Mode | Adapter | Use case |
+|---|---|---|
+| `local` | `local-storage.ts` | Local dev (filesystem) |
+| `blob` | `blob-storage.ts` | Vercel staging (durable, ~4.5 MB cap) |
+| `shelby` | `shelby-storage.ts` | Production target (Shelby protocol) |
 
-## Local setup
+Set `FLASHFOLDER_STORAGE_MODE` to switch. The app falls back to `local` if the requested adapter isn't configured.
 
-1. Install dependencies:
+---
+
+## Quick start
 
 ```bash
+# 1. Install
 pnpm install
-```
 
-2. Copy envs:
-
-```bash
+# 2. Environment
 cp .env.example .env
-```
+# Set DATABASE_URL to a PostgreSQL instance
 
-3. Start PostgreSQL and update `DATABASE_URL` in `.env`.
-
-   Important:
-   A Vercel-generated `.env.local` is not enough for Prisma commands unless it also includes `DATABASE_URL`.
-
-4. Generate Prisma client:
-
-```bash
+# 3. Database
 pnpm prisma:generate
-```
-
-5. Push the schema:
-
-```bash
 pnpm db:push
-```
-
-6. Seed a demo workspace:
-
-```bash
 pnpm db:seed
-```
 
-7. Run the app:
-
-```bash
+# 4. Run
 pnpm dev
 ```
 
-If you want Shelby-prep diagnostics without activating Shelby, keep:
+Open [localhost:3000](http://localhost:3000).
 
-```bash
-FLASHFOLDER_STORAGE_MODE=local
-```
+---
 
-If you want the temporary production-safe adapter:
+## Environment variables
 
-```bash
-FLASHFOLDER_STORAGE_MODE=blob
-BLOB_READ_WRITE_TOKEN=...
-```
+### Required
 
-Important:
-The connected Vercel Blob store must be `private`, and Vercel Blob server uploads are effectively capped around 4.5 MB. It works well as a stopgap for server-controlled uploads and downloads, but Shelby is still the long-term path for larger active files.
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `NEXT_PUBLIC_APTOS_NETWORK` | `testnet` / `devnet` / `mainnet` |
+| `NEXT_PUBLIC_DEFAULT_WALLET` | Demo wallet address for fallback |
+| `FLASHFOLDER_STORAGE_MODE` | `local` / `blob` / `shelby` |
 
-If you want to test fallback behavior while Shelby is still scaffolded, you can set:
+### Storage (Blob)
 
-```bash
-FLASHFOLDER_STORAGE_MODE=shelby
-FLASHFOLDER_FAIL_ON_STORAGE_MISCONFIG=false
-```
+| Variable | Description |
+|---|---|
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob store token (must be private store) |
 
-The app will report Shelby readiness in settings while safely falling back to local storage.
+### Storage (Shelby)
 
-If you want to keep FlashVault fully demoable without real chain access, keep:
+| Variable | Description |
+|---|---|
+| `SHELBY_API_KEY` | Shelby API key |
+| `SHELBY_RPC_URL` | Shelby RPC endpoint |
+| `SHELBY_NETWORK` | `shelbynet` / `localhost` |
+| `SHELBY_ACCOUNT` | Shelby account address |
+| `SHELBY_ACCOUNT_NAMESPACE` | Storage namespace |
+| `SHELBY_PRIVATE_KEY` | Signer key (when needed) |
 
-```bash
-APTOS_AUTH_MODE=mock
-APTOS_MOCK_ENABLED=true
-```
+### Aptos
 
-## Demo behavior
+| Variable | Description |
+|---|---|
+| `APTOS_AUTH_MODE` | `mock` / `challenge` |
+| `APTOS_MOCK_ENABLED` | `true` for demo NFT data |
+| `APTOS_FULLNODE_URL` | Aptos fullnode RPC |
+| `APTOS_INDEXER_URL` | Aptos indexer GraphQL |
+| `FLASHVAULT_USE_MOCK_NFTS` | `true` for mock NFT imports |
+| `FLASHVAULT_ENCRYPTION_SECRET` | AES key for vault file encryption |
 
-Without a real Aptos wallet installed, FlashFolder uses a demo wallet address from `.env` so you can still:
+### Other
 
-- create folders
-- upload files
-- preview supported file types
-- create share links
-- inspect analytics data
-- import mock NFTs into FlashVault
-- upload teaser or owner-only vault content
+| Variable | Description |
+|---|---|
+| `FLASHFOLDER_MAX_UPLOAD_MB` | Upload size limit (default 50) |
+| `FLASHFOLDER_FAIL_ON_STORAGE_MISCONFIG` | `true` to hard-fail instead of fallback |
 
-## FlashVault behavior
+---
 
-FlashVault is intentionally precise about privacy:
+## Demo mode
 
-- good framing: "private vault for Aptos NFT content"
-- good framing: "owner-gated media and unlockables"
-- good framing: "vault the content, not the chain record"
-- avoid claiming the NFT itself becomes invisible onchain
+Without a real Aptos wallet extension, the app uses a demo wallet address from env and mock NFT data. You can:
 
-In the current MVP:
+- Create folders and upload files
+- Preview images, video, audio, PDFs
+- Create share links (public, private, password)
+- Import mock NFTs into FlashVault
+- Upload teaser/owner-only vault content
+- Verify mock ownership and view access logs
 
-- NFT ownership reads are normalized through `lib/server/aptos/service.ts`
-- mock ownership is enabled by default with `APTOS_MOCK_ENABLED=true`
-- vault uploads can be encrypted with `FLASHVAULT_ENCRYPTION_SECRET`
-- protected vault content is served through verified backend routes, not public static URLs
+---
 
-## Aptos later
+## Deployment (Vercel)
 
-When you are ready to wire real Aptos integration:
+The app auto-deploys from `main` to [flashfolder.vercel.app](https://flashfolder.vercel.app).
 
-1. Set `APTOS_AUTH_MODE="challenge"`
-2. Add `APTOS_FULLNODE_URL` and/or `APTOS_INDEXER_URL`
-3. Replace the scaffolded logic in [`lib/server/aptos/auth.ts`](/c:/FlashFolder/lib/server/aptos/auth.ts)
-4. Replace the mock provider selection in [`lib/server/aptos/service.ts`](/c:/FlashFolder/lib/server/aptos/service.ts)
-5. Keep the UI and business logic unchanged so only the provider layer changes
+**Important:** `local` storage mode is ephemeral on Vercel. Use `blob` for durable uploads until Shelby access is approved.
 
-## Shelby later
+Minimum Vercel env vars: `DATABASE_URL`, `NEXT_PUBLIC_APTOS_NETWORK`, `NEXT_PUBLIC_DEFAULT_WALLET`, `FLASHFOLDER_STORAGE_MODE`, `APTOS_AUTH_MODE`, `APTOS_MOCK_ENABLED`.
 
-Once Shelby early access is approved:
+---
 
-1. Add real Shelby env values:
-   - `SHELBY_API_KEY`
-   - `SHELBY_RPC_URL`
-   - `SHELBY_ACCOUNT_NAMESPACE`
-2. Set `FLASHFOLDER_STORAGE_MODE="shelby"`
-3. Replace the TODOs in [`lib/storage/shelby-storage.ts`](/c:/FlashFolder/lib/storage/shelby-storage.ts) with real SDK calls
-4. Ask in Shelby Discord for test tokens if you still need them to continue real storage tests
+## Roadmap
 
-## Vercel notes
+- [ ] Shelby SDK integration (blocked on early access approval)
+- [ ] Real Aptos wallet auth (challenge-response signing)
+- [ ] Real NFT ownership via Aptos Indexer
+- [ ] Micropayment-gated content via Shelby paid reads
+- [ ] Cross-chain identity (Ethereum/Solana via Shelby kits)
+- [ ] On-chain vault registry (Move contract)
 
-FlashFolder can be deployed to Vercel for preview environments, but there is one important constraint:
-
-- `FLASHFOLDER_STORAGE_MODE=local` is only suitable for local development
-- Vercel filesystem writes are ephemeral, so uploaded files will not persist between deployments or invocations
-- `FLASHFOLDER_STORAGE_MODE=blob` is the temporary production-safe mode for durable uploads on Vercel
-- Blob mode should be treated as a bridge to Shelby, not the final large-file path
-
-For a meaningful hosted deployment you should use:
-
-- a managed Postgres database for `DATABASE_URL`
-- Vercel Blob temporarily for production uploads
-- Shelby storage once access is approved for the final hot-storage path
-
-Current Vercel state:
-
-- production alias is active at `https://flashfolder.vercel.app`
-- the latest production deployment was ready after the most recent push to `main`
-- Neon-backed Prisma commands work after pulling project envs locally
-
-Minimum Vercel environment variables:
-
-- `DATABASE_URL`
-- `NEXT_PUBLIC_APTOS_NETWORK`
-- `NEXT_PUBLIC_DEFAULT_WALLET`
-- `APTOS_FULLNODE_URL`
-- `APTOS_INDEXER_URL`
-- `APTOS_AUTH_MODE`
-- `APTOS_MOCK_ENABLED`
-- `FLASHFOLDER_STORAGE_MODE`
-- `FLASHFOLDER_MAX_UPLOAD_MB`
-- `FLASHFOLDER_FAIL_ON_STORAGE_MISCONFIG`
-- `BLOB_READ_WRITE_TOKEN` when Blob mode is enabled
-- `FLASHVAULT_USE_MOCK_NFTS`
-- `FLASHVAULT_ENCRYPTION_SECRET`
-- `SHELBY_API_KEY` when Shelby is enabled
-- `SHELBY_NETWORK` when Shelby is enabled
-- `SHELBY_ACCOUNT` when Shelby is enabled
-- `SHELBY_RPC_URL` when Shelby is enabled
-- `SHELBY_ACCOUNT_NAMESPACE` when Shelby is enabled
-- `SHELBY_PRIVATE_KEY` when Shelby signer-based access is enabled
+---
 
 ## Verification
 
-The current repo passes:
+```bash
+pnpm lint     # ESLint
+pnpm build    # Production build
+pnpm db:push  # Schema sync
+pnpm db:seed  # Demo data
+```
 
-- `pnpm lint`
-- `pnpm build`
-- `pnpm db:push`
-- `pnpm db:seed`
+---
 
-## Notes
+## License
 
-- The empty `flashfolder-temp` directory is leftover from the initial scaffold workaround and can be removed safely.
-- Prisma is pinned to `6.19.2` to preserve the conventional schema + `DATABASE_URL` workflow.
+MIT

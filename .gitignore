@@ -4,6 +4,7 @@
 /node_modules
 /.flashfolder
 /flashfolder-temp
+/preview
 /.pnp
 .pnp.*
 .yarn/*
