@@ -1,0 +1,565 @@
+"use client";
+
+import {
+  Copy,
+  Download,
+  KeyRound,
+  Link2,
+  Lock,
+  Shield,
+  ShieldCheck,
+  UploadCloud,
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+
+import { FilePreview } from "@/components/file-preview";
+import { UploadDropzone } from "@/components/upload-dropzone";
+import { WalletStatus, useWorkspaceWallet } from "@/components/wallet-status";
+import {
+  useCreateVaultShare,
+  useUploadVaultFile,
+  useVaultAsset,
+  useVerifyVaultOwnership,
+} from "@/lib/client/hooks";
+import {
+  SHARE_TYPES,
+  VAULT_FILE_ROLES,
+  VAULT_PREVIEW_MODES,
+} from "@/lib/file-kinds";
+import { cn, formatBytes, formatDate } from "@/lib/utils";
+
+type VaultAssetClientProps = {
+  vaultAssetId: string;
+};
+
+function prettyRole(role: string) {
+  return role.toLowerCase().replaceAll("_", " ");
+}
+
+export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
+  const { walletAddress } = useWorkspaceWallet();
+  const vaultAssetQuery = useVaultAsset(walletAddress, vaultAssetId);
+  const verifyOwnership = useVerifyVaultOwnership(walletAddress, vaultAssetId);
+  const uploadVaultFile = useUploadVaultFile(walletAddress, vaultAssetId);
+  const createVaultShare = useCreateVaultShare(walletAddress, vaultAssetId);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [description, setDescription] = useState("");
+  const [role, setRole] = useState<"PRIMARY_MEDIA" | "UNLOCKABLE" | "ATTACHMENT" | "TEASER">(
+    "PRIMARY_MEDIA",
+  );
+  const [encrypt, setEncrypt] = useState(true);
+  const [shareType, setShareType] = useState<"PUBLIC" | "PRIVATE" | "PASSWORD">(
+    "PRIVATE",
+  );
+  const [sharePassword, setSharePassword] = useState("");
+  const [previewRole, setPreviewRole] = useState("TEASER");
+  const [securePreviewSrc, setSecurePreviewSrc] = useState<string | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+
+  const vaultAsset = vaultAssetQuery.data?.vaultAsset;
+  const previewFile = useMemo(() => {
+    if (!vaultAsset) {
+      return null;
+    }
+
+    return (
+      vaultAsset.vaultFiles.find((entry) => entry.role === previewRole) ??
+      vaultAsset.vaultFiles.find((entry) => entry.role === VAULT_FILE_ROLES.TEASER) ??
+      vaultAsset.vaultFiles[0] ??
+      null
+    );
+  }, [previewRole, vaultAsset]);
+
+  useEffect(() => {
+    return () => {
+      if (securePreviewSrc) {
+        URL.revokeObjectURL(securePreviewSrc);
+      }
+    };
+  }, [securePreviewSrc]);
+
+  async function loadProtectedContent(targetRole: string, download = false) {
+    if (!vaultAsset) {
+      return;
+    }
+
+    setIsLoadingPreview(true);
+
+    try {
+      const response = await fetch(
+        `/api/vault/assets/${vaultAsset.id}/content?role=${targetRole}${download ? "&download=1" : "&inline=1"}`,
+        {
+          headers: {
+            "x-wallet-address": walletAddress,
+          },
+        },
+      );
+
+      const contentType = response.headers.get("content-type") ?? "";
+      const payload = contentType.includes("application/json")
+        ? ((await response.json()) as { error?: string })
+        : null;
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "Unable to load protected content.");
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+
+      if (download) {
+        const anchor = document.createElement("a");
+        anchor.href = objectUrl;
+        anchor.download = previewFile?.file.originalName ?? "vault-content";
+        anchor.click();
+        URL.revokeObjectURL(objectUrl);
+      } else {
+        setSecurePreviewSrc((current) => {
+          if (current) {
+            URL.revokeObjectURL(current);
+          }
+          return objectUrl;
+        });
+        setPreviewRole(targetRole);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  }
+
+  if (vaultAssetQuery.isLoading) {
+    return <div className="rounded-[2rem] bg-white/80 p-8">Loading vault asset...</div>;
+  }
+
+  if (!vaultAsset) {
+    return (
+      <div className="rounded-[2rem] bg-white/80 p-8 text-slate-600">
+        Vault asset not found.
+      </div>
+    );
+  }
+
+  const teaserFile =
+    vaultAsset.vaultFiles.find((entry) => entry.role === VAULT_FILE_ROLES.TEASER) ??
+    null;
+  const hasProtectedPreview =
+    vaultAsset.vaultFiles.some((entry) => entry.role === VAULT_FILE_ROLES.PRIMARY_MEDIA) ||
+    vaultAsset.vaultFiles.some((entry) => entry.role === VAULT_FILE_ROLES.UNLOCKABLE);
+  const previewSrc =
+    securePreviewSrc ??
+    (previewFile?.role === VAULT_FILE_ROLES.TEASER
+      ? `/api/vault/assets/${vaultAsset.id}/content?role=${previewFile.role}&inline=1`
+      : undefined);
+
+  return (
+    <div className="space-y-8">
+      <div className="rounded-[2rem] bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.25),transparent_34%),linear-gradient(135deg,#020617_0%,#0f172a_45%,#155e75_130%)] p-8 text-white shadow-[0_40px_120px_rgba(15,23,42,0.3)]">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="text-sm uppercase tracking-[0.3em] text-white/60">
+              FlashVault asset
+            </p>
+            <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
+              {vaultAsset.nftName ?? vaultAsset.nftObjectId}
+            </h1>
+            <p className="mt-4 max-w-2xl text-base text-white/72">
+              Private vault for Aptos NFT content with verified owner access,
+              collector sharing, and optional encrypted uploads.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3 text-sm">
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                {vaultAsset.collectionName ?? "Unassigned collection"}
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                {vaultAsset.ownerOnly ? "Owner only access" : "Shared access enabled"}
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                {vaultAsset.publicPreviewMode.toLowerCase()} preview mode
+              </span>
+            </div>
+          </div>
+          <WalletStatus />
+        </div>
+      </div>
+
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="space-y-6">
+          <div className="rounded-[2rem] border border-white/60 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+                  Protected media
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold text-slate-950">
+                  Preview vault content
+                </h2>
+              </div>
+              <button
+                className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white"
+                disabled={verifyOwnership.isPending}
+                onClick={() => verifyOwnership.mutate()}
+                type="button"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                {verifyOwnership.isPending ? "Checking..." : "Verify ownership"}
+              </button>
+            </div>
+
+            <div className="mt-5 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+              <p className="text-sm font-semibold text-slate-950">
+                Vault the content, not the chain record.
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Ownership and transfer state remain public on Aptos. FlashVault only
+                protects private media access, unlockables, and who can fetch the
+                offchain content.
+              </p>
+            </div>
+
+            <div className="mt-6">
+              {previewFile && previewSrc ? (
+                <FilePreview
+                  originalName={previewFile.file.originalName}
+                  previewType={previewFile.file.previewType}
+                  src={previewSrc}
+                />
+              ) : (
+                <div className="flex h-72 items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-600">
+                  Add a teaser file or load protected media after ownership
+                  verification to preview this vault asset.
+                </div>
+              )}
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              {vaultAsset.vaultFiles.map((entry) => (
+                <button
+                  key={entry.id}
+                  className={cn(
+                    "rounded-full px-4 py-2 text-sm font-semibold",
+                    previewRole === entry.role
+                      ? "bg-slate-950 text-white"
+                      : "bg-slate-100 text-slate-700",
+                  )}
+                  onClick={() =>
+                    entry.role === VAULT_FILE_ROLES.TEASER
+                      ? setPreviewRole(entry.role)
+                      : void loadProtectedContent(entry.role)
+                  }
+                  type="button"
+                >
+                  {prettyRole(entry.role)}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              {vaultAsset.vaultFiles.map((entry) => (
+                <div key={entry.id} className="rounded-3xl border border-slate-200 bg-white p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-950">
+                        {entry.file.filename}
+                      </p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.22em] text-slate-500">
+                        {prettyRole(entry.role)}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                      {entry.file.isEncrypted ? "Encrypted" : "Plain"}
+                    </span>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-600">
+                    <span className="rounded-full bg-slate-100 px-3 py-2">
+                      {formatBytes(entry.file.size)}
+                    </span>
+                    <span className="rounded-full bg-slate-100 px-3 py-2">
+                      {entry.file.mimeType}
+                    </span>
+                  </div>
+                  <div className="mt-4 flex gap-3">
+                    {entry.role === VAULT_FILE_ROLES.TEASER ? (
+                      <button
+                        className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white"
+                        onClick={() => setPreviewRole(entry.role)}
+                        type="button"
+                      >
+                        Preview teaser
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white"
+                          disabled={isLoadingPreview}
+                          onClick={() => loadProtectedContent(entry.role)}
+                          type="button"
+                        >
+                          <Shield className="h-4 w-4" />
+                          {isLoadingPreview ? "Loading..." : "Load protected"}
+                        </button>
+                        <button
+                          className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700"
+                          disabled={isLoadingPreview}
+                          onClick={() => loadProtectedContent(entry.role, true)}
+                          type="button"
+                        >
+                          <Download className="h-4 w-4" />
+                          Download
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="rounded-[2rem] border border-white/60 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-white">
+                  <UploadCloud className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+                    Upload content
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold text-slate-950">
+                    Add media or unlockables
+                  </h2>
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <UploadDropzone
+                  onSelectFile={setSelectedFile}
+                  selectedFile={selectedFile}
+                />
+              </div>
+
+              <div className="mt-4 grid gap-4">
+                <select
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
+                  onChange={(event) => setRole(event.target.value as typeof role)}
+                  value={role}
+                >
+                  {Object.values(VAULT_FILE_ROLES).map((entryRole) => (
+                    <option key={entryRole} value={entryRole}>
+                      {prettyRole(entryRole)}
+                    </option>
+                  ))}
+                </select>
+                <textarea
+                  className="h-28 rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
+                  onChange={(event) => setDescription(event.target.value)}
+                  placeholder="Describe what collectors unlock here."
+                  value={description}
+                />
+                <label className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                  <input
+                    checked={encrypt}
+                    className="h-4 w-4"
+                    onChange={(event) => setEncrypt(event.target.checked)}
+                    type="checkbox"
+                  />
+                  Encrypt before upload for owner-only media.
+                </label>
+                <button
+                  className="rounded-2xl bg-sky-500 px-4 py-3 text-sm font-semibold text-white"
+                  disabled={!selectedFile || uploadVaultFile.isPending}
+                  onClick={() =>
+                    selectedFile &&
+                    uploadVaultFile.mutate(
+                      {
+                        file: selectedFile,
+                        role,
+                        description,
+                        encrypt,
+                      },
+                      {
+                        onSuccess: () => {
+                          setSelectedFile(null);
+                          setDescription("");
+                        },
+                      },
+                    )
+                  }
+                  type="button"
+                >
+                  {uploadVaultFile.isPending ? "Uploading..." : "Upload vault content"}
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] border border-white/60 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+                Access settings
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold text-slate-950">
+                Share with collectors
+              </h2>
+
+              <div className="mt-5 grid grid-cols-3 gap-2">
+                {(["PUBLIC", "PRIVATE", "PASSWORD"] as const).map((type) => (
+                  <button
+                    key={type}
+                    className={cn(
+                      "rounded-2xl px-3 py-3 text-xs font-semibold",
+                      shareType === type
+                        ? "bg-slate-950 text-white"
+                        : "bg-slate-100 text-slate-700",
+                    )}
+                    onClick={() => setShareType(type)}
+                    type="button"
+                  >
+                    {type.toLowerCase()}
+                  </button>
+                ))}
+              </div>
+
+              {shareType === SHARE_TYPES.PASSWORD ? (
+                <input
+                  className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
+                  onChange={(event) => setSharePassword(event.target.value)}
+                  placeholder="Collector password"
+                  value={sharePassword}
+                />
+              ) : null}
+
+              <button
+                className="mt-4 w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white"
+                onClick={() =>
+                  createVaultShare.mutate({
+                    shareType,
+                    password: shareType === SHARE_TYPES.PASSWORD ? sharePassword : undefined,
+                  })
+                }
+                type="button"
+              >
+                Create vault share
+              </button>
+
+              <div className="mt-5 space-y-3">
+                {vaultAsset.shares.map((share) => (
+                  <div
+                    key={share.id}
+                    className="flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3"
+                  >
+                    <div className="flex items-center gap-2 text-sm text-slate-700">
+                      {share.shareType === SHARE_TYPES.PASSWORD ? (
+                        <KeyRound className="h-4 w-4" />
+                      ) : share.shareType === SHARE_TYPES.PRIVATE ? (
+                        <Lock className="h-4 w-4" />
+                      ) : (
+                        <Link2 className="h-4 w-4" />
+                      )}
+                      <Link className="font-semibold text-slate-950" href={`/share/${share.token}`}>
+                        {share.shareType.toLowerCase()} link
+                      </Link>
+                    </div>
+                    <button
+                      className="rounded-full bg-white p-2 text-slate-600"
+                      onClick={() =>
+                        void navigator.clipboard.writeText(
+                          `${window.location.origin}/share/${share.token}`,
+                        )
+                      }
+                      type="button"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+
+                {vaultAsset.shares.length === 0 ? (
+                  <div className="rounded-3xl bg-slate-50 p-4 text-sm text-slate-600">
+                    No collector links yet. Create a share when you want to expose
+                    teaser or gated media outside your wallet session.
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside className="space-y-6">
+          <div className="rounded-[2rem] border border-white/60 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+            <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+              Ownership status
+            </p>
+            <div className="mt-4 rounded-3xl bg-slate-50 p-5">
+              <p className="text-sm font-semibold text-slate-950">
+                {verifyOwnership.data?.isOwner
+                  ? "Ownership verified for the connected wallet."
+                  : "Run a fresh ownership check before loading owner-only media."}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {verifyOwnership.data?.isOwner
+                  ? "Protected previews and downloads are now being requested through verified backend routes."
+                  : "This is especially important if the NFT may have been transferred since the vault was created."}
+              </p>
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              <div className="rounded-3xl bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">Public preview mode</p>
+                <p className="mt-2 text-lg font-semibold text-slate-950">
+                  {vaultAsset.publicPreviewMode === VAULT_PREVIEW_MODES.PLACEHOLDER
+                    ? "Placeholder"
+                    : vaultAsset.publicPreviewMode.toLowerCase()}
+                </p>
+              </div>
+              <div className="rounded-3xl bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">Protected files</p>
+                <p className="mt-2 text-lg font-semibold text-slate-950">
+                  {vaultAsset.vaultFiles.length}
+                </p>
+              </div>
+              <div className="rounded-3xl bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">Has teaser content</p>
+                <p className="mt-2 text-lg font-semibold text-slate-950">
+                  {teaserFile ? "Yes" : "Not yet"}
+                </p>
+              </div>
+              <div className="rounded-3xl bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">Has protected preview</p>
+                <p className="mt-2 text-lg font-semibold text-slate-950">
+                  {hasProtectedPreview ? "Yes" : "No"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[2rem] border border-white/60 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+            <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+              Access logs
+            </p>
+            <div className="mt-4 space-y-3">
+              {vaultAsset.accessLogs.map((log) => (
+                <div key={log.id} className="rounded-3xl bg-slate-50 p-4">
+                  <p className="text-sm font-semibold text-slate-950">
+                    {log.accessType.replaceAll("_", " ").toLowerCase()}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">{formatDate(log.createdAt)}</p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    {log.accessorWallet ?? "Anonymous or share route"}
+                  </p>
+                </div>
+              ))}
+
+              {vaultAsset.accessLogs.length === 0 ? (
+                <div className="rounded-3xl bg-slate-50 p-4 text-sm text-slate-600">
+                  Vault access logs appear after verification checks, shared views,
+                  or protected downloads.
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}

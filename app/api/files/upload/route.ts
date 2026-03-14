@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getRequestWalletAddress, uploadFile } from "@/lib/server/workspace";
+import { isStorageError, toStorageResponse } from "@/lib/storage/errors";
 
 export const runtime = "nodejs";
 
@@ -27,6 +28,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ file: created }, { status: 201 });
   } catch (error) {
+    if (isStorageError(error)) {
+      const mapped = toStorageResponse(error, "Upload failed.");
+      return NextResponse.json({ error: mapped.message, code: mapped.code }, { status: mapped.status });
+    }
+
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Upload failed." },
       { status: 400 },

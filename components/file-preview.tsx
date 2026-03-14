@@ -3,11 +3,12 @@ import Image from "next/image";
 import { PREVIEW_TYPES, type PreviewTypeValue } from "@/lib/file-kinds";
 
 type FilePreviewProps = {
-  fileId: string;
+  fileId?: string;
   originalName: string;
   previewType: PreviewTypeValue;
   token?: string;
   password?: string;
+  src?: string;
 };
 
 export function FilePreview({
@@ -16,18 +17,24 @@ export function FilePreview({
   previewType,
   token,
   password,
+  src,
 }: FilePreviewProps) {
-  const query = new URLSearchParams({
-    inline: "1",
-    ...(token ? { token } : {}),
-    ...(password ? { password } : {}),
-  });
-  const src = `/api/files/${fileId}/download?${query.toString()}`;
+  const previewSrc =
+    src ??
+    (() => {
+      if (!fileId) return "";
+      const query = new URLSearchParams({
+        inline: "1",
+        ...(token ? { token } : {}),
+        ...(password ? { password } : {}),
+      });
+      return `/api/files/${fileId}/download?${query.toString()}`;
+    })();
 
   if (previewType === PREVIEW_TYPES.IMAGE) {
     return (
       <Image
-        src={src}
+        src={previewSrc}
         alt={originalName}
         className="h-72 w-full rounded-3xl object-cover"
         height={720}
@@ -40,7 +47,7 @@ export function FilePreview({
   if (previewType === PREVIEW_TYPES.VIDEO) {
     return (
       <video className="h-72 w-full rounded-3xl bg-slate-950 object-cover" controls>
-        <source src={src} />
+        <source src={previewSrc} />
       </video>
     );
   }
@@ -49,7 +56,7 @@ export function FilePreview({
     return (
       <div className="rounded-3xl border border-slate-200 bg-white p-6">
         <audio className="w-full" controls>
-          <source src={src} />
+          <source src={previewSrc} />
         </audio>
       </div>
     );
@@ -59,7 +66,7 @@ export function FilePreview({
     return (
       <iframe
         className="h-96 w-full rounded-3xl border border-slate-200 bg-white"
-        src={src}
+        src={previewSrc}
         title={originalName}
       />
     );
@@ -68,7 +75,7 @@ export function FilePreview({
   return (
     <iframe
       className="h-96 w-full rounded-3xl border border-slate-200 bg-white"
-      src={src}
+      src={previewSrc}
       title={originalName}
     />
   );

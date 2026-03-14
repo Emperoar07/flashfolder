@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getVaultShare } from "@/lib/server/flashvault";
 import { verifySharePassword } from "@/lib/server/workspace";
 
 export const runtime = "nodejs";
@@ -16,6 +17,10 @@ export async function POST(request: Request, context: Context) {
     return NextResponse.json({ valid: false }, { status: 400 });
   }
 
-  const valid = await verifySharePassword(token, payload.password);
+  const fileValid = await verifySharePassword(token, payload.password);
+  const vaultValid = await getVaultShare(token, payload.password);
+  const valid =
+    fileValid ||
+    Boolean(vaultValid && !vaultValid.locked && !vaultValid.expired);
   return NextResponse.json({ valid });
 }

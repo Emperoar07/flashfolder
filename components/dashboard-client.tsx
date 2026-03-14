@@ -22,7 +22,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FilePreview } from "@/components/file-preview";
 import { UploadDropzone } from "@/components/upload-dropzone";
 import { WalletStatus, useWorkspaceWallet } from "@/components/wallet-status";
+import { WorkspaceNav } from "@/components/workspace-nav";
 import { apiFetch } from "@/lib/client/api";
+import { useCurrentUser } from "@/lib/client/hooks";
 import {
   PREVIEW_TYPES,
   SHARE_TYPES,
@@ -53,6 +55,7 @@ function previewIcon(type: PreviewTypeValue) {
 
 export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const { walletAddress } = useWorkspaceWallet();
+  const profileQuery = useCurrentUser(walletAddress);
   const queryClient = useQueryClient();
   const [, startTransition] = useTransition();
   const [folderName, setFolderName] = useState("");
@@ -87,7 +90,15 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
 
   const settingsQuery = useQuery({
     queryKey: ["settings"],
-    queryFn: () => apiFetch<{ settings: { storageMode: string } }>("/api/settings"),
+    queryFn: () =>
+      apiFetch<{
+        settings: {
+          requestedStorageMode: string;
+          activeStorageMode: string;
+          storageState: string;
+          storageFallbackReason: string | null;
+        };
+      }>("/api/settings"),
   });
 
   const createFolderMutation = useMutation({
@@ -212,15 +223,18 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           </p>
         </div>
 
+        <WorkspaceNav />
+
         <div className="rounded-3xl bg-slate-950 p-5 text-white">
           <p className="text-xs uppercase tracking-[0.3em] text-white/60">
             Storage
           </p>
           <p className="mt-3 text-3xl font-semibold">
-            {settingsQuery.data?.settings.storageMode ?? "local"}
+            {settingsQuery.data?.settings.activeStorageMode ?? "local"}
           </p>
           <p className="mt-2 text-sm text-white/70">
-            Local mock mode is active until Shelby credentials are approved.
+            {settingsQuery.data?.settings.storageFallbackReason ??
+              "Local mock mode is active until Shelby credentials are approved."}
           </p>
         </div>
 
@@ -277,6 +291,21 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             Create folder
           </button>
         </div>
+
+        <Link
+          className="block rounded-3xl border border-slate-200 bg-slate-50 p-5"
+          href="/vault"
+        >
+          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+            FlashVault
+          </p>
+          <p className="mt-3 text-lg font-semibold text-slate-950">
+            {profileQuery.data?.stats.vaultAssetCount ?? 0} vault assets
+          </p>
+          <p className="mt-2 text-sm text-slate-600">
+            Private vault for Aptos NFT content, owner-gated media, and unlockables.
+          </p>
+        </Link>
       </aside>
 
       <section className="space-y-6">
@@ -296,7 +325,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             </div>
             <WalletStatus />
           </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <div className="mt-8 grid gap-4 sm:grid-cols-4">
             <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
               <p className="text-sm text-white/60">Files</p>
               <p className="mt-2 text-3xl font-semibold">{files.length}</p>
@@ -310,6 +339,12 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
               <p className="text-sm text-white/60">Shares</p>
               <p className="mt-2 text-3xl font-semibold">{metrics.totalShares}</p>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+              <p className="text-sm text-white/60">Vaults</p>
+              <p className="mt-2 text-3xl font-semibold">
+                {profileQuery.data?.stats.vaultAssetCount ?? 0}
+              </p>
             </div>
           </div>
         </div>

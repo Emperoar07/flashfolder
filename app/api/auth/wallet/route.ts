@@ -1,21 +1,37 @@
 import { NextResponse } from "next/server";
 
+import {
+  createSessionForWallet,
+  getWalletAuthStatus,
+} from "@/lib/server/aptos";
+import { toAptosResponse } from "@/lib/server/aptos/errors";
 import { ensureUser } from "@/lib/server/workspace";
 import { walletAuthSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const payload = await request.json();
-  const parsed = walletAuthSchema.safeParse(payload);
+  try {
+    const payload = await request.json();
+    const parsed = walletAuthSchema.safeParse(payload);
 
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.flatten() },
-      { status: 400 },
-    );
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.flatten() },
+        { status: 400 },
+      );
+    }
+
+    const user = await ensureUser(parsed.data.walletAddress, parsed.data.username);
+    const session = await createSessionForWallet(parsed.data.walletAddress);
+
+    return NextResponse.json({
+      user,
+      session,
+      auth: getWalletAuthStatus(),
+    });
+  } catch (error) {
+    const mapped = toAptosResponse(error, "Wallet login failed.");
+    return NextResponse.json({ error: mapped.message, code: mapped.code }, { status: mapped.status });
   }
-
-  const user = await ensureUser(parsed.data.walletAddress, parsed.data.username);
-  return NextResponse.json({ user });
 }

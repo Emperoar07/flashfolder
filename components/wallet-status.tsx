@@ -1,45 +1,18 @@
 "use client";
 
 import { Wallet, X } from "lucide-react";
-import { useEffect, useEffectEvent, useState } from "react";
 
-import { apiFetch } from "@/lib/client/api";
-import { demoWalletAddress } from "@/lib/config";
+import {
+  useWalletAddress,
+  useWalletConnection,
+  useWalletNetwork,
+} from "@/lib/client/wallet";
 import { shortenWallet } from "@/lib/utils";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
-
-const storageKey = "flashfolder.wallet";
 
 export function useWorkspaceWallet() {
-  const { account, connect, connected, disconnect, isLoading, wallets } =
-    useWallet();
-  const [fallbackWallet] = useState(() => {
-    if (typeof window === "undefined") {
-      return demoWalletAddress;
-    }
-
-    return window.localStorage.getItem(storageKey) ?? demoWalletAddress;
-  });
-
-  useEffect(() => {
-    if (account?.address) {
-      window.localStorage.setItem(storageKey, account.address.toString());
-    }
-  }, [account?.address]);
-
-  const walletAddress = account?.address?.toString() ?? fallbackWallet;
-
-  const syncWallet = useEffectEvent(async (address: string) => {
-    await apiFetch("/api/auth/wallet", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ walletAddress: address }),
-    });
-  });
-
-  useEffect(() => {
-    void syncWallet(walletAddress);
-  }, [walletAddress]);
+  const { connect, connected, disconnect, isLoading, wallets } = useWalletConnection();
+  const { walletAddress, isDemo } = useWalletAddress();
+  const { network } = useWalletNetwork();
 
   return {
     walletAddress,
@@ -48,7 +21,8 @@ export function useWorkspaceWallet() {
     disconnect,
     isLoading,
     wallets,
-    isDemo: walletAddress === demoWalletAddress && !connected,
+    isDemo,
+    network,
   };
 }
 

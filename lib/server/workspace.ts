@@ -1,10 +1,15 @@
-import { ShareType, ViewEventType } from "@prisma/client";
+import { Prisma, ShareType, ViewEventType } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 
 import { appConfig, demoWalletAddress } from "@/lib/config";
+import { getAptosRuntimeStatus, getWalletAuthStatus } from "@/lib/server/aptos";
 import { prisma } from "@/lib/prisma";
-import { getStorageAdapter } from "@/lib/storage";
+import {
+  getStorageAdapter,
+  getStorageAdapterForProvider,
+  getStorageRuntime,
+} from "@/lib/storage";
 import { inferPreviewType, slugifyFilename } from "@/lib/utils";
 
 function normalizeWalletAddress(walletAddress?: string | null) {
@@ -33,6 +38,47 @@ export async function getFolders(walletAddress?: string | null) {
     where: { userId: user.id },
     orderBy: [{ createdAt: "asc" }],
   });
+}
+
+export async function getCurrentUserProfile(walletAddress?: string | null) {
+  const user = await ensureUser(walletAddress);
+  const [folderCount, fileCount, shareCount, vaultAssetCount, recentUploads, recentActivity] =
+    await Promise.all([
+      prisma.folder.count({ where: { userId: user.id } }),
+      prisma.file.count({ where: { userId: user.id } }),
+      prisma.share.count({
+        where: {
+          OR: [
+            { file: { userId: user.id } },
+            { vaultAsset: { userId: user.id } },
+          ],
+        },
+      }),
+      prisma.vaultAsset.count({ where: { userId: user.id } }),
+      prisma.file.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: "desc" },
+        take: 4,
+      }),
+      prisma.fileView.findMany({
+        where: { file: { userId: user.id } },
+        include: { file: true },
+        orderBy: { viewedAt: "desc" },
+        take: 8,
+      }),
+    ]);
+
+  return {
+    user,
+    stats: {
+      folderCount,
+      fileCount,
+      shareCount,
+      vaultAssetCount,
+    },
+    recentUploads,
+    recentActivity,
+  };
 }
 
 export async function createFolder(
@@ -133,8 +179,7 @@ export async function uploadFile(
     fileId,
     input.file.name,
   );
-
-  await getStorageAdapter().uploadFile({
+  const uploadResult = await getStorageAdapter().uploadFile({
     blobKey,
     buffer,
     mimeType: input.file.type || "application/octet-stream",
@@ -147,7 +192,11 @@ export async function uploadFile(
       folderId: input.folderId ?? null,
       filename: input.file.name,
       originalName: input.file.name,
-      blobKey,
+      blobKey: uploadResult.blobKey,
+      storageProvider: uploadResult.provider.toUpperCase() as "LOCAL" | "SHELBY",
+      storageMetadata: uploadResult.metadata
+        ? (uploadResult.metadata as Prisma.InputJsonValue)
+        : undefined,
       size: buffer.byteLength,
       mimeType: input.file.type || "application/octet-stream",
       previewType: inferPreviewType(
@@ -156,6 +205,29 @@ export async function uploadFile(
       ),
       description: input.description ?? null,
     },
+  });
+}
+
+export async function updateFile(
+  walletAddress: string | null | undefined,
+  id: string,
+  data: {
+    folderId?: string | null;
+    description?: string | null;
+  },
+) {
+  const user = await ensureUser(walletAddress);
+  const file = await prisma.file.findFirst({
+    where: { id, userId: user.id },
+  });
+
+  if (!file) {
+    throw new Error("File not found.");
+  }
+
+  return prisma.file.update({
+    where: { id },
+    data,
   });
 }
 
@@ -219,7 +291,7 @@ export async function deleteFile(
 
   await Promise.all([
     prisma.file.delete({ where: { id: file.id } }),
-    getStorageAdapter().deleteFile(file.blobKey),
+    getStorageAdapterForProvider(file.storageProvider).deleteFile(file.blobKey),
   ]);
 }
 
@@ -257,7 +329,7 @@ export async function createShare(
   });
 }
 
-export async function getShare(token: string, password?: string) {
+export async function getFileShare(token: string, password?: string) {
   const share = await prisma.share.findUnique({
     where: { token },
     include: {
@@ -270,12 +342,18 @@ export async function getShare(token: string, password?: string) {
     },
   });
 
-  if (!share) {
+  if (!share?.file) {
     return null;
   }
 
   if (share.expiresAt && share.expiresAt < new Date()) {
-    return { share, file: share.file, locked: false, expired: true };
+    return {
+      resourceType: "file" as const,
+      share,
+      file: share.file,
+      locked: false,
+      expired: true,
+    };
   }
 
   if (share.shareType === ShareType.PASSWORD) {
@@ -285,15 +363,27 @@ export async function getShare(token: string, password?: string) {
         : false;
 
     if (!isValid) {
-      return { share, file: share.file, locked: true, expired: false };
+      return {
+        resourceType: "file" as const,
+        share,
+        file: share.file,
+        locked: true,
+        expired: false,
+      };
     }
   }
 
-  return { share, file: share.file, locked: false, expired: false };
+  return {
+    resourceType: "file" as const,
+    share,
+    file: share.file,
+    locked: false,
+    expired: false,
+  };
 }
 
 export async function verifySharePassword(token: string, password: string) {
-  const result = await getShare(token, password);
+  const result = await getFileShare(token, password);
   return Boolean(result && !result.locked && !result.expired);
 }
 
@@ -320,12 +410,25 @@ export function getRequestWalletAddress(request: Request) {
   return request.headers.get("x-wallet-address") ?? demoWalletAddress;
 }
 
+export function getOptionalRequestWalletAddress(request: Request) {
+  return request.headers.get("x-wallet-address");
+}
+
 export function getSettingsSnapshot() {
+  const runtime = getStorageRuntime();
+
   return {
-    storageMode: appConfig.storageMode,
-    shelbyConfigured: Boolean(appConfig.shelbyApiKey && appConfig.shelbyRpcUrl),
-    shelbyNamespace: appConfig.shelbyNamespace,
+    requestedStorageMode: runtime.requestedMode,
+    activeStorageMode: runtime.activeMode,
+    storageState: runtime.integrationState,
+    storageFallbackReason: runtime.fallbackReason,
+    shelbyConfigured: Boolean(appConfig.shelby.apiKey && appConfig.shelby.rpcUrl),
+    shelbyNamespace: appConfig.shelby.namespace,
+    shelbyNetwork: appConfig.shelby.network,
     maxUploadMb: Math.round(appConfig.maxUploadBytes / (1024 * 1024)),
     aptosNetwork: appConfig.aptosNetwork,
+    useMockNfts: appConfig.useMockNfts,
+    aptos: getAptosRuntimeStatus(),
+    walletAuth: getWalletAuthStatus(),
   };
 }
