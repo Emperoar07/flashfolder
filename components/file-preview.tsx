@@ -1,11 +1,11 @@
 import Image from "next/image";
 
-import { PreviewType } from "@prisma/client";
+import { PREVIEW_TYPES, type PreviewTypeValue } from "@/lib/file-kinds";
 
 type FilePreviewProps = {
   fileId: string;
   originalName: string;
-  previewType: PreviewType;
+  previewType: PreviewTypeValue;
   token?: string;
   password?: string;
 };
@@ -24,7 +24,7 @@ export function FilePreview({
   });
   const src = `/api/files/${fileId}/download?${query.toString()}`;
 
-  if (previewType === PreviewType.IMAGE) {
+  if (previewType === PREVIEW_TYPES.IMAGE) {
     return (
       <Image
         src={src}
@@ -37,7 +37,7 @@ export function FilePreview({
     );
   }
 
-  if (previewType === PreviewType.VIDEO) {
+  if (previewType === PREVIEW_TYPES.VIDEO) {
     return (
       <video className="h-72 w-full rounded-3xl bg-slate-950 object-cover" controls>
         <source src={src} />
@@ -45,7 +45,7 @@ export function FilePreview({
     );
   }
 
-  if (previewType === PreviewType.AUDIO) {
+  if (previewType === PREVIEW_TYPES.AUDIO) {
     return (
       <div className="rounded-3xl border border-slate-200 bg-white p-6">
         <audio className="w-full" controls>
@@ -55,7 +55,7 @@ export function FilePreview({
     );
   }
 
-  if (previewType === PreviewType.PDF) {
+  if (previewType === PREVIEW_TYPES.PDF) {
     return (
       <iframe
         className="h-96 w-full rounded-3xl border border-slate-200 bg-white"

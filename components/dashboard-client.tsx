@@ -1,6 +1,5 @@
 "use client";
 
-import { PreviewType, ShareType } from "@prisma/client";
 import {
   AudioLines,
   CirclePlay,
@@ -24,6 +23,11 @@ import { FilePreview } from "@/components/file-preview";
 import { UploadDropzone } from "@/components/upload-dropzone";
 import { WalletStatus, useWorkspaceWallet } from "@/components/wallet-status";
 import { apiFetch } from "@/lib/client/api";
+import {
+  PREVIEW_TYPES,
+  SHARE_TYPES,
+  type PreviewTypeValue,
+} from "@/lib/file-kinds";
 import type { FileRecord, FolderRecord, ShareRecord } from "@/lib/types";
 import { formatBytes, formatDate, shortenWallet } from "@/lib/utils";
 
@@ -31,16 +35,16 @@ type DashboardClientProps = {
   initialFolderId?: string;
 };
 
-function previewIcon(type: PreviewType) {
+function previewIcon(type: PreviewTypeValue) {
   switch (type) {
-    case PreviewType.IMAGE:
+    case PREVIEW_TYPES.IMAGE:
       return <ImageIcon className="h-4 w-4" />;
-    case PreviewType.VIDEO:
+    case PREVIEW_TYPES.VIDEO:
       return <CirclePlay className="h-4 w-4" />;
-    case PreviewType.AUDIO:
+    case PREVIEW_TYPES.AUDIO:
       return <AudioLines className="h-4 w-4" />;
-    case PreviewType.TEXT:
-    case PreviewType.PDF:
+    case PREVIEW_TYPES.TEXT:
+    case PREVIEW_TYPES.PDF:
       return <FileText className="h-4 w-4" />;
     default:
       return <FileArchive className="h-4 w-4" />;
@@ -512,9 +516,9 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                     className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm"
                   >
                     <div className="flex items-center gap-2">
-                      {share.shareType === ShareType.PASSWORD ? (
+                      {share.shareType === SHARE_TYPES.PASSWORD ? (
                         <KeyRound className="h-4 w-4 text-slate-500" />
-                      ) : share.shareType === ShareType.PRIVATE ? (
+                      ) : share.shareType === SHARE_TYPES.PRIVATE ? (
                         <Lock className="h-4 w-4 text-slate-500" />
                       ) : (
                         <Link2 className="h-4 w-4 text-slate-500" />

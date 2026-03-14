@@ -1,6 +1,7 @@
-import { PreviewType } from "@prisma/client";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+
+import { PREVIEW_TYPES, type PreviewTypeValue } from "@/lib/file-kinds";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -41,22 +42,22 @@ export function slugifyFilename(filename: string) {
 export function inferPreviewType(
   mimeType: string,
   filename: string,
-): PreviewType {
+): PreviewTypeValue {
   const lowerMime = mimeType.toLowerCase();
   const lowerName = filename.toLowerCase();
 
-  if (lowerMime.startsWith("image/")) return PreviewType.IMAGE;
-  if (lowerMime.startsWith("video/")) return PreviewType.VIDEO;
-  if (lowerMime.startsWith("audio/")) return PreviewType.AUDIO;
+  if (lowerMime.startsWith("image/")) return PREVIEW_TYPES.IMAGE;
+  if (lowerMime.startsWith("video/")) return PREVIEW_TYPES.VIDEO;
+  if (lowerMime.startsWith("audio/")) return PREVIEW_TYPES.AUDIO;
   if (lowerMime === "application/pdf" || lowerName.endsWith(".pdf")) {
-    return PreviewType.PDF;
+    return PREVIEW_TYPES.PDF;
   }
   if (
     lowerMime.startsWith("text/") ||
     /\.(md|txt|json|ts|tsx|js|jsx|html|css|csv|xml|yaml|yml)$/i.test(lowerName)
   ) {
-    return PreviewType.TEXT;
+    return PREVIEW_TYPES.TEXT;
   }
 
-  return PreviewType.OTHER;
+  return PREVIEW_TYPES.OTHER;
 }
