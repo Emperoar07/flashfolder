@@ -39,15 +39,15 @@ export function WalletStatus() {
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-3">
-      <div className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 shadow-sm">
+      <div className="rounded-full border border-[rgba(255,255,255,0.07)] bg-[#111] px-4 py-2 text-sm text-[rgba(240,237,230,0.55)]">
         {isDemo ? "Demo workspace" : "Wallet live"}:{" "}
-        <span className="font-semibold text-slate-900">
+        <span className="font-semibold text-[#f0ede6]">
           {shortenWallet(walletAddress)}
         </span>
       </div>
       {connected ? (
         <button
-          className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white"
+          className="inline-flex items-center gap-2 rounded-full bg-[#c8392b] px-4 py-2 text-sm font-medium text-[#f0ede6]"
           onClick={() => void disconnect()}
           type="button"
         >
@@ -58,7 +58,7 @@ export function WalletStatus() {
         wallets.slice(0, 2).map((wallet) => (
           <button
             key={wallet.name}
-            className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white"
+            className="inline-flex items-center gap-2 rounded-full bg-[#c8392b] px-4 py-2 text-sm font-medium text-[#f0ede6]"
             disabled={isLoading}
             onClick={() => void connect(wallet.name)}
             type="button"
@@ -69,7 +69,7 @@ export function WalletStatus() {
         ))
       )}
       {!connected && wallets.length === 0 ? (
-        <div className="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+        <div className="rounded-full border border-[rgba(184,160,106,0.2)] bg-[rgba(184,160,106,0.08)] px-4 py-2 text-sm text-[#b8a06a]">
           Install an Aptos wallet to replace demo mode.
         </div>
       ) : null}

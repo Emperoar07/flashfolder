@@ -31,8 +31,8 @@ export function WorkspaceNav() {
             key={item.href}
             className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium ${
               active
-                ? "bg-slate-950 text-white"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                ? "bg-[#c8392b] text-[#f0ede6]"
+                : "bg-[rgba(255,255,255,0.03)] text-[rgba(240,237,230,0.55)] hover:bg-[rgba(255,255,255,0.06)]"
             }`}
             href={item.href}
           >

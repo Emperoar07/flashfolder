@@ -1,18 +1,30 @@
 import type { Metadata } from "next";
-import { Fraunces, Space_Grotesk } from "next/font/google";
+import { DM_Mono, Bebas_Neue, Playfair_Display, Space_Grotesk } from "next/font/google";
 
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
+const dmMono = DM_Mono({
+  variable: "--font-dm-mono",
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+});
+
+const bebasNeue = Bebas_Neue({
+  variable: "--font-bebas-neue",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+});
+
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
-});
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  style: ["normal"],
 });
 
 export const metadata: Metadata = {
@@ -29,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${spaceGrotesk.variable} ${fraunces.variable} antialiased`}
+        className={`${dmMono.variable} ${bebasNeue.variable} ${playfairDisplay.variable} ${spaceGrotesk.variable} antialiased`}
       >
         <Providers>{children}</Providers>
       </body>

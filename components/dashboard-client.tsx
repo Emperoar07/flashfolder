@@ -210,29 +210,29 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
 
   return (
     <div className="grid gap-8 xl:grid-cols-[280px_minmax(0,1fr)_360px]">
-      <aside className="space-y-6 rounded-[2rem] border border-white/60 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+      <aside className="space-y-6 rounded-[2rem] border border-[rgba(255,255,255,0.07)] bg-[#111] p-6 backdrop-blur">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+          <p className="text-xs uppercase tracking-[0.3em] text-[rgba(240,237,230,0.35)]">
             Workspace
           </p>
-          <h2 className="mt-3 text-2xl font-semibold text-slate-950">
+          <h2 className="mt-3 font-[family-name:var(--font-bebas-neue)] text-3xl tracking-[0.06em] font-semibold text-[#f0ede6]">
             {shortenWallet(walletAddress)}
           </h2>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-[rgba(240,237,230,0.35)]">
             Hot-storage UX on top of a Shelby-ready adapter.
           </p>
         </div>
 
         <WorkspaceNav />
 
-        <div className="rounded-3xl bg-slate-950 p-5 text-white">
-          <p className="text-xs uppercase tracking-[0.3em] text-white/60">
+        <div className="rounded-3xl bg-[rgba(255,255,255,0.05)] p-5 text-[#f0ede6]">
+          <p className="text-xs uppercase tracking-[0.3em] text-[rgba(240,237,230,0.35)]">
             Storage
           </p>
           <p className="mt-3 text-3xl font-semibold">
             {settingsQuery.data?.settings.activeStorageMode ?? "local"}
           </p>
-          <p className="mt-2 text-sm text-white/70">
+          <p className="mt-2 text-sm text-[rgba(240,237,230,0.55)]">
             {settingsQuery.data?.settings.storageFallbackReason ??
               "Local mock mode is active until Shelby credentials are approved."}
           </p>
@@ -240,16 +240,16 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
+            <h3 className="font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-sm font-semibold uppercase text-[rgba(240,237,230,0.35)]">
               Folders
             </h3>
-            <FolderOpen className="h-4 w-4 text-slate-400" />
+            <FolderOpen className="h-4 w-4 text-[rgba(240,237,230,0.25)]" />
           </div>
           <button
             className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-medium ${
               activeFolderId === null
-                ? "bg-slate-950 text-white"
-                : "bg-slate-100 text-slate-700"
+                ? "bg-[#c8392b] text-[#f0ede6]"
+                : "bg-[rgba(255,255,255,0.03)] text-[rgba(240,237,230,0.55)]"
             }`}
             onClick={() => startTransition(() => setActiveFolderId(null))}
             type="button"
@@ -261,8 +261,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               key={folder.id}
               className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-medium ${
                 activeFolderId === folder.id
-                  ? "bg-slate-950 text-white"
-                  : "bg-slate-100 text-slate-700"
+                  ? "bg-[#c8392b] text-[#f0ede6]"
+                  : "bg-[rgba(255,255,255,0.03)] text-[rgba(240,237,230,0.55)]"
               }`}
               onClick={() => startTransition(() => setActiveFolderId(folder.id))}
               type="button"
@@ -272,18 +272,18 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           ))}
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-          <label className="text-xs uppercase tracking-[0.25em] text-slate-500">
+        <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-4">
+          <label className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
             New folder
           </label>
           <input
-            className="mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
+            className="mt-3 w-full rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#161616] px-4 py-3 text-sm text-[#f0ede6] outline-none"
             onChange={(event) => setFolderName(event.target.value)}
             placeholder="Campaign Assets"
             value={folderName}
           />
           <button
-            className="mt-3 w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-medium text-white"
+            className="mt-3 w-full rounded-2xl bg-[#c8392b] px-4 py-3 text-sm font-medium text-[#f0ede6]"
             disabled={createFolderMutation.isPending}
             onClick={() => createFolderMutation.mutate()}
             type="button"
@@ -293,32 +293,32 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
         </div>
 
         <Link
-          className="block rounded-3xl border border-slate-200 bg-slate-50 p-5"
+          className="block rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-5"
           href="/vault"
         >
-          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+          <p className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
             FlashVault
           </p>
-          <p className="mt-3 text-lg font-semibold text-slate-950">
+          <p className="mt-3 text-lg font-semibold text-[#f0ede6]">
             {profileQuery.data?.stats.vaultAssetCount ?? 0} vault assets
           </p>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-[rgba(240,237,230,0.55)]">
             Private vault for Aptos NFT content, owner-gated media, and unlockables.
           </p>
         </Link>
       </aside>
 
       <section className="space-y-6">
-        <div className="rounded-[2rem] bg-[linear-gradient(135deg,#0f172a_0%,#111827_45%,#0ea5e9_120%)] p-8 text-white shadow-[0_40px_120px_rgba(15,23,42,0.25)]">
+        <div className="rounded-[2rem] bg-[linear-gradient(135deg,#111_0%,#1a1a1a_60%,rgba(200,57,43,0.15)_100%)] p-8 text-[#f0ede6]">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm uppercase tracking-[0.3em] text-white/60">
+              <p className="text-sm uppercase tracking-[0.3em] text-[rgba(240,237,230,0.35)]">
                 FlashFolder
               </p>
-              <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
+              <h1 className="mt-4 font-[family-name:var(--font-bebas-neue)] text-5xl tracking-[0.06em] font-semibold sm:text-6xl">
                 A decentralized file workspace for the files you actually open.
               </h1>
-              <p className="mt-4 max-w-xl text-base text-white/72">
+              <p className="mt-4 max-w-xl text-base text-[rgba(240,237,230,0.55)]">
                 Upload once, preview instantly, and keep Shelby isolated behind a
                 storage adapter until real network credentials arrive.
               </p>
@@ -326,22 +326,22 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             <WalletStatus />
           </div>
           <div className="mt-8 grid gap-4 sm:grid-cols-4">
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
-              <p className="text-sm text-white/60">Files</p>
+            <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-4">
+              <p className="text-sm text-[rgba(240,237,230,0.35)]">Files</p>
               <p className="mt-2 text-3xl font-semibold">{files.length}</p>
             </div>
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
-              <p className="text-sm text-white/60">Storage</p>
+            <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-4">
+              <p className="text-sm text-[rgba(240,237,230,0.35)]">Storage</p>
               <p className="mt-2 text-3xl font-semibold">
                 {formatBytes(metrics.totalStorage)}
               </p>
             </div>
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
-              <p className="text-sm text-white/60">Shares</p>
+            <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-4">
+              <p className="text-sm text-[rgba(240,237,230,0.35)]">Shares</p>
               <p className="mt-2 text-3xl font-semibold">{metrics.totalShares}</p>
             </div>
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
-              <p className="text-sm text-white/60">Vaults</p>
+            <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-4">
+              <p className="text-sm text-[rgba(240,237,230,0.35)]">Vaults</p>
               <p className="mt-2 text-3xl font-semibold">
                 {profileQuery.data?.stats.vaultAssetCount ?? 0}
               </p>
@@ -350,20 +350,20 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
-          <div className="rounded-[2rem] border border-white/60 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
-              <Search className="h-4 w-4 text-slate-400" />
+          <div className="rounded-[2rem] border border-[rgba(255,255,255,0.07)] bg-[#111] p-6 backdrop-blur">
+            <div className="flex items-center gap-3 rounded-2xl border border-[rgba(255,255,255,0.07)] px-4 py-3">
+              <Search className="h-4 w-4 text-[rgba(240,237,230,0.25)]" />
               <input
-                className="w-full bg-transparent text-sm outline-none"
+                className="w-full bg-transparent text-sm text-[#f0ede6] outline-none"
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search files or descriptions"
                 value={search}
               />
             </div>
 
-            <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-slate-200">
+            <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-[rgba(255,255,255,0.07)]">
               <table className="w-full text-left">
-                <thead className="bg-slate-50 text-sm text-slate-500">
+                <thead className="bg-[#111] text-sm text-[rgba(240,237,230,0.35)]">
                   <tr>
                     <th className="px-4 py-3 font-medium">File</th>
                     <th className="px-4 py-3 font-medium">Folder</th>
@@ -371,40 +371,40 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                     <th className="px-4 py-3 font-medium">Size</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 bg-white text-sm">
+                <tbody className="divide-y divide-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.01)] text-sm">
                   {filteredFiles.map((file) => (
                     <tr
                       key={file.id}
-                      className="cursor-pointer transition hover:bg-slate-50"
+                      className="cursor-pointer transition hover:bg-[#161616]"
                       onClick={() => setSelectedFileId(file.id)}
                     >
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
-                          <span className="rounded-xl bg-slate-100 p-2 text-slate-700">
+                          <span className="rounded-xl bg-[rgba(255,255,255,0.05)] p-2 text-[rgba(240,237,230,0.55)]">
                             {previewIcon(file.previewType)}
                           </span>
                           <div>
-                            <p className="font-medium text-slate-950">{file.filename}</p>
-                            <p className="text-slate-500">
+                            <p className="font-medium text-[#f0ede6]">{file.filename}</p>
+                            <p className="text-[rgba(240,237,230,0.35)]">
                               {file.description ?? "No description"}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-slate-600">
+                      <td className="px-4 py-4 text-[rgba(240,237,230,0.55)]">
                         {file.folder?.name ?? "Root"}
                       </td>
-                      <td className="px-4 py-4 text-slate-600">
+                      <td className="px-4 py-4 text-[rgba(240,237,230,0.55)]">
                         {formatDate(file.updatedAt)}
                       </td>
-                      <td className="px-4 py-4 text-slate-600">
+                      <td className="px-4 py-4 text-[rgba(240,237,230,0.55)]">
                         {formatBytes(file.size)}
                       </td>
                     </tr>
                   ))}
                   {filteredFiles.length === 0 ? (
                     <tr>
-                      <td className="px-4 py-10 text-center text-slate-500" colSpan={4}>
+                      <td className="px-4 py-10 text-center text-[rgba(240,237,230,0.35)]" colSpan={4}>
                         No files yet. Upload a sample asset to make the workspace feel real.
                       </td>
                     </tr>
@@ -414,8 +414,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-white/60 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
+          <div className="rounded-[2rem] border border-[rgba(255,255,255,0.07)] bg-[#111] p-6 backdrop-blur">
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
               Upload
             </p>
             <div className="mt-4">
@@ -425,13 +425,13 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               />
             </div>
             <textarea
-              className="mt-4 h-28 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
+              className="mt-4 h-28 w-full rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[#161616] px-4 py-3 text-sm text-[#f0ede6] outline-none"
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Add a quick note for the file detail page"
               value={description}
             />
             <button
-              className="mt-4 w-full rounded-2xl bg-sky-500 px-4 py-3 text-sm font-semibold text-white"
+              className="mt-4 w-full rounded-2xl bg-[#c8392b] px-4 py-3 text-sm font-semibold text-[#f0ede6]"
               disabled={uploadMutation.isPending}
               onClick={() => uploadMutation.mutate()}
               type="button"
@@ -442,20 +442,20 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
         </div>
       </section>
 
-      <aside className="space-y-6 rounded-[2rem] border border-white/60 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+      <aside className="space-y-6 rounded-[2rem] border border-[rgba(255,255,255,0.07)] bg-[#111] p-6 backdrop-blur">
         {selectedFile ? (
           <>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+                <p className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
                   File detail
                 </p>
-                <h2 className="mt-3 text-2xl font-semibold text-slate-950">
+                <h2 className="mt-3 font-[family-name:var(--font-bebas-neue)] text-3xl tracking-[0.06em] font-semibold text-[#f0ede6]">
                   {selectedFile.filename}
                 </h2>
               </div>
               <button
-                className="rounded-2xl bg-slate-100 p-3 text-slate-600 transition hover:bg-slate-200"
+                className="rounded-2xl bg-[rgba(255,255,255,0.05)] p-3 text-[rgba(240,237,230,0.55)] transition hover:bg-[rgba(255,255,255,0.08)]"
                 onClick={() => deleteFileMutation.mutate(selectedFile.id)}
                 type="button"
               >
@@ -470,39 +470,39 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             />
 
             <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-[rgba(240,237,230,0.35)]">
                   Size
                 </p>
-                <p className="mt-2 text-lg font-semibold text-slate-950">
+                <p className="mt-2 text-lg font-semibold text-[#f0ede6]">
                   {formatBytes(selectedFile.size)}
                 </p>
               </div>
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-[rgba(240,237,230,0.35)]">
                   Views
                 </p>
-                <p className="mt-2 text-lg font-semibold text-slate-950">
+                <p className="mt-2 text-lg font-semibold text-[#f0ede6]">
                   {selectedFile.views.length}
                 </p>
               </div>
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-[rgba(240,237,230,0.35)]">
                   Shares
                 </p>
-                <p className="mt-2 text-lg font-semibold text-slate-950">
+                <p className="mt-2 text-lg font-semibold text-[#f0ede6]">
                   {selectedFile.shares.length}
                 </p>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+            <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-5">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
+                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
                   Share
                 </p>
                 <Link
-                  className="inline-flex items-center gap-2 text-sm font-medium text-slate-700"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-[rgba(240,237,230,0.55)]"
                   href={`/files/${selectedFile.id}`}
                 >
                   <Settings2 className="h-4 w-4" />
@@ -516,8 +516,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                     key={type}
                     className={`rounded-2xl px-3 py-3 text-xs font-semibold ${
                       shareType === type
-                        ? "bg-slate-950 text-white"
-                        : "bg-white text-slate-700"
+                        ? "bg-[#c8392b] text-[#f0ede6]"
+                        : "bg-[rgba(255,255,255,0.05)] text-[rgba(240,237,230,0.55)]"
                     }`}
                     onClick={() => setShareType(type)}
                     type="button"
@@ -529,7 +529,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
 
               {shareType === "PASSWORD" ? (
                 <input
-                  className="mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none"
+                  className="mt-3 w-full rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#161616] px-4 py-3 text-sm text-[#f0ede6] outline-none"
                   onChange={(event) => setSharePassword(event.target.value)}
                   placeholder="Password for the share link"
                   value={sharePassword}
@@ -537,7 +537,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               ) : null}
 
               <button
-                className="mt-4 w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white"
+                className="mt-4 w-full rounded-2xl bg-[#c8392b] px-4 py-3 text-sm font-semibold text-[#f0ede6]"
                 onClick={() => createShareMutation.mutate(selectedFile.id)}
                 type="button"
               >
@@ -548,22 +548,22 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                 {selectedFile.shares.map((share) => (
                   <div
                     key={share.id}
-                    className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm"
+                    className="flex items-center justify-between rounded-2xl bg-[#161616] px-4 py-3 text-sm"
                   >
                     <div className="flex items-center gap-2">
                       {share.shareType === SHARE_TYPES.PASSWORD ? (
-                        <KeyRound className="h-4 w-4 text-slate-500" />
+                        <KeyRound className="h-4 w-4 text-[rgba(240,237,230,0.35)]" />
                       ) : share.shareType === SHARE_TYPES.PRIVATE ? (
-                        <Lock className="h-4 w-4 text-slate-500" />
+                        <Lock className="h-4 w-4 text-[rgba(240,237,230,0.35)]" />
                       ) : (
-                        <Link2 className="h-4 w-4 text-slate-500" />
+                        <Link2 className="h-4 w-4 text-[rgba(240,237,230,0.35)]" />
                       )}
-                      <Link className="font-medium text-slate-900" href={`/share/${share.token}`}>
+                      <Link className="font-medium text-[#f0ede6]" href={`/share/${share.token}`}>
                         {share.shareType.toLowerCase()}
                       </Link>
                     </div>
                     <button
-                      className="rounded-full bg-slate-100 p-2 text-slate-600"
+                      className="rounded-full bg-[rgba(255,255,255,0.05)] p-2 text-[rgba(240,237,230,0.55)]"
                       onClick={() =>
                         void navigator.clipboard.writeText(
                           `${window.location.origin}/share/${share.token}`,
@@ -579,20 +579,20 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             </div>
           </>
         ) : (
-          <div className="rounded-3xl bg-slate-50 p-6 text-sm text-slate-500">
+          <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-6 text-sm text-[rgba(240,237,230,0.35)]">
             Select a file to preview it, create a share link, and inspect analytics.
           </div>
         )}
 
-        <div className="rounded-3xl bg-slate-950 p-6 text-white">
-          <p className="text-xs uppercase tracking-[0.25em] text-white/60">
+        <div className="rounded-3xl bg-[rgba(255,255,255,0.05)] p-6 text-[#f0ede6]">
+          <p className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
             Next step
           </p>
           <p className="mt-3 text-lg font-semibold">
             Ask Shelby for test tokens once the UI and metadata flow feel right.
           </p>
           <Link
-            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-sky-300"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#b8a06a]"
             href="/settings"
           >
             Open storage settings

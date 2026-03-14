@@ -36,7 +36,7 @@ export function FilePreview({
       <Image
         src={previewSrc}
         alt={originalName}
-        className="h-72 w-full rounded-3xl object-cover"
+        className="h-72 w-full rounded-2xl object-cover"
         height={720}
         unoptimized
         width={1280}
@@ -46,7 +46,7 @@ export function FilePreview({
 
   if (previewType === PREVIEW_TYPES.VIDEO) {
     return (
-      <video className="h-72 w-full rounded-3xl bg-slate-950 object-cover" controls>
+      <video className="h-72 w-full rounded-2xl bg-[#0a0a0a] object-cover" controls>
         <source src={previewSrc} />
       </video>
     );
@@ -54,7 +54,7 @@ export function FilePreview({
 
   if (previewType === PREVIEW_TYPES.AUDIO) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#111] p-6">
         <audio className="w-full" controls>
           <source src={previewSrc} />
         </audio>
@@ -65,7 +65,7 @@ export function FilePreview({
   if (previewType === PREVIEW_TYPES.PDF) {
     return (
       <iframe
-        className="h-96 w-full rounded-3xl border border-slate-200 bg-white"
+        className="h-96 w-full rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#111]"
         src={previewSrc}
         title={originalName}
       />
@@ -74,7 +74,7 @@ export function FilePreview({
 
   return (
     <iframe
-      className="h-96 w-full rounded-3xl border border-slate-200 bg-white"
+      className="h-96 w-full rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#111]"
       src={previewSrc}
       title={originalName}
     />
