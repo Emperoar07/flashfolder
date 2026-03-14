@@ -1,7 +1,7 @@
 import type { Readable } from "node:stream";
 
-export type StorageMode = "local" | "mock" | "shelby";
-export type StorageProviderName = "local" | "shelby";
+export type StorageMode = "local" | "mock" | "blob" | "shelby";
+export type StorageProviderName = "local" | "blob" | "shelby";
 export type StorageIntegrationState =
   | "active"
   | "scaffolded"
@@ -59,6 +59,7 @@ export interface StorageAdapterDescriptor {
   supportsByteRanges: boolean;
   supportsListing: boolean;
   supportsMetadata: boolean;
+  maxUploadBytes?: number;
   notes?: string;
   reason?: string;
 }

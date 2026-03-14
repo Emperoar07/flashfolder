@@ -146,11 +146,12 @@ export default function Home() {
             Shelby-ready architecture
           </div>
           <h2 className="mt-5 text-3xl font-semibold">
-            Demo now with local storage. Swap the blob backend later.
+            Ship now with Blob storage. Swap to Shelby later.
           </h2>
           <p className="mt-4 text-white/70">
-            FlashFolder stays fully demoable before early access by isolating local
-            storage and mock Aptos reads behind clean service boundaries.
+            FlashFolder stays production-safe before Shelby early access by
+            isolating temporary Blob storage and mock Aptos reads behind clean
+            service boundaries.
           </p>
           <Link
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950"

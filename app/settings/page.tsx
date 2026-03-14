@@ -15,11 +15,11 @@ export default async function SettingsPage() {
           Runtime integration settings
         </h1>
         <p className="mt-3 max-w-2xl text-slate-600">
-          FlashFolder is running in local mock mode until Shelby access is
-          approved. When you receive credentials, update your environment
-          variables and replace the TODOs in the Shelby adapter. FlashVault uses
-          the same storage boundary, plus a separate ownership verification layer
-          for Aptos NFT content.
+          FlashFolder can now run on a temporary production-safe Blob adapter
+          while Shelby access is pending. When Shelby credentials arrive, you
+          can switch storage modes without rewriting the product layer.
+          FlashVault uses the same storage boundary, plus a separate ownership
+          verification layer for Aptos NFT content.
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -36,9 +36,9 @@ export default async function SettingsPage() {
             </p>
           </div>
           <div className="rounded-3xl bg-slate-50 p-5">
-            <p className="text-sm text-slate-500">Shelby configured</p>
+            <p className="text-sm text-slate-500">Blob configured</p>
             <p className="mt-2 text-2xl font-semibold text-slate-950">
-              {settings.shelbyConfigured ? "Yes" : "Not yet"}
+              {settings.blobConfigured ? "Yes" : "Not yet"}
             </p>
           </div>
           <div className="rounded-3xl bg-slate-50 p-5">
@@ -61,6 +61,12 @@ export default async function SettingsPage() {
             <p className="mt-2 text-2xl font-semibold text-slate-950">
               {settings.maxUploadMb} MB
             </p>
+            {settings.maxUploadMb !== settings.configuredMaxUploadMb ? (
+              <p className="mt-2 text-sm text-slate-500">
+                Configured for {settings.configuredMaxUploadMb} MB, capped by the
+                active adapter.
+              </p>
+            ) : null}
           </div>
         </div>
 
@@ -149,32 +155,39 @@ export default async function SettingsPage() {
         </div>
 
         <div className="mt-8 rounded-3xl bg-slate-950 p-6 text-white">
-          <p className="text-sm font-semibold">When Shelby access lands</p>
+          <p className="text-sm font-semibold">Recommended rollout</p>
           <p className="mt-3 text-white/70">
-            1. Add `SHELBY_API_KEY`, `SHELBY_RPC_URL`, and namespace values to
-            your environment.
+            1. Connect `BLOB_READ_WRITE_TOKEN` and switch
+            `FLASHFOLDER_STORAGE_MODE` to `blob` for temporary production-safe
+            uploads on Vercel.
           </p>
           <p className="mt-2 text-white/70">
-            2. Swap `FLASHFOLDER_STORAGE_MODE` from `local` to `shelby`.
+            2. Keep Blob mode for small server-side uploads while Shelby access
+            is pending.
           </p>
           <p className="mt-2 text-white/70">
-            3. Replace the placeholder methods in
+            3. Add `SHELBY_API_KEY`, `SHELBY_RPC_URL`, and namespace values when
+            you receive them.
+          </p>
+          <p className="mt-2 text-white/70">
+            4. Replace the placeholder methods in
             `lib/storage/shelby-storage.ts`.
           </p>
           <p className="mt-2 text-white/70">
-            4. Swap mock Aptos NFT reads for real wallet ownership checks in
+            5. Swap mock Aptos NFT reads for real wallet ownership checks in
             `lib/server/aptos/service.ts`.
           </p>
           <p className="mt-2 text-white/70">
-            5. Remove fallback-to-local behavior only after Shelby uploads,
+            6. Remove fallback-to-local behavior only after Shelby uploads,
             downloads, and range reads pass the integration checklist.
           </p>
           <p className="mt-2 text-white/70">
-            6. Replace mock wallet login with real challenge verification in
+            7. Replace mock wallet login with real challenge verification in
             `lib/server/aptos/auth.ts`.
           </p>
           <p className="mt-4 text-sm text-amber-300">
-            On Vercel, local storage is ephemeral. Keep `local` mode for local dev only.
+            On Vercel, local storage is ephemeral. Use `blob` as the temporary
+            production adapter and reserve `local` for local development only.
           </p>
         </div>
 

@@ -15,9 +15,13 @@ import {
   verifyDigitalAssetOwnershipDetailed,
 } from "@/lib/server/aptos-digital-assets";
 import { decryptVaultBuffer, encryptVaultBuffer } from "@/lib/server/crypto";
-import { appConfig } from "@/lib/config";
 import { prisma } from "@/lib/prisma";
-import { getStorageAdapter, getStorageAdapterForProvider } from "@/lib/storage";
+import {
+  getEffectiveStorageUploadLimitBytes,
+  getStorageAdapter,
+  getStorageAdapterForProvider,
+  toStorageProviderEnum,
+} from "@/lib/storage";
 import { StorageError } from "@/lib/storage/errors";
 import { inferPreviewType, slugifyFilename } from "@/lib/utils";
 import { ensureUser } from "@/lib/server/workspace";
@@ -216,7 +220,7 @@ export async function uploadVaultFile(
   }
 
   const originalBuffer = Buffer.from(await input.file.arrayBuffer());
-  if (originalBuffer.byteLength > appConfig.maxUploadBytes) {
+  if (originalBuffer.byteLength > getEffectiveStorageUploadLimitBytes()) {
     throw new Error("Upload exceeds the configured size limit.");
   }
 
@@ -246,7 +250,7 @@ export async function uploadVaultFile(
         filename: input.file.name,
         originalName: input.file.name,
         blobKey: uploadResult.blobKey,
-        storageProvider: uploadResult.provider.toUpperCase() as "LOCAL" | "SHELBY",
+        storageProvider: toStorageProviderEnum(uploadResult.provider),
         storageMetadata: uploadResult.metadata
           ? (uploadResult.metadata as Prisma.InputJsonValue)
           : undefined,
@@ -505,7 +509,7 @@ export async function getVaultContent(args: {
 
 export async function readVaultContentBuffer(args: {
   blobKey: string;
-  storageProvider: "LOCAL" | "SHELBY";
+  storageProvider: "LOCAL" | "BLOB" | "SHELBY";
   isEncrypted: boolean;
   encryptedKeyRef?: string | null;
 }) {

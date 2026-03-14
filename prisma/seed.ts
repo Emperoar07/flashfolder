@@ -1,16 +1,78 @@
 import {
+  Prisma,
   PrismaClient,
   PreviewType,
   ShareType,
   VaultAccessType,
   VaultFileRole,
 } from "@prisma/client";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 
 import { appConfig, demoWalletAddress } from "../lib/config";
+import { getStorageAdapter, toStorageProviderEnum } from "../lib/storage";
 
 const prisma = new PrismaClient();
+const storageAdapter = getStorageAdapter();
+
+async function upsertSeededFile(args: {
+  userId: string;
+  folderId?: string | null;
+  filename: string;
+  mimeType: string;
+  previewType: PreviewType;
+  description: string;
+  content: Buffer;
+  blobKey: string;
+  isEncrypted?: boolean;
+}) {
+  const uploaded = await storageAdapter.uploadFile({
+    blobKey: args.blobKey,
+    buffer: args.content,
+    mimeType: args.mimeType,
+  });
+
+  const existing = await prisma.file.findFirst({
+    where: { filename: args.filename, userId: args.userId },
+  });
+
+  if (existing) {
+    return prisma.file.update({
+      where: { id: existing.id },
+      data: {
+        folderId: args.folderId ?? null,
+        originalName: args.filename,
+        blobKey: uploaded.blobKey,
+        storageProvider: toStorageProviderEnum(uploaded.provider),
+        storageMetadata: uploaded.metadata
+          ? (uploaded.metadata as Prisma.InputJsonValue)
+          : undefined,
+        size: args.content.byteLength,
+        mimeType: args.mimeType,
+        isEncrypted: args.isEncrypted ?? false,
+        previewType: args.previewType,
+        description: args.description,
+      },
+    });
+  }
+
+  return prisma.file.create({
+    data: {
+      userId: args.userId,
+      folderId: args.folderId ?? null,
+      filename: args.filename,
+      originalName: args.filename,
+      blobKey: uploaded.blobKey,
+      storageProvider: toStorageProviderEnum(uploaded.provider),
+      storageMetadata: uploaded.metadata
+        ? (uploaded.metadata as Prisma.InputJsonValue)
+        : undefined,
+      size: args.content.byteLength,
+      mimeType: args.mimeType,
+      isEncrypted: args.isEncrypted ?? false,
+      previewType: args.previewType,
+      description: args.description,
+    },
+  });
+}
 
 async function main() {
   const user = await prisma.user.upsert({
@@ -42,50 +104,43 @@ async function main() {
     },
   });
 
-  const existing = await prisma.file.findFirst({
-    where: { filename: "welcome-note.md", userId: user.id },
+  const content = Buffer.from(
+    [
+      "# FlashFolder",
+      "",
+      `This sample note lives in ${storageAdapter.descriptor.name.toLowerCase()}.`,
+      "",
+      `Storage mode: ${appConfig.storageMode}`,
+      "Next step: connect Shelby credentials in Settings when access is approved.",
+    ].join("\n"),
+    "utf8",
+  );
+
+  const file = await upsertSeededFile({
+    userId: user.id,
+    folderId: mediaFolder.id,
+    filename: "welcome-note.md",
+    mimeType: "text/markdown",
+    previewType: PreviewType.TEXT,
+    description: `A seeded sample file for ${storageAdapter.descriptor.name.toLowerCase()}.`,
+    content,
+    blobKey: `${demoWalletAddress}/workspace/${mediaFolder.id}/seed-welcome-note.md`,
   });
 
-  if (!existing) {
-    const content = Buffer.from(
-      [
-        "# FlashFolder",
-        "",
-        "This sample note lives in local mock storage.",
-        "",
-        `Storage mode: ${appConfig.storageMode}`,
-        "Next step: connect Shelby credentials in Settings when access is approved.",
-      ].join("\n"),
-      "utf8",
-    );
-
-    const blobKey = `${demoWalletAddress}/workspace/${mediaFolder.id}/seed-welcome-note.md`;
-    const destination = path.join(process.cwd(), appConfig.storageRoot, blobKey);
-    await mkdir(path.dirname(destination), { recursive: true });
-    await writeFile(destination, content);
-
-    const file = await prisma.file.create({
-      data: {
-        userId: user.id,
-        folderId: mediaFolder.id,
-        filename: "welcome-note.md",
-        originalName: "welcome-note.md",
-        blobKey,
-        size: content.byteLength,
-        mimeType: "text/markdown",
-        previewType: PreviewType.TEXT,
-        description: "A seeded sample file for local development.",
-      },
-    });
-
-    await prisma.share.create({
-      data: {
-        fileId: file.id,
-        token: "flash-demo-share",
-        shareType: ShareType.PUBLIC,
-      },
-    });
-  }
+  await prisma.share.upsert({
+    where: { token: "flash-demo-share" },
+    update: {
+      fileId: file.id,
+      shareType: ShareType.PUBLIC,
+      expiresAt: null,
+      passwordHash: null,
+    },
+    create: {
+      fileId: file.id,
+      token: "flash-demo-share",
+      shareType: ShareType.PUBLIC,
+    },
+  });
 
   const vaultAsset = await prisma.vaultAsset.upsert({
     where: {
@@ -112,42 +167,41 @@ async function main() {
     },
   });
 
-  const teaserFile = await prisma.file.findFirst({
-    where: { filename: "vault-teaser.txt", userId: user.id },
+  const teaserContent = Buffer.from(
+    [
+      "FlashVault teaser",
+      "",
+      "This is the public preview for a collector vault.",
+      "Vault the content, not the chain record.",
+    ].join("\n"),
+    "utf8",
+  );
+  const createdTeaser = await upsertSeededFile({
+    userId: user.id,
+    filename: "vault-teaser.txt",
+    mimeType: "text/plain",
+    previewType: PreviewType.TEXT,
+    description: "Public teaser for a FlashVault asset.",
+    content: teaserContent,
+    blobKey: `${demoWalletAddress}/vault/${vaultAsset.nftObjectId}/vault-teaser.txt`,
   });
 
-  if (!teaserFile) {
-    const teaserContent = Buffer.from(
-      [
-        "FlashVault teaser",
-        "",
-        "This is the public preview for a collector vault.",
-        "Vault the content, not the chain record.",
-      ].join("\n"),
-      "utf8",
-    );
-    const teaserBlobKey = `${demoWalletAddress}/vault/${vaultAsset.nftObjectId}/vault-teaser.txt`;
-    const teaserDestination = path.join(
-      process.cwd(),
-      appConfig.storageRoot,
-      teaserBlobKey,
-    );
-    await mkdir(path.dirname(teaserDestination), { recursive: true });
-    await writeFile(teaserDestination, teaserContent);
+  const existingVaultTeaser = await prisma.vaultFile.findFirst({
+    where: {
+      vaultAssetId: vaultAsset.id,
+      role: VaultFileRole.TEASER,
+    },
+  });
 
-    const createdTeaser = await prisma.file.create({
+  if (existingVaultTeaser) {
+    await prisma.vaultFile.update({
+      where: { id: existingVaultTeaser.id },
       data: {
-        userId: user.id,
-        filename: "vault-teaser.txt",
-        originalName: "vault-teaser.txt",
-        blobKey: teaserBlobKey,
-        size: teaserContent.byteLength,
-        mimeType: "text/plain",
-        previewType: PreviewType.TEXT,
-        description: "Public teaser for a FlashVault asset.",
+        fileId: createdTeaser.id,
+        encryptedKeyRef: null,
       },
     });
-
+  } else {
     await prisma.vaultFile.create({
       data: {
         vaultAssetId: vaultAsset.id,
@@ -155,17 +209,34 @@ async function main() {
         role: VaultFileRole.TEASER,
       },
     });
+  }
 
-    await prisma.share.create({
-      data: {
-        vaultAssetId: vaultAsset.id,
-        token: "flashvault-demo-share",
-        shareType: ShareType.PASSWORD,
-        passwordHash:
-          "$2b$10$7o4zAFLVJ9rE8zJ1sL1YbO7T4vU0RAG6D8UC6V5s2slQxeqmoeNQy",
-      },
-    });
+  await prisma.share.upsert({
+    where: { token: "flashvault-demo-share" },
+    update: {
+      vaultAssetId: vaultAsset.id,
+      shareType: ShareType.PASSWORD,
+      passwordHash:
+        "$2b$10$7o4zAFLVJ9rE8zJ1sL1YbO7T4vU0RAG6D8UC6V5s2slQxeqmoeNQy",
+    },
+    create: {
+      vaultAssetId: vaultAsset.id,
+      token: "flashvault-demo-share",
+      shareType: ShareType.PASSWORD,
+      passwordHash:
+        "$2b$10$7o4zAFLVJ9rE8zJ1sL1YbO7T4vU0RAG6D8UC6V5s2slQxeqmoeNQy",
+    },
+  });
 
+  const existingAccessLog = await prisma.vaultAccessLog.findFirst({
+    where: {
+      vaultAssetId: vaultAsset.id,
+      accessorWallet: demoWalletAddress,
+      accessType: VaultAccessType.OWNER_VIEW,
+    },
+  });
+
+  if (!existingAccessLog) {
     await prisma.vaultAccessLog.create({
       data: {
         vaultAssetId: vaultAsset.id,

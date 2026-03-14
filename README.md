@@ -7,16 +7,15 @@ It also includes FlashVault, an optional premium mode for private Aptos NFT cont
 It is built as a Shelby-ready MVP:
 
 - PostgreSQL + Prisma store all product metadata
-- local mock storage keeps uploads demoable today
+- local storage keeps development simple and Vercel Blob can keep production uploads durable today
 - a Shelby adapter scaffold is already isolated behind the same storage interface
 - Aptos wallet login is wired in with a demo-wallet fallback for local UX
 - FlashVault uses a separate Aptos ownership verification layer and optional encrypted vault uploads
 
 ## Current status
 
-- latest verified commit: `68a51ea`
 - latest production deployment alias: `https://flashfolder.vercel.app`
-- local Prisma commands still require a real `DATABASE_URL` in `.env`
+- Neon-backed `DATABASE_URL` works once envs are pulled locally
 
 ## Stack
 
@@ -96,8 +95,10 @@ The app uses a storage interface in [`lib/storage/types.ts`](/c:/FlashFolder/lib
 Current adapters:
 
 - [`lib/storage/local-storage.ts`](/c:/FlashFolder/lib/storage/local-storage.ts): working mock adapter that writes to `.flashfolder/storage`
+- [`lib/storage/blob-storage.ts`](/c:/FlashFolder/lib/storage/blob-storage.ts): Vercel Blob adapter for temporary production-safe storage
 - [`lib/storage/shelby-storage.ts`](/c:/FlashFolder/lib/storage/shelby-storage.ts): scaffolded Shelby adapter entrypoint
 - [`lib/storage/shelby/adapter.ts`](/c:/FlashFolder/lib/storage/shelby/adapter.ts): provider-specific Shelby implementation boundary
+- [`docs/vercel-blob-integration.md`](/c:/FlashFolder/docs/vercel-blob-integration.md): temporary production storage notes
 - [`docs/shelby-integration.md`](/c:/FlashFolder/docs/shelby-integration.md): implementation handoff notes for real Shelby work
 
 ## Aptos architecture
@@ -189,6 +190,16 @@ If you want Shelby-prep diagnostics without activating Shelby, keep:
 FLASHFOLDER_STORAGE_MODE=local
 ```
 
+If you want the temporary production-safe adapter:
+
+```bash
+FLASHFOLDER_STORAGE_MODE=blob
+BLOB_READ_WRITE_TOKEN=...
+```
+
+Important:
+The connected Vercel Blob store must be `private`, and Vercel Blob server uploads are effectively capped around 4.5 MB. It works well as a stopgap for server-controlled uploads and downloads, but Shelby is still the long-term path for larger active files.
+
 If you want to test fallback behavior while Shelby is still scaffolded, you can set:
 
 ```bash
@@ -261,17 +272,20 @@ FlashFolder can be deployed to Vercel for preview environments, but there is one
 
 - `FLASHFOLDER_STORAGE_MODE=local` is only suitable for local development
 - Vercel filesystem writes are ephemeral, so uploaded files will not persist between deployments or invocations
+- `FLASHFOLDER_STORAGE_MODE=blob` is the temporary production-safe mode for durable uploads on Vercel
+- Blob mode should be treated as a bridge to Shelby, not the final large-file path
 
 For a meaningful hosted deployment you should use:
 
 - a managed Postgres database for `DATABASE_URL`
-- Shelby storage once access is approved, or another persistent remote blob store temporarily
+- Vercel Blob temporarily for production uploads
+- Shelby storage once access is approved for the final hot-storage path
 
 Current Vercel state:
 
 - production alias is active at `https://flashfolder.vercel.app`
 - the latest production deployment was ready after the most recent push to `main`
-- local `pnpm db:push` and `pnpm db:seed` remain blocked in this workspace until `DATABASE_URL` is configured
+- Neon-backed Prisma commands work after pulling project envs locally
 
 Minimum Vercel environment variables:
 
@@ -285,6 +299,7 @@ Minimum Vercel environment variables:
 - `FLASHFOLDER_STORAGE_MODE`
 - `FLASHFOLDER_MAX_UPLOAD_MB`
 - `FLASHFOLDER_FAIL_ON_STORAGE_MISCONFIG`
+- `BLOB_READ_WRITE_TOKEN` when Blob mode is enabled
 - `FLASHVAULT_USE_MOCK_NFTS`
 - `FLASHVAULT_ENCRYPTION_SECRET`
 - `SHELBY_API_KEY` when Shelby is enabled
@@ -300,6 +315,8 @@ The current repo passes:
 
 - `pnpm lint`
 - `pnpm build`
+- `pnpm db:push`
+- `pnpm db:seed`
 
 ## Notes
 

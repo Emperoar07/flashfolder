@@ -8,7 +8,9 @@ import { prisma } from "@/lib/prisma";
 import {
   getStorageAdapter,
   getStorageAdapterForProvider,
+  getEffectiveStorageUploadLimitBytes,
   getStorageRuntime,
+  toStorageProviderEnum,
 } from "@/lib/storage";
 import { inferPreviewType, slugifyFilename } from "@/lib/utils";
 
@@ -168,7 +170,7 @@ export async function uploadFile(
     throw new Error("Upload is empty.");
   }
 
-  if (buffer.byteLength > appConfig.maxUploadBytes) {
+  if (buffer.byteLength > getEffectiveStorageUploadLimitBytes()) {
     throw new Error("Upload exceeds the configured size limit.");
   }
 
@@ -193,7 +195,7 @@ export async function uploadFile(
       filename: input.file.name,
       originalName: input.file.name,
       blobKey: uploadResult.blobKey,
-      storageProvider: uploadResult.provider.toUpperCase() as "LOCAL" | "SHELBY",
+      storageProvider: toStorageProviderEnum(uploadResult.provider),
       storageMetadata: uploadResult.metadata
         ? (uploadResult.metadata as Prisma.InputJsonValue)
         : undefined,
@@ -416,6 +418,12 @@ export function getOptionalRequestWalletAddress(request: Request) {
 
 export function getSettingsSnapshot() {
   const runtime = getStorageRuntime();
+  const effectiveUploadLimitMb = Number(
+    (getEffectiveStorageUploadLimitBytes() / (1024 * 1024)).toFixed(1),
+  );
+  const configuredUploadLimitMb = Number(
+    (appConfig.maxUploadBytes / (1024 * 1024)).toFixed(1),
+  );
 
   return {
     requestedStorageMode: runtime.requestedMode,
@@ -423,9 +431,11 @@ export function getSettingsSnapshot() {
     storageState: runtime.integrationState,
     storageFallbackReason: runtime.fallbackReason,
     shelbyConfigured: Boolean(appConfig.shelby.apiKey && appConfig.shelby.rpcUrl),
+    blobConfigured: Boolean(appConfig.blob.readWriteToken),
     shelbyNamespace: appConfig.shelby.namespace,
     shelbyNetwork: appConfig.shelby.network,
-    maxUploadMb: Math.round(appConfig.maxUploadBytes / (1024 * 1024)),
+    maxUploadMb: effectiveUploadLimitMb,
+    configuredMaxUploadMb: configuredUploadLimitMb,
     aptosNetwork: appConfig.aptosNetwork,
     useMockNfts: appConfig.useMockNfts,
     aptos: getAptosRuntimeStatus(),

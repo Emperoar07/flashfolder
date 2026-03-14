@@ -4,8 +4,8 @@ export const demoWalletAddress =
   process.env.NEXT_PUBLIC_DEFAULT_WALLET ??
   "0x4c617368466f6c64657244656d6f57616c6c6574";
 
-const rawStorageMode = (process.env.FLASHFOLDER_STORAGE_MODE ?? "local").toLowerCase();
-const rawAptosAuthMode = (process.env.APTOS_AUTH_MODE ?? "mock").toLowerCase();
+const rawStorageMode = (process.env.FLASHFOLDER_STORAGE_MODE ?? "local").trim().toLowerCase();
+const rawAptosAuthMode = (process.env.APTOS_AUTH_MODE ?? "mock").trim().toLowerCase();
 const maxUploadMb = Number.parseInt(
   process.env.FLASHFOLDER_MAX_UPLOAD_MB ?? "100",
   10,
@@ -17,6 +17,8 @@ export const appConfig = {
   storageMode:
     rawStorageMode === "shelby"
       ? "shelby"
+      : rawStorageMode === "blob"
+        ? "blob"
       : rawStorageMode === "mock"
         ? "mock"
         : "local",
@@ -26,6 +28,9 @@ export const appConfig = {
   storageRoot: process.env.FLASHFOLDER_STORAGE_ROOT ?? ".flashfolder/storage",
   failOnStorageMisconfig:
     process.env.FLASHFOLDER_FAIL_ON_STORAGE_MISCONFIG === "true",
+  blob: {
+    readWriteToken: process.env.BLOB_READ_WRITE_TOKEN ?? "",
+  },
   aptosNetwork: process.env.NEXT_PUBLIC_APTOS_NETWORK ?? "testnet",
   aptos: {
     network: process.env.NEXT_PUBLIC_APTOS_NETWORK ?? "testnet",
