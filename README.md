@@ -12,6 +12,12 @@ It is built as a Shelby-ready MVP:
 - Aptos wallet login is wired in with a demo-wallet fallback for local UX
 - FlashVault uses a separate Aptos ownership verification layer and optional encrypted vault uploads
 
+## Current status
+
+- latest verified commit: `68a51ea`
+- latest production deployment alias: `https://flashfolder.vercel.app`
+- local Prisma commands still require a real `DATABASE_URL` in `.env`
+
 ## Stack
 
 - Next.js 16
@@ -150,6 +156,9 @@ cp .env.example .env
 
 3. Start PostgreSQL and update `DATABASE_URL` in `.env`.
 
+   Important:
+   A Vercel-generated `.env.local` is not enough for Prisma commands unless it also includes `DATABASE_URL`.
+
 4. Generate Prisma client:
 
 ```bash
@@ -257,6 +266,12 @@ For a meaningful hosted deployment you should use:
 
 - a managed Postgres database for `DATABASE_URL`
 - Shelby storage once access is approved, or another persistent remote blob store temporarily
+
+Current Vercel state:
+
+- production alias is active at `https://flashfolder.vercel.app`
+- the latest production deployment was ready after the most recent push to `main`
+- local `pnpm db:push` and `pnpm db:seed` remain blocked in this workspace until `DATABASE_URL` is configured
 
 Minimum Vercel environment variables:
 
