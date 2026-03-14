@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { WorkspacePreviewCard } from "@/components/workspace-preview-card";
+
 export default function Home() {
   return (
     <>
@@ -29,50 +31,7 @@ export default function Home() {
           </div>
         </div>
         <div className="hero-right">
-          <div className="preview-card">
-            <div className="preview-card-header">
-              <span>My Workspace</span>
-              <div className="preview-card-dots">
-                <span />
-                <span />
-                <span />
-              </div>
-            </div>
-            <div className="preview-card-body">
-              <div className="file-row">
-                <div className="file-icon img">&#x1F5BC;</div>
-                <div className="file-info">
-                  <div className="file-name">cover-art-final.png</div>
-                  <div className="file-meta">PNG Image</div>
-                </div>
-                <div className="file-size">4.2 MB</div>
-              </div>
-              <div className="file-row">
-                <div className="file-icon vid">&#x25B6;</div>
-                <div className="file-info">
-                  <div className="file-name">teaser-clip.mp4</div>
-                  <div className="file-meta">MP4 Video</div>
-                </div>
-                <div className="file-size">28 MB</div>
-              </div>
-              <div className="file-row">
-                <div className="file-icon doc">&#x1F4C4;</div>
-                <div className="file-info">
-                  <div className="file-name">whitepaper-v3.pdf</div>
-                  <div className="file-meta">PDF Document</div>
-                </div>
-                <div className="file-size">1.8 MB</div>
-              </div>
-              <div className="file-row">
-                <div className="file-icon zip">&#x1F4E6;</div>
-                <div className="file-info">
-                  <div className="file-name">source-assets.zip</div>
-                  <div className="file-meta">ZIP Archive</div>
-                </div>
-                <div className="file-size">156 MB</div>
-              </div>
-            </div>
-          </div>
+          <WorkspacePreviewCard />
         </div>
       </section>
 
