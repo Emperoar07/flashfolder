@@ -14,6 +14,9 @@ importers:
       '@aptos-labs/wallet-adapter-react':
         specifier: ^8.3.1
         version: 8.3.1(@aptos-labs/ts-sdk@5.2.1(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.2.14)(@wallet-standard/core@1.1.1)(react@19.2.3)
+      '@prisma/client':
+        specifier: 6.19.2
+        version: 6.19.2(prisma@6.19.2(typescript@5.9.3))(typescript@5.9.3)
       '@tanstack/react-query':
         specifier: ^5.90.21
         version: 5.90.21(react@19.2.3)
@@ -51,9 +54,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@prisma/client':
-        specifier: 6.19.2
-        version: 6.19.2(prisma@6.19.2(typescript@5.9.3))(typescript@5.9.3)
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.2.1
