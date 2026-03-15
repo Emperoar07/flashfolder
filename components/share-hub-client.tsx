@@ -33,6 +33,15 @@ type ShareWithFile = ShareRecord & {
   downloads?: ShareDownload[];
 };
 
+const APTOS_NETWORK = process.env.NEXT_PUBLIC_APTOS_NETWORK ?? "testnet";
+function aptosScanUrl(txHash: string) {
+  const base =
+    APTOS_NETWORK === "mainnet"
+      ? "https://explorer.aptoslabs.com/txn"
+      : "https://explorer.aptoslabs.com/txn";
+  return `${base}/${txHash}?network=${APTOS_NETWORK}`;
+}
+
 export function ShareHubClient() {
   const { walletAddress, connected } = useWorkspaceWallet();
   const queryClient = useQueryClient();
@@ -569,9 +578,27 @@ export function ShareHubClient() {
                                 {formatDate(new Date(download.paidAt).toISOString())}
                               </span>
                             </div>
-                            <div style={{ color: "rgba(100,200,100,0.8)", fontSize: 8, marginTop: 2 }}>
-                              ✓ Downloaded {download.downloadCount} of {share.maxDownloadsPerPayment ?? 1} time{download.downloadCount !== 1 ? "s" : ""}
-                              {download.lastDownloadAt && ` (Last: ${formatDate(new Date(download.lastDownloadAt).toISOString())})`}
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>
+                              <div style={{ color: "rgba(100,200,100,0.8)", fontSize: 8 }}>
+                                ✓ Downloaded {download.downloadCount} of {share.maxDownloadsPerPayment ?? 1} time{download.downloadCount !== 1 ? "s" : ""}
+                                {download.lastDownloadAt && ` (Last: ${formatDate(new Date(download.lastDownloadAt).toISOString())})`}
+                              </div>
+                              <a
+                                href={aptosScanUrl(download.txHash)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  fontSize: 8,
+                                  color: "var(--accent-gold)",
+                                  textDecoration: "none",
+                                  border: "1px solid rgba(232,170,48,0.3)",
+                                  borderRadius: 4,
+                                  padding: "1px 5px",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                txn ↗
+                              </a>
                             </div>
                           </div>
                         ))}

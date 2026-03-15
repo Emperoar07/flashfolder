@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { useWorkspaceWallet } from "@/components/wallet-status";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { shortenWallet } from "@/lib/utils";
 
 function WalletIcon() {
@@ -108,16 +109,16 @@ export function Navbar() {
   }
 
   const btnClass =
-    "rounded-full border border-[rgba(255,255,255,0.07)] px-5 py-2 text-[11px] tracking-[0.05em] text-[#f0ede6] transition hover:border-[#c8392b] hover:bg-[rgba(200,57,43,0.08)]";
+    "rounded-full border border-[var(--border)] px-5 py-2 text-[11px] tracking-[0.05em] text-[var(--foreground)] transition hover:border-[var(--accent-red)] hover:bg-[var(--accent-red-subtle)]";
 
   return (
     <>
-      <nav className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-[rgba(255,255,255,0.07)] bg-[rgba(10,10,10,0.85)] px-6 py-4 backdrop-blur-xl sm:px-10">
+      <nav className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-[var(--border)] bg-[var(--navbar-bg)] px-6 py-4 backdrop-blur-xl sm:px-10">
         <Link
           href="/"
-          className="font-[family-name:var(--font-bebas-neue)] text-[22px] tracking-[0.15em] text-[#f0ede6]"
+          className="font-[family-name:var(--font-bebas-neue)] text-[22px] tracking-[0.15em] text-[var(--foreground)]"
         >
-          <span className="text-[#c8392b]">FLASH</span>FOLDER
+          <span className="text-[var(--accent-red)]">FLASH</span>FOLDER
         </Link>
 
         <div className="hidden items-center gap-6 sm:flex">
@@ -127,19 +128,19 @@ export function Navbar() {
               href={link.href}
               className={`relative text-[10px] uppercase tracking-[0.2em] transition-colors ${
                 isActive(link.href)
-                  ? "text-[#c8392b]"
-                  : "text-[rgba(240,237,230,0.55)] hover:text-[#c8392b]"
+                  ? "text-[var(--accent-red)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--accent-red)]"
               }`}
             >
               {link.label}
               {isActive(link.href) ? (
-                <span className="absolute -bottom-1.5 left-0 right-0 h-px bg-[#c8392b]" />
+                <span className="absolute -bottom-1.5 left-0 right-0 h-px bg-[var(--accent-red)]" />
               ) : null}
             </Link>
           ))}
 
-          <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[rgba(240,237,230,0.35)]">
-            <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[#c8392b]" />
+            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)]">
+              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-red)]" />
             Testnet
           </span>
 
@@ -157,19 +158,19 @@ export function Navbar() {
             </button>
 
             {connectDropdownOpen ? (
-              <div className="absolute right-0 top-full z-[9999] mt-2 min-w-[260px] rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#111] p-2 shadow-2xl backdrop-blur-xl overflow-y-auto max-h-[50vh]">
+              <div className="absolute right-0 top-full z-[9999] mt-2 min-w-[260px] rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-2xl backdrop-blur-xl overflow-y-auto max-h-[50vh]">
                 {connected ? (
                   <>
-                    <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[rgba(240,237,230,0.35)]">
+                    <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)]">
                       Connected wallet
                     </div>
-                    <div className="px-3 py-1 break-all text-[11px] text-[#f0ede6]">
+                    <div className="px-3 py-1 break-all text-[11px] text-[var(--foreground)]">
                       {walletAddress}
                     </div>
-                    <div className="my-2 h-px bg-[rgba(255,255,255,0.07)]" />
+                    <div className="my-2 h-px bg-[var(--border)]" />
                     <button
                       onClick={handleDisconnect}
-                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[11px] text-[#c8392b] transition hover:bg-[rgba(200,57,43,0.08)]"
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[11px] text-[var(--accent-red)] transition hover:bg-[var(--accent-red-subtle)]"
                       type="button"
                     >
                       <span>&#x23FB;</span>
@@ -178,10 +179,10 @@ export function Navbar() {
                   </>
                 ) : (
                   <>
-                    <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[rgba(240,237,230,0.35)]">
+                    <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)]">
                       Connect an Aptos wallet ({wallets.length} found)
                     </div>
-                    <div className="my-1 h-px bg-[rgba(255,255,255,0.07)]" />
+                    <div className="my-1 h-px bg-[var(--border)]" />
                     {wallets.length > 0 ? (
                       wallets.slice(0, 5).map((wallet) => (
                         <button
@@ -191,7 +192,7 @@ export function Navbar() {
                             void handleWalletConnect(wallet.name);
                           }}
                           disabled={isAuthenticating}
-                          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[11px] text-[#f0ede6] transition hover:bg-[rgba(255,255,255,0.05)] disabled:opacity-60"
+                          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[11px] text-[var(--foreground)] transition hover:bg-[var(--surface-subtle-hover)] disabled:opacity-60"
                           type="button"
                         >
                           <WalletIcon />
@@ -199,12 +200,12 @@ export function Navbar() {
                         </button>
                       ))
                     ) : (
-                      <div className="rounded-lg border border-[rgba(184,160,106,0.2)] bg-[rgba(184,160,106,0.08)] px-3 py-3 text-[11px] text-[#b8a06a]">
+                      <div className="rounded-lg border border-[var(--border-gold)] bg-[var(--accent-gold-subtle)] px-3 py-3 text-[11px] text-[var(--accent-gold)]">
                         No Aptos wallet was detected. Install Petra, Nightly, Backpack, OKX Wallet, or another Aptos-compatible wallet, then refresh.
                       </div>
                     )}
                     {walletError ? (
-                      <div className="mt-2 rounded-lg border border-[rgba(200,57,43,0.28)] bg-[rgba(200,57,43,0.12)] px-3 py-2 text-[11px] text-[#ffb4ac]">
+                      <div className="mt-2 rounded-lg border border-[var(--border-hover)] bg-[var(--accent-red-subtle)] px-3 py-2 text-[11px] text-[var(--error-text)]">
                         {walletError}
                       </div>
                     ) : null}
@@ -213,12 +214,14 @@ export function Navbar() {
               </div>
             ) : null}
           </div>
+          <ThemeToggle />
         </div>
 
         <div className="flex items-center gap-3 sm:hidden">
+          <ThemeToggle />
           <button
             onClick={() => setConnectDropdownOpen((open) => !open)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.07)] px-3 py-1.5 text-[10px] text-[#f0ede6] transition hover:border-[#c8392b]"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] px-3 py-1.5 text-[10px] text-[var(--foreground)] transition hover:border-[var(--accent-red)]"
             type="button"
           >
             <WalletIcon />
@@ -250,21 +253,21 @@ export function Navbar() {
         <div className="fixed inset-0 z-[45] bg-transparent sm:hidden" onClick={() => setConnectDropdownOpen(false)}>
           <div
             ref={mobileDropdownRef}
-            className="fixed right-4 top-[68px] z-[46] min-w-[250px] rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#111] p-2 shadow-2xl backdrop-blur-xl"
+            className="fixed right-4 top-[68px] z-[46] min-w-[250px] rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-2xl backdrop-blur-xl"
             onClick={(event) => event.stopPropagation()}
           >
             {connected ? (
               <>
-                <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[rgba(240,237,230,0.35)]">
+                <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)]">
                   Connected wallet
                 </div>
-                <div className="px-3 py-1 break-all text-[11px] text-[#f0ede6]">
+                <div className="px-3 py-1 break-all text-[11px] text-[var(--foreground)]">
                   {walletAddress}
                 </div>
-                <div className="my-2 h-px bg-[rgba(255,255,255,0.07)]" />
+                <div className="my-2 h-px bg-[var(--border)]" />
                 <button
                   onClick={handleDisconnect}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[11px] text-[#c8392b] transition hover:bg-[rgba(200,57,43,0.08)]"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[11px] text-[var(--accent-red)] transition hover:bg-[var(--accent-red-subtle)]"
                   type="button"
                 >
                   <span>&#x23FB;</span>
@@ -273,17 +276,17 @@ export function Navbar() {
               </>
             ) : (
               <>
-                <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[rgba(240,237,230,0.35)]">
+                <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)]">
                   Connect an Aptos wallet
                 </div>
-                <div className="my-1 h-px bg-[rgba(255,255,255,0.07)]" />
+                <div className="my-1 h-px bg-[var(--border)]" />
                 {wallets.length > 0 ? (
                   wallets.slice(0, 5).map((wallet) => (
                     <button
                       key={wallet.name}
                       onClick={() => void handleWalletConnect(wallet.name)}
                       disabled={isAuthenticating}
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[11px] text-[#f0ede6] transition hover:bg-[rgba(255,255,255,0.05)] disabled:opacity-60"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[11px] text-[var(--foreground)] transition hover:bg-[var(--surface-subtle-hover)] disabled:opacity-60"
                       type="button"
                     >
                       <WalletIcon />
@@ -291,12 +294,12 @@ export function Navbar() {
                     </button>
                   ))
                 ) : (
-                  <div className="rounded-lg border border-[rgba(184,160,106,0.2)] bg-[rgba(184,160,106,0.08)] px-3 py-3 text-[11px] text-[#b8a06a]">
+                  <div className="rounded-lg border border-[var(--border-gold)] bg-[var(--accent-gold-subtle)] px-3 py-3 text-[11px] text-[var(--accent-gold)]">
                     No Aptos wallet was detected. Install Petra, Nightly, Backpack, OKX Wallet, or another Aptos-compatible wallet, then refresh.
                   </div>
                 )}
                 {walletError ? (
-                  <div className="mt-2 rounded-lg border border-[rgba(200,57,43,0.28)] bg-[rgba(200,57,43,0.12)] px-3 py-2 text-[11px] text-[#ffb4ac]">
+                  <div className="mt-2 rounded-lg border border-[var(--border-hover)] bg-[var(--accent-red-subtle)] px-3 py-2 text-[11px] text-[var(--error-text)]">
                     {walletError}
                   </div>
                 ) : null}

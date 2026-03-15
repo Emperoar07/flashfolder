@@ -1,25 +1,65 @@
 @import "tailwindcss";
 
 /* ========== DESIGN TOKENS ========== */
-:root {
-  --background: #0a0a0a;
-  --foreground: #f0ede6;
+:root,
+[data-theme="dark"] {
+  --background: #000000;
+  --foreground: #f5f1ed;
   --card: #111111;
-  --card-hover: #161616;
-  --bg-elevated: #1a1a1a;
-  --text-secondary: rgba(240, 237, 230, 0.55);
-  --text-muted: rgba(240, 237, 230, 0.35);
-  --accent-red: #c8392b;
-  --accent-red-hover: #a82d22;
+  --card-hover: #1a0a0a;
+  --bg-elevated: #1a0a0a;
+  --text-secondary: rgba(245, 241, 237, 0.55);
+  --text-muted: rgba(245, 241, 237, 0.35);
+  --accent-red: #dc143c;
+  --accent-red-hover: #8b0000;
   --accent-gold: #b8a06a;
   --accent-gold-dim: rgba(184, 160, 106, 0.4);
   --border: rgba(255, 255, 255, 0.07);
-  --border-hover: rgba(200, 57, 43, 0.3);
+  --border-hover: rgba(220, 20, 60, 0.3);
   --border-gold: rgba(184, 160, 106, 0.2);
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 20px;
   --transition: 0.25s ease;
+  /* Extended tokens */
+  --navbar-bg: rgba(0, 0, 0, 0.85);
+  --accent-red-subtle: rgba(220, 20, 60, 0.1);
+  --accent-gold-subtle: rgba(184, 160, 106, 0.08);
+  --surface-subtle: rgba(255, 255, 255, 0.03);
+  --surface-subtle-hover: rgba(255, 255, 255, 0.05);
+  --error-text: #ffb4ac;
+  --phantom-text: rgba(255, 255, 255, 0.06);
+  --toggle-track: rgba(255, 255, 255, 0.06);
+  --toggle-border: rgba(255, 255, 255, 0.12);
+  --toggle-thumb: #dc143c;
+}
+
+[data-theme="light"] {
+  --background: #f5f1ed;
+  --foreground: #1a0a0a;
+  --card: #fffcfa;
+  --card-hover: #f0e8e4;
+  --bg-elevated: #e8ddd8;
+  --text-secondary: rgba(26, 10, 10, 0.6);
+  --text-muted: rgba(26, 10, 10, 0.4);
+  --accent-red: #dc143c;
+  --accent-red-hover: #8b0000;
+  --accent-gold: #9a7a45;
+  --accent-gold-dim: rgba(154, 122, 69, 0.4);
+  --border: rgba(26, 10, 10, 0.1);
+  --border-hover: rgba(220, 20, 60, 0.3);
+  --border-gold: rgba(154, 122, 69, 0.25);
+  /* Extended tokens */
+  --navbar-bg: rgba(245, 241, 237, 0.9);
+  --accent-red-subtle: rgba(220, 20, 60, 0.08);
+  --accent-gold-subtle: rgba(154, 122, 69, 0.08);
+  --surface-subtle: rgba(26, 10, 10, 0.03);
+  --surface-subtle-hover: rgba(26, 10, 10, 0.05);
+  --error-text: #991b1b;
+  --phantom-text: rgba(0, 0, 0, 0.06);
+  --toggle-track: rgba(220, 20, 60, 0.08);
+  --toggle-border: rgba(220, 20, 60, 0.25);
+  --toggle-thumb: #dc143c;
 }
 
 @theme inline {
@@ -30,6 +70,10 @@
   --font-serif: var(--font-playfair);
 }
 
+html {
+  transition: background-color 0.3s ease;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -38,6 +82,7 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Grain texture overlay */
@@ -63,7 +108,7 @@ h3 {
 }
 
 ::selection {
-  background: rgba(200, 57, 43, 0.3);
+  background: var(--border-hover);
 }
 
 a,
@@ -93,6 +138,58 @@ select {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.15);
 }
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(26, 10, 10, 0.15);
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 10, 10, 0.28);
+}
+
+/* ========== THEME TOGGLE ========== */
+.theme-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 52px;
+  height: 26px;
+  border-radius: 99px;
+  background: var(--toggle-track);
+  border: 1px solid var(--toggle-border);
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+.theme-toggle__thumb {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--toggle-thumb);
+  left: 2px;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 6px rgba(220, 20, 60, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: rgba(245, 241, 237, 0.9);
+}
+[data-theme="light"] .theme-toggle__thumb {
+  transform: translateX(26px);
+}
+.theme-toggle__bg-icon {
+  position: absolute;
+  font-size: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  transition: color 0.3s ease;
+  user-select: none;
+  pointer-events: none;
+}
+.theme-toggle__bg-icon--moon { left: 3px; }
+.theme-toggle__bg-icon--sun  { right: 3px; }
 
 /* ========== SECTION LABEL ========== */
 .section-label {
@@ -381,7 +478,7 @@ select {
 .feature-number {
   font-family: var(--font-bebas-neue), sans-serif;
   font-size: 48px;
-  color: rgba(255, 255, 255, 0.05);
+  color: var(--phantom-text);
   line-height: 1;
   margin-bottom: 20px;
 }
@@ -470,7 +567,7 @@ select {
   background: rgba(255, 255, 255, 0.03);
 }
 .storage-bar {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-subtle-hover);
   height: 4px;
   border-radius: 2px;
   overflow: hidden;
@@ -495,9 +592,9 @@ select {
 .dash-hero {
   background: linear-gradient(
     135deg,
-    #111 0%,
-    #1a1a1a 60%,
-    rgba(200, 57, 43, 0.15) 100%
+    var(--card) 0%,
+    var(--bg-elevated) 60%,
+    var(--accent-red-subtle) 100%
   );
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -537,7 +634,7 @@ select {
   margin-top: 24px;
 }
 .metric {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-subtle);
   padding: 16px;
   border-radius: var(--radius-sm);
 }
@@ -657,7 +754,7 @@ select {
 .detail-preview {
   width: 100%;
   aspect-ratio: 16/10;
-  background: linear-gradient(135deg, #1a1a1a, #111);
+  background: linear-gradient(135deg, var(--bg-elevated), var(--card));
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   display: flex;
@@ -774,9 +871,9 @@ select {
 .vault-hero {
   background: linear-gradient(
     135deg,
-    #0a0a0a 0%,
-    #141414 50%,
-    rgba(184, 160, 106, 0.12) 100%
+    var(--background) 0%,
+    var(--card) 50%,
+    var(--accent-gold-subtle) 100%
   );
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -921,7 +1018,7 @@ select {
 .how-num {
   font-family: var(--font-bebas-neue), sans-serif;
   font-size: 24px;
-  color: rgba(255, 255, 255, 0.08);
+  color: var(--phantom-text);
   width: 28px;
   flex-shrink: 0;
 }
@@ -955,7 +1052,7 @@ select {
 .share-preview {
   width: 100%;
   aspect-ratio: 16/9;
-  background: linear-gradient(135deg, #111, #1a1a1a);
+  background: linear-gradient(135deg, var(--card), var(--bg-elevated));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1106,7 +1203,7 @@ select {
   bottom: 0;
   width: min(320px, 85vw);
   z-index: 41;
-  background: #111;
+  background: var(--card);
   border-left: 1px solid var(--border);
   padding: 80px 28px 40px;
   display: flex;
