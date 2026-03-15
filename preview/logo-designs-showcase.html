@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlashFolder — 10 Logo Design Concepts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a0a0a;
+      color: #f5f1ed;
+      min-height: 100vh;
+    }
+
+    .header {
+      text-align: center;
+      padding: 60px 20px 40px;
+    }
+    .header h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #f5f1ed;
+    }
+    .header p {
+      color: rgba(245,241,237,0.45);
+      font-size: 14px;
+      margin-top: 10px;
+      letter-spacing: 0.04em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 32px 80px;
+    }
+
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: #111;
+      transition: border-color 0.3s ease, transform 0.3s ease;
+    }
+    .card:hover {
+      border-color: rgba(220,20,60,0.2);
+      transform: translateY(-3px);
+    }
+
+    .card-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 220px;
+      padding: 40px 32px;
+      position: relative;
+    }
+    .card-preview.dark { background: #0a0a0a; }
+    .card-preview.light { background: #f8f6f3; }
+
+    .card-info {
+      padding: 20px 24px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .card-info .num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      color: #dc143c;
+      margin-bottom: 6px;
+    }
+    .card-info h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .card-info p {
+      font-size: 13px;
+      color: rgba(245,241,237,0.45);
+      line-height: 1.5;
+    }
+    .card-info .tags {
+      margin-top: 10px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .card-info .tag {
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 100px;
+      background: rgba(220,20,60,0.08);
+      color: rgba(220,20,60,0.7);
+      font-weight: 500;
+    }
+
+    /* Both-bg card shows logo on dark AND light */
+    .dual-bg {
+      display: flex;
+    }
+    .dual-bg .half {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 220px;
+      padding: 40px 24px;
+    }
+    .dual-bg .half.dark { background: #0a0a0a; }
+    .dual-bg .half.light { background: #f8f6f3; }
+
+    /* ============= LOGO STYLES ============= */
+
+    /* --- Logo 1: Lightning Folder --- */
+    .logo-1 { display: flex; align-items: center; gap: 4px; }
+    .logo-1 .icon {
+      width: 48px; height: 48px;
+      display: block;
+      flex: 0 0 auto;
+      transform: translateY(-3px);
+    }
+    .logo-1 .wordmark {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      line-height: 1;
+    }
+    .logo-1 .wordmark .flash { color: #dc143c; }
+    .logo-1.on-dark .wordmark { color: #f5f1ed; }
+    .logo-1.on-light .wordmark { color: #1a1a1a; }
+
+    /* --- Logo 2: Warm Gradient Mark --- */
+    .logo-2 { display: flex; align-items: center; gap: 14px; }
+    .logo-2 .icon { width: 44px; height: 44px; }
+    .logo-2 .wordmark {
+      font-family: 'Sora', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .logo-2.on-dark .wordmark { color: #f5f1ed; }
+    .logo-2.on-light .wordmark { color: #1a1a1a; }
+    .logo-2 .wordmark .flash { color: #e85d75; }
+
+    /* --- Logo 3: Shield Vault --- */
+    .logo-3 { display: flex; align-items: center; gap: 14px; }
+    .logo-3 .icon { width: 44px; height: 52px; }
+    .logo-3 .wordmark {
+      font-family: 'Outfit', sans-serif;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .logo-3.on-dark .wordmark { color: #f5f1ed; }
+    .logo-3.on-light .wordmark { color: #1a1a1a; }
+    .logo-3 .wordmark .flash { color: #dc143c; }
+
+    /* --- Logo 4: Origami Bolt --- */
+    .logo-4 { display: flex; align-items: center; gap: 14px; }
+    .logo-4 .icon { width: 46px; height: 46px; }
+    .logo-4 .wordmark {
+      font-family: 'Inter', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .logo-4.on-dark .wordmark { color: #f5f1ed; }
+    .logo-4.on-light .wordmark { color: #222; }
+    .logo-4 .wordmark .flash { color: #c41230; }
+
+    /* --- Logo 5: Soft Circle --- */
+    .logo-5 { display: flex; align-items: center; gap: 16px; }
+    .logo-5 .icon { width: 50px; height: 50px; }
+    .logo-5 .wordmark {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 25px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+    .logo-5.on-dark .wordmark { color: #f5f1ed; }
+    .logo-5.on-light .wordmark { color: #1a1a1a; }
+    .logo-5 .wordmark .flash { color: #dc143c; }
+
+    /* --- Logo 6: FF Monogram --- */
+    .logo-6 { display: flex; align-items: center; gap: 16px; }
+    .logo-6 .icon { width: 48px; height: 48px; }
+    .logo-6 .wordmark {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+    }
+    .logo-6.on-dark .wordmark { color: #f5f1ed; }
+    .logo-6.on-light .wordmark { color: #1a1a1a; }
+
+    /* --- Logo 7: Orbit --- */
+    .logo-7 { display: flex; align-items: center; gap: 14px; }
+    .logo-7 .icon { width: 52px; height: 52px; }
+    .logo-7 .wordmark {
+      font-family: 'Sora', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .logo-7.on-dark .wordmark { color: #f5f1ed; }
+    .logo-7.on-light .wordmark { color: #1a1a1a; }
+    .logo-7 .wordmark .flash { color: #dc143c; }
+
+    /* --- Logo 8: Negative Space --- */
+    .logo-8 { display: flex; align-items: center; gap: 14px; }
+    .logo-8 .icon { width: 48px; height: 48px; }
+    .logo-8 .wordmark {
+      font-family: 'Outfit', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+    .logo-8.on-dark .wordmark { color: #f5f1ed; }
+    .logo-8.on-light .wordmark { color: #1a1a1a; }
+    .logo-8 .wordmark .flash { color: #dc143c; }
+
+    /* --- Logo 9: Stacked Rounded --- */
+    .logo-9 { display: flex; align-items: center; gap: 14px; }
+    .logo-9 .icon { width: 42px; height: 48px; }
+    .logo-9 .wordmark {
+      font-family: 'Inter', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .logo-9.on-dark .wordmark { color: #f5f1ed; }
+    .logo-9.on-light .wordmark { color: #1a1a1a; }
+    .logo-9 .wordmark .flash { color: #dc143c; }
+
+    /* --- Logo 10: Premium Serif --- */
+    .logo-10 { display: flex; align-items: center; gap: 14px; }
+    .logo-10 .icon { width: 46px; height: 46px; }
+    .logo-10 .wordmark {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .logo-10.on-dark .wordmark { color: #f5f1ed; }
+    .logo-10.on-light .wordmark { color: #1a1a1a; }
+    .logo-10 .wordmark .flash { color: #b01030; }
+
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr; padding: 16px; gap: 20px; }
+      .dual-bg { flex-direction: column; }
+      .dual-bg .half { min-height: 160px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FlashFolder — Logo Design Concepts</h1>
+  <p>10 humane, approachable logo designs · dark &amp; light previews</p>
+</div>
+
+<div class="grid">
+
+  <!-- ========== LOGO 1: Lightning Folder ========== -->
+  <div class="card">
+    <div class="dual-bg">
+      <div class="half dark">
+        <div class="logo-1 on-dark">
+          <svg class="icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Rounded folder body -->
+            <rect x="2" y="14" width="44" height="30" rx="6" fill="#dc143c" opacity="0.15"/>
+            <rect x="2" y="14" width="44" height="30" rx="6" stroke="#dc143c" stroke-width="2" fill="none"/>
+            <!-- Folder tab -->
+            <path d="M2 20V12a6 6 0 016-6h10l4 4h18a6 6 0 016 6v4" stroke="#dc143c" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <!-- Realistic lightning bolt -->
+            <path d="M28.5 16 L22 26 L26.5 26 L24 29 L27 29 L21 38 L23 31 L19.5 31 L22 26 L18.5 26 L25 16 Z" fill="#f5f1ed" stroke="#f5f1ed" stroke-width="0.5" stroke-linejoin="round"/>
+            <!-- Bolt glow -->
+            <path d="M28.5 16 L22 26 L26.5 26 L24 29 L27 29 L21 38 L23 31 L19.5 31 L22 26 L18.5 26 L25 16 Z" fill="#f5f1ed" opacity="0.3" filter="url(#boltGlow1)"/>
+            <defs><filter id="boltGlow1"><feGaussianBlur stdDeviation="2"/></filter></defs>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+      <div class="half light">
+        <div class="logo-1 on-light">
+          <svg class="icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="14" width="44" height="30" rx="6" fill="#dc143c" opacity="0.06"/>
+            <rect x="2" y="14" width="44" height="30" rx="6" stroke="#dc143c" stroke-width="2" fill="none"/>
+            <path d="M2 20V12a6 6 0 016-6h10l4 4h18a6 6 0 016 6v4" stroke="#dc143c" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <!-- Realistic lightning bolt -->
+            <path d="M28.5 16 L22 26 L26.5 26 L24 29 L27 29 L21 38 L23 31 L19.5 31 L22 26 L18.5 26 L25 16 Z" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="0.5" stroke-linejoin="round"/>
+            <path d="M28.5 16 L22 26 L26.5 26 L24 29 L27 29 L21 38 L23 31 L19.5 31 L22 26 L18.5 26 L25 16 Z" fill="#1a1a1a" opacity="0.15" filter="url(#boltGlow1b)"/>
+            <defs><filter id="boltGlow1b"><feGaussianBlur stdDeviation="2"/></filter></defs>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="num">01</div>
+      <h3>Lightning Folder</h3>
+      <p>Rounded folder with a realistic jagged lightning bolt inside. Friendly, recognisable at any size.</p>
+      <div class="tags"><span class="tag">MINIMAL</span><span class="tag">FRIENDLY</span><span class="tag">SCALABLE</span></div>
+    </div>
+  </div>
+
+  <!-- ========== LOGO 2: Warm Gradient Mark ========== -->
+  <div class="card">
+    <div class="dual-bg">
+      <div class="half dark">
+        <div class="logo-2 on-dark">
+          <svg class="icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="warmGrad" x1="0" y1="0" x2="44" y2="44">
+                <stop offset="0%" stop-color="#ff6b8a"/>
+                <stop offset="100%" stop-color="#dc143c"/>
+              </linearGradient>
+            </defs>
+            <rect width="44" height="44" rx="12" fill="url(#warmGrad)"/>
+            <!-- Stylised "F" with flash -->
+            <path d="M16 12h14M16 12v20M16 22h10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Small bolt accent -->
+            <path d="M31 20l-3 5h4l-3 7" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+      <div class="half light">
+        <div class="logo-2 on-light">
+          <svg class="icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="warmGrad2" x1="0" y1="0" x2="44" y2="44">
+                <stop offset="0%" stop-color="#ff6b8a"/>
+                <stop offset="100%" stop-color="#dc143c"/>
+              </linearGradient>
+            </defs>
+            <rect width="44" height="44" rx="12" fill="url(#warmGrad2)"/>
+            <path d="M16 12h14M16 12v20M16 22h10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M31 20l-3 5h4l-3 7" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="num">02</div>
+      <h3>Warm Gradient Mark</h3>
+      <p>Soft pink-to-crimson rounded square with a bold "F" and subtle bolt accent. Modern app-icon feel.</p>
+      <div class="tags"><span class="tag">MODERN</span><span class="tag">APP ICON</span><span class="tag">WARM</span></div>
+    </div>
+  </div>
+
+  <!-- ========== LOGO 3: Shield Vault ========== -->
+  <div class="card">
+    <div class="dual-bg">
+      <div class="half dark">
+        <div class="logo-3 on-dark">
+          <svg class="icon" viewBox="0 0 44 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Rounded shield outline -->
+            <path d="M22 4L6 12v14c0 10 7 17 16 20 9-3 16-10 16-20V12L22 4z" stroke="#dc143c" stroke-width="2" fill="rgba(220,20,60,0.08)" stroke-linejoin="round"/>
+            <!-- Folder inside shield -->
+            <rect x="13" y="20" width="18" height="13" rx="3" stroke="#f5f1ed" stroke-width="1.5" fill="none"/>
+            <path d="M13 23v-2a2 2 0 012-2h5l2 2h8a2 2 0 012 2v0" stroke="#f5f1ed" stroke-width="1.5" fill="none"/>
+            <!-- Tiny bolt -->
+            <path d="M24 23l-2.5 4h3l-2.5 5" stroke="#dc143c" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+      <div class="half light">
+        <div class="logo-3 on-light">
+          <svg class="icon" viewBox="0 0 44 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 4L6 12v14c0 10 7 17 16 20 9-3 16-10 16-20V12L22 4z" stroke="#dc143c" stroke-width="2" fill="rgba(220,20,60,0.06)" stroke-linejoin="round"/>
+            <rect x="13" y="20" width="18" height="13" rx="3" stroke="#333" stroke-width="1.5" fill="none"/>
+            <path d="M13 23v-2a2 2 0 012-2h5l2 2h8a2 2 0 012 2v0" stroke="#333" stroke-width="1.5" fill="none"/>
+            <path d="M24 23l-2.5 4h3l-2.5 5" stroke="#dc143c" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="num">03</div>
+      <h3>Shield Vault</h3>
+      <p>Protective shield wrapping a folder — speaks to security and blockchain-gated access. Trustworthy and warm.</p>
+      <div class="tags"><span class="tag">SECURITY</span><span class="tag">TRUST</span><span class="tag">ON-CHAIN</span></div>
+    </div>
+  </div>
+
+  <!-- ========== LOGO 4: Origami Bolt ========== -->
+  <div class="card">
+    <div class="dual-bg">
+      <div class="half dark">
+        <div class="logo-4 on-dark">
+          <svg class="icon" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Folded paper / origami shape -->
+            <path d="M8 6h22l8 8v24a4 4 0 01-4 4H12a4 4 0 01-4-4V10a4 4 0 014-4z" fill="rgba(196,18,48,0.12)" stroke="#c41230" stroke-width="1.8"/>
+            <!-- Fold corner -->
+            <path d="M30 6v8h8" stroke="#c41230" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+            <!-- Centered lightning bolt -->
+            <path d="M26 16l-5 8h6l-5 10" stroke="#f5f1ed" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+      <div class="half light">
+        <div class="logo-4 on-light">
+          <svg class="icon" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 6h22l8 8v24a4 4 0 01-4 4H12a4 4 0 01-4-4V10a4 4 0 014-4z" fill="rgba(196,18,48,0.07)" stroke="#c41230" stroke-width="1.8"/>
+            <path d="M30 6v8h8" stroke="#c41230" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+            <path d="M26 16l-5 8h6l-5 10" stroke="#333" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="num">04</div>
+      <h3>Origami Bolt</h3>
+      <p>Folded document page with a lightning stroke — bridges the concept of files and speed. Crafted, tangible feel.</p>
+      <div class="tags"><span class="tag">CRAFT</span><span class="tag">FILE-FIRST</span><span class="tag">TANGIBLE</span></div>
+    </div>
+  </div>
+
+  <!-- ========== LOGO 5: Soft Circle ========== -->
+  <div class="card">
+    <div class="dual-bg">
+      <div class="half dark">
+        <div class="logo-5 on-dark">
+          <svg class="icon" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Soft circle background -->
+            <circle cx="25" cy="25" r="23" fill="rgba(220,20,60,0.1)" stroke="#dc143c" stroke-width="1.5"/>
+            <!-- Simple folder -->
+            <rect x="13" y="21" width="24" height="15" rx="3.5" stroke="#f5f1ed" stroke-width="1.8" fill="none"/>
+            <path d="M13 24v-2.5a2.5 2.5 0 012.5-2.5h6l2.5 2.5h10a2.5 2.5 0 012.5 2.5v0" stroke="#f5f1ed" stroke-width="1.8" fill="none"/>
+            <!-- Small bolt in folder -->
+            <path d="M27.5 23l-3 4.5h4l-3 5" stroke="#dc143c" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+      <div class="half light">
+        <div class="logo-5 on-light">
+          <svg class="icon" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="25" cy="25" r="23" fill="rgba(220,20,60,0.06)" stroke="#dc143c" stroke-width="1.5"/>
+            <rect x="13" y="21" width="24" height="15" rx="3.5" stroke="#333" stroke-width="1.8" fill="none"/>
+            <path d="M13 24v-2.5a2.5 2.5 0 012.5-2.5h6l2.5 2.5h10a2.5 2.5 0 012.5 2.5v0" stroke="#333" stroke-width="1.8" fill="none"/>
+            <path d="M27.5 23l-3 4.5h4l-3 5" stroke="#dc143c" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="num">05</div>
+      <h3>Soft Circle</h3>
+      <p>Gentle circular container with a line-art folder and crimson bolt. Approachable, works great as an avatar.</p>
+      <div class="tags"><span class="tag">AVATAR-READY</span><span class="tag">GENTLE</span><span class="tag">BALANCED</span></div>
+    </div>
+  </div>
+
+  <!-- ========== LOGO 6: FF Monogram ========== -->
+  <div class="card">
+    <div class="dual-bg">
+      <div class="half dark">
+        <div class="logo-6 on-dark">
+          <svg class="icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Rounded square housing -->
+            <rect x="2" y="2" width="44" height="44" rx="10" fill="none" stroke="rgba(220,20,60,0.4)" stroke-width="1.5"/>
+            <!-- F left -->
+            <path d="M12 14h9M12 14v20M12 24h7" stroke="#f5f1ed" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- F right, slightly overlapping -->
+            <path d="M26 14h9M26 14v20M26 24h7" stroke="#dc143c" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Lightning accent connecting the two -->
+            <path d="M22 18l-1 4h3l-2 4" stroke="#dc143c" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+          </svg>
+          <span class="wordmark">FLASHFOLDER</span>
+        </div>
+      </div>
+      <div class="half light">
+        <div class="logo-6 on-light">
+          <svg class="icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="44" height="44" rx="10" fill="none" stroke="rgba(220,20,60,0.3)" stroke-width="1.5"/>
+            <path d="M12 14h9M12 14v20M12 24h7" stroke="#222" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M26 14h9M26 14v20M26 24h7" stroke="#dc143c" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M22 18l-1 4h3l-2 4" stroke="#dc143c" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+          </svg>
+          <span class="wordmark">FLASHFOLDER</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="num">06</div>
+      <h3>FF Monogram</h3>
+      <p>Two bold "F" letterforms — one neutral, one crimson — bridged by a micro-bolt. Strong brand anchor.</p>
+      <div class="tags"><span class="tag">MONOGRAM</span><span class="tag">BOLD</span><span class="tag">ICON-FIRST</span></div>
+    </div>
+  </div>
+
+  <!-- ========== LOGO 7: Orbit ========== -->
+  <div class="card">
+    <div class="dual-bg">
+      <div class="half dark">
+        <div class="logo-7 on-dark">
+          <svg class="icon" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Folder base -->
+            <rect x="10" y="20" width="28" height="18" rx="4" stroke="#f5f1ed" stroke-width="1.8" fill="none"/>
+            <path d="M10 23v-3a3 3 0 013-3h7l3 3h12a3 3 0 013 3v0" stroke="#f5f1ed" stroke-width="1.8" fill="none"/>
+            <!-- Orbit ring -->
+            <ellipse cx="26" cy="26" rx="22" ry="10" stroke="#dc143c" stroke-width="1.2" stroke-dasharray="3 3" fill="none" opacity="0.5" transform="rotate(-20 26 26)"/>
+            <!-- Flash particle on orbit -->
+            <circle cx="46" cy="19" r="3.5" fill="#dc143c"/>
+            <circle cx="46" cy="19" r="5.5" fill="none" stroke="#dc143c" stroke-width="0.8" opacity="0.3"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+      <div class="half light">
+        <div class="logo-7 on-light">
+          <svg class="icon" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="20" width="28" height="18" rx="4" stroke="#333" stroke-width="1.8" fill="none"/>
+            <path d="M10 23v-3a3 3 0 013-3h7l3 3h12a3 3 0 013 3v0" stroke="#333" stroke-width="1.8" fill="none"/>
+            <ellipse cx="26" cy="26" rx="22" ry="10" stroke="#dc143c" stroke-width="1.2" stroke-dasharray="3 3" fill="none" opacity="0.4" transform="rotate(-20 26 26)"/>
+            <circle cx="46" cy="19" r="3.5" fill="#dc143c"/>
+            <circle cx="46" cy="19" r="5.5" fill="none" stroke="#dc143c" stroke-width="0.8" opacity="0.3"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="num">07</div>
+      <h3>Orbit</h3>
+      <p>A folder with a dashed orbit ring and a crimson particle — conveys speed, movement, and decentralised nodes.</p>
+      <div class="tags"><span class="tag">MOTION</span><span class="tag">DECENTRALISED</span><span class="tag">DYNAMIC</span></div>
+    </div>
+  </div>
+
+  <!-- ========== LOGO 8: Negative Space ========== -->
+  <div class="card">
+    <div class="dual-bg">
+      <div class="half dark">
+        <div class="logo-8 on-dark">
+          <svg class="icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Solid crimson folder body -->
+            <path d="M4 16a4 4 0 014-4h10l4 4h18a4 4 0 014 4v20a4 4 0 01-4 4H8a4 4 0 01-4-4V16z" fill="#dc143c"/>
+            <!-- Lightning bolt cut out as negative space (white on dark, dark on light) -->
+            <path d="M28 18l-6 9h7l-6 11" stroke="#0a0a0a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+      <div class="half light">
+        <div class="logo-8 on-light">
+          <svg class="icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 16a4 4 0 014-4h10l4 4h18a4 4 0 014 4v20a4 4 0 01-4 4H8a4 4 0 01-4-4V16z" fill="#dc143c"/>
+            <path d="M28 18l-6 9h7l-6 11" stroke="#f8f6f3" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="num">08</div>
+      <h3>Negative Space</h3>
+      <p>Bold solid crimson folder with lightning carved into it. High contrast, instantly recognisable, works at 16px.</p>
+      <div class="tags"><span class="tag">BOLD</span><span class="tag">FAVICON-READY</span><span class="tag">ICONIC</span></div>
+    </div>
+  </div>
+
+  <!-- ========== LOGO 9: Stacked Rounded ========== -->
+  <div class="card">
+    <div class="dual-bg">
+      <div class="half dark">
+        <div class="logo-9 on-dark">
+          <svg class="icon" viewBox="0 0 42 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Three stacked rounded file cards -->
+            <rect x="6" y="2" width="30" height="10" rx="5" fill="none" stroke="rgba(245,241,237,0.2)" stroke-width="1.2"/>
+            <rect x="3" y="14" width="36" height="10" rx="5" fill="none" stroke="rgba(245,241,237,0.35)" stroke-width="1.3"/>
+            <rect x="0" y="26" width="42" height="14" rx="6" fill="rgba(220,20,60,0.12)" stroke="#dc143c" stroke-width="1.8"/>
+            <!-- Flash bolt in bottom card -->
+            <path d="M24 29l-3 4.5h4l-3 5" stroke="#dc143c" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+            <!-- Dots representing files in upper cards -->
+            <circle cx="16" cy="7" r="1.5" fill="rgba(245,241,237,0.2)"/>
+            <circle cx="21" cy="7" r="1.5" fill="rgba(245,241,237,0.2)"/>
+            <circle cx="26" cy="7" r="1.5" fill="rgba(245,241,237,0.2)"/>
+            <circle cx="14" cy="19" r="1.5" fill="rgba(245,241,237,0.35)"/>
+            <circle cx="19" cy="19" r="1.5" fill="rgba(245,241,237,0.35)"/>
+            <circle cx="24" cy="19" r="1.5" fill="rgba(245,241,237,0.35)"/>
+            <circle cx="29" cy="19" r="1.5" fill="rgba(245,241,237,0.35)"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+      <div class="half light">
+        <div class="logo-9 on-light">
+          <svg class="icon" viewBox="0 0 42 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="2" width="30" height="10" rx="5" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="1.2"/>
+            <rect x="3" y="14" width="36" height="10" rx="5" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="1.3"/>
+            <rect x="0" y="26" width="42" height="14" rx="6" fill="rgba(220,20,60,0.08)" stroke="#dc143c" stroke-width="1.8"/>
+            <path d="M24 29l-3 4.5h4l-3 5" stroke="#dc143c" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+            <circle cx="16" cy="7" r="1.5" fill="rgba(0,0,0,0.1)"/>
+            <circle cx="21" cy="7" r="1.5" fill="rgba(0,0,0,0.1)"/>
+            <circle cx="26" cy="7" r="1.5" fill="rgba(0,0,0,0.1)"/>
+            <circle cx="14" cy="19" r="1.5" fill="rgba(0,0,0,0.18)"/>
+            <circle cx="19" cy="19" r="1.5" fill="rgba(0,0,0,0.18)"/>
+            <circle cx="24" cy="19" r="1.5" fill="rgba(0,0,0,0.18)"/>
+            <circle cx="29" cy="19" r="1.5" fill="rgba(0,0,0,0.18)"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="num">09</div>
+      <h3>Stacked Rounded</h3>
+      <p>Three depth-stacked file pills — the front one highlighted with a bolt. Conveys layers, storage, organisation.</p>
+      <div class="tags"><span class="tag">DEPTH</span><span class="tag">STORAGE</span><span class="tag">ORGANISED</span></div>
+    </div>
+  </div>
+
+  <!-- ========== LOGO 10: Premium Serif ========== -->
+  <div class="card">
+    <div class="dual-bg">
+      <div class="half dark">
+        <div class="logo-10 on-dark">
+          <svg class="icon" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Elegant double-line diamond frame -->
+            <rect x="4" y="4" width="38" height="38" rx="4" transform="rotate(0 23 23)" stroke="#b01030" stroke-width="1.2" fill="none"/>
+            <rect x="8" y="8" width="30" height="30" rx="2.5" stroke="rgba(176,16,48,0.35)" stroke-width="0.8" fill="none"/>
+            <!-- Elegant bolt — thinner, more refined -->
+            <path d="M26 11l-6 10h7l-6 13" stroke="#f5f1ed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <!-- Small decorative dots -->
+            <circle cx="10" cy="10" r="1.5" fill="#b01030" opacity="0.5"/>
+            <circle cx="36" cy="36" r="1.5" fill="#b01030" opacity="0.5"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+      <div class="half light">
+        <div class="logo-10 on-light">
+          <svg class="icon" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="38" height="38" rx="4" stroke="#b01030" stroke-width="1.2" fill="none"/>
+            <rect x="8" y="8" width="30" height="30" rx="2.5" stroke="rgba(176,16,48,0.25)" stroke-width="0.8" fill="none"/>
+            <path d="M26 11l-6 10h7l-6 13" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="10" cy="10" r="1.5" fill="#b01030" opacity="0.4"/>
+            <circle cx="36" cy="36" r="1.5" fill="#b01030" opacity="0.4"/>
+          </svg>
+          <span class="wordmark"><span class="flash">Flash</span>Folder</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="num">10</div>
+      <h3>Premium Serif</h3>
+      <p>Elegant double-bordered frame with a refined bolt, paired with a serif wordmark. Luxury meets Web3.</p>
+      <div class="tags"><span class="tag">PREMIUM</span><span class="tag">ELEGANT</span><span class="tag">SERIF</span></div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
