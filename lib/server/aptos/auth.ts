@@ -13,7 +13,13 @@ import { AptosIntegrationError } from "@/lib/server/aptos/errors";
 
 const challengeTtlMs = 5 * 60 * 1000;
 const sessionTtlMs = 24 * 60 * 60 * 1000;
-const authSecret = (process.env.FLASHFOLDER_AUTH_SECRET ?? appConfig.vaultEncryptionSecret).trim();
+const authSecret = (() => {
+  const secret = (process.env.FLASHFOLDER_AUTH_SECRET ?? process.env.FLASHVAULT_ENCRYPTION_SECRET ?? "").trim();
+  if (!secret && process.env.NODE_ENV === "production") {
+    throw new Error("FLASHFOLDER_AUTH_SECRET or FLASHVAULT_ENCRYPTION_SECRET must be set in production.");
+  }
+  return secret || "dev-auth-secret-local-only";
+})();
 
 type SignedChallengePayload = {
   kind: "challenge";

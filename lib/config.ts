@@ -37,9 +37,12 @@ export const appConfig = {
     authMode: (rawAptosAuthMode === "challenge" ? "challenge" : "challenge") as WalletAuthMode,
     mockEnabled: false,
   },
-  useMockNfts: false,
   vaultEncryptionSecret:
-    process.env.FLASHVAULT_ENCRYPTION_SECRET ?? "flashvault-demo-secret",
+    process.env.FLASHVAULT_ENCRYPTION_SECRET ?? (
+      process.env.NODE_ENV === "production"
+        ? (() => { throw new Error("FLASHVAULT_ENCRYPTION_SECRET must be set in production."); })()
+        : "flashvault-dev-local-only"
+    ),
   shelby: {
     apiKey: process.env.SHELBY_API_KEY ?? "",
     rpcUrl: process.env.SHELBY_RPC_URL ?? "",

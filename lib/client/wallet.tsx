@@ -79,14 +79,6 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
     wallets,
   } = useWallet();
   
-  // Debug logging
-  console.debug("[Wallet Provider] useWallet hook state:", {
-    walletCount: wallets.length,
-    connected,
-    isLoading,
-    accountAddress: account?.address?.toString(),
-  });
-  
   const [lastError, setLastError] = useState<string | null>(null);
   const [authSession, setAuthSession] = useState<AuthSessionPayload | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -111,15 +103,12 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
   const network = process.env.NEXT_PUBLIC_APTOS_NETWORK ?? "testnet";
 
   async function connect(walletName: string) {
-    console.debug("[Wallet Provider] Connect called with wallet:", walletName);
     setLastError(null);
 
     try {
       await adapterConnect(walletName);
-      console.debug("[Wallet Provider] Connect successful");
     } catch (error) {
       const message = getReadableWalletError(error);
-      console.debug("[Wallet Provider] Connect failed:", message);
       setLastError(message);
       reportWalletError(error);
       throw error;
@@ -234,14 +223,6 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
           fullMessage: fullMessageStr,
           signedAddress: signed.address,
         };
-
-        // Debug log
-        console.debug("[Wallet] Verification payload prepared", {
-          signature_length: signatureHex.length,
-          publicKey_length: currentPublicKey.length,
-          fullMessage_length: fullMessageStr.length,
-          signedAddress: signed.address,
-        });
 
         const payload = await apiFetch<AuthSessionPayload>("/api/auth/verify", {
           method: "POST",

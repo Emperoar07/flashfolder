@@ -2,7 +2,7 @@ import { Prisma, ShareType, ViewEventType } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 
-import { appConfig, demoWalletAddress } from "@/lib/config";
+import { appConfig } from "@/lib/config";
 import {
   getAptosRuntimeStatus,
   getSessionForToken,
@@ -31,13 +31,12 @@ type FileListOptions = {
 };
 
 function normalizeWalletAddress(walletAddress?: string | null) {
-  const normalized = walletAddress?.trim() ?? demoWalletAddress;
-  
-  // Ensure address is not too short (basic validation)
-  if (normalized.startsWith("0x") && normalized.length < 10) {
-    return demoWalletAddress;
+  const normalized = walletAddress?.trim();
+
+  if (!normalized || (normalized.startsWith("0x") && normalized.length < 10)) {
+    throw new Error("Valid wallet address is required.");
   }
-  
+
   return normalized;
 }
 
@@ -559,7 +558,7 @@ export function getRequestWalletAddress(request: Request) {
     return cookieWallet;
   }
 
-  return demoWalletAddress;
+  throw new Error("Wallet not connected. Please connect your Aptos wallet.");
 }
 
 export function getOptionalRequestWalletAddress(request: Request) {
@@ -633,7 +632,6 @@ export function getSettingsSnapshot() {
     maxUploadMb: effectiveUploadLimitMb,
     configuredMaxUploadMb: configuredUploadLimitMb,
     aptosNetwork: appConfig.aptosNetwork,
-    useMockNfts: appConfig.useMockNfts,
     aptos: getAptosRuntimeStatus(),
     walletAuth: getWalletAuthStatus(),
   };

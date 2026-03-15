@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { useWorkspaceWallet } from "@/components/wallet-status";
 import { WorkspaceDropdown } from "@/components/workspace-dropdown";
@@ -15,11 +17,13 @@ const GRAD_CLASSES = ["grad1", "grad2", "grad3"];
 const GRAD_EMOJIS = ["\u{1F3A8}", "\u{1F30A}", "\u{1F331}"];
 
 export function VaultDashboardClient() {
+  const router = useRouter();
   const { walletAddress } = useWorkspaceWallet();
   const profileQuery = useCurrentUser(walletAddress);
   const vaultAssetsQuery = useVaultAssets(walletAddress);
   const walletNftsQuery = useWalletNfts(walletAddress);
   const createVaultAsset = useCreateVaultAsset(walletAddress);
+  const [importingId, setImportingId] = useState<string | null>(null);
 
   const vaultAssets = vaultAssetsQuery.data?.vaultAssets ?? [];
   const ownedNfts = walletNftsQuery.data?.nfts ?? [];
@@ -130,34 +134,50 @@ export function VaultDashboardClient() {
           <h3 style={{ fontFamily: "var(--font-bebas-neue)", fontSize: 18, letterSpacing: "0.1em" }}>
             YOUR VAULTS
           </h3>
-          {availableImports.length > 0 && (
-            <button
-              className="btn-primary"
-              style={{ padding: "10px 24px", fontSize: 10 }}
-              onClick={() => {
-                const nft = availableImports[0];
-                createVaultAsset.mutate({
-                  nftObjectId: nft.objectId,
-                  collectionName: nft.collectionName,
-                  nftName: nft.tokenName,
-                  publicPreviewMode: "TEASER",
-                  ownerOnly: true,
-                });
-              }}
-              type="button"
-            >
-              Import NFT
-            </button>
-          )}
+          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+            {vaultAssets.length} vault{vaultAssets.length !== 1 ? "s" : ""}
+          </span>
         </div>
 
         <div className="nft-grid">
-          {vaultAssets.map((asset, i) => (
+          {vaultAssets.length === 0 && (
+            <div
+              className="nft-card"
+              style={{
+                borderStyle: "dashed",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 280,
+              }}
+            >
+              <div style={{ textAlign: "center", padding: 32 }}>
+                <div style={{ fontSize: 32, opacity: 0.15, marginBottom: 12 }}>🔒</div>
+                <div style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.15em" }}>
+                  No vaults yet
+                </div>
+                <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 6 }}>
+                  Import an NFT below to create your first vault
+                </div>
+              </div>
+            </div>
+          )}
+          {vaultAssets.map((asset, i) => {
+            const meta = asset.nftMetadataSnapshot as { imageUrl?: string } | null;
+            return (
             <Link key={asset.id} href={`/vault/${asset.id}`} className="nft-card" style={{ textDecoration: "none", color: "inherit" }}>
               <div className="nft-thumb">
+                {meta?.imageUrl ? (
+                  <img
+                    src={meta.imageUrl}
+                    alt={asset.nftName ?? "NFT"}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
                 <div className={`nft-thumb-inner ${GRAD_CLASSES[i % 3]}`}>
                   {GRAD_EMOJIS[i % 3]}
                 </div>
+                )}
                 <span className="nft-badge owner">Owner</span>
               </div>
               <div className="nft-info">
@@ -173,44 +193,81 @@ export function VaultDashboardClient() {
                 </div>
               </div>
             </Link>
-          ))}
-          <div
-            className="nft-card"
-            style={{
-              borderStyle: "dashed",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: 280,
-            }}
-            onClick={() => {
-              if (availableImports.length > 0) {
-                const nft = availableImports[0];
-                createVaultAsset.mutate({
-                  nftObjectId: nft.objectId,
-                  collectionName: nft.collectionName,
-                  nftName: nft.tokenName,
-                  publicPreviewMode: "TEASER",
-                  ownerOnly: true,
-                });
-              }
-            }}
-          >
-            <div style={{ textAlign: "center", padding: 32 }}>
-              <div style={{ fontSize: 32, opacity: 0.15, marginBottom: 12 }}>+</div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "var(--text-muted)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.15em",
-                }}
-              >
-                Import NFT
-              </div>
+            );
+          })}
+        </div>
+
+        {/* AVAILABLE NFTs — not yet imported */}
+        {availableImports.length > 0 && (
+          <div style={{ marginTop: 40 }}>
+            <div className="file-table-header">
+              <h3 style={{ fontFamily: "var(--font-bebas-neue)", fontSize: 18, letterSpacing: "0.1em" }}>
+                AVAILABLE NFTS
+              </h3>
+              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                {availableImports.length} NFT{availableImports.length !== 1 ? "s" : ""} ready to import
+              </span>
+            </div>
+
+            <div className="nft-grid">
+              {availableImports.map((nft, i) => {
+                const isImporting = importingId === nft.objectId;
+                return (
+                  <div key={nft.objectId} className="nft-card">
+                    <div className="nft-thumb">
+                      {nft.imageUrl ? (
+                        <img
+                          src={nft.imageUrl}
+                          alt={nft.tokenName}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "var(--radius-sm)" }}
+                        />
+                      ) : (
+                        <div className={`nft-thumb-inner ${GRAD_CLASSES[(i + vaultAssets.length) % 3]}`}>
+                          {GRAD_EMOJIS[(i + vaultAssets.length) % 3]}
+                        </div>
+                      )}
+                      <span className="nft-badge available">Available</span>
+                    </div>
+                    <div className="nft-info">
+                      <div className="nft-name">{nft.tokenName}</div>
+                      <div className="nft-collection">{nft.collectionName}</div>
+                      {nft.description && (
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {nft.description}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ padding: "0 16px 16px" }}>
+                      <button
+                        className="btn-primary"
+                        style={{ width: "100%", padding: "10px 0", fontSize: 10 }}
+                        disabled={isImporting || createVaultAsset.isPending}
+                        onClick={async () => {
+                          setImportingId(nft.objectId);
+                          try {
+                            const result = await createVaultAsset.mutateAsync({
+                              nftObjectId: nft.objectId,
+                              collectionName: nft.collectionName,
+                              nftName: nft.tokenName,
+                              publicPreviewMode: "TEASER",
+                              ownerOnly: true,
+                            });
+                            router.push(`/vault/${result.vaultAsset.id}`);
+                          } catch {
+                            setImportingId(null);
+                          }
+                        }}
+                        type="button"
+                      >
+                        {isImporting ? "Importing…" : "Import to Vault"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        </div>
+        )}
 
         <div style={{ marginTop: 40 }}>
           <div className="sidebar-section-label">Vault Activity</div>

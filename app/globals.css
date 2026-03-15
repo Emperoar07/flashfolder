@@ -288,6 +288,15 @@ select {
   background: var(--accent-red-hover);
   transform: translateY(-1px);
 }
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-primary:disabled:hover {
+  background: var(--accent-red);
+  transform: none;
+}
 .btn-primary::after {
   content: "\2192";
   font-size: 14px;
@@ -1030,6 +1039,10 @@ select {
 .nft-badge.owner {
   color: var(--accent-gold);
   border-color: var(--border-gold);
+}
+.nft-badge.available {
+  color: var(--text-secondary);
+  border-color: var(--border);
 }
 .nft-info {
   padding: 16px;

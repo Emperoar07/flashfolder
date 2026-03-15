@@ -97,7 +97,7 @@ lib/
 │   │   ├── auth.ts             #   Wallet auth + challenge
 │   │   ├── service.ts          #   NFT discovery + ownership verification
 │   │   ├── indexer-provider.ts #   Real Aptos Indexer GraphQL provider
-│   │   └── mock-provider.ts    #   Mock data for local dev
+│   │   └── provider.ts         #   Provider interface
 │   ├── flashvault.ts           # Vault business logic
 │   ├── flashvault-contract.ts  # On-chain vault registry TypeScript bindings
 │   ├── workspace.ts            # Workspace helpers + share listing
@@ -284,14 +284,14 @@ Open [localhost:3000](http://localhost:3000).
 |---|---|
 | `DATABASE_URL` | PostgreSQL connection string |
 | `NEXT_PUBLIC_APTOS_NETWORK` | `testnet` / `devnet` / `mainnet` |
-| `NEXT_PUBLIC_DEFAULT_WALLET` | Demo wallet address for fallback |
 | `FLASHFOLDER_STORAGE_MODE` | `local` / `blob` / `shelby` |
 
 ### Auth
 
 | Variable | Description |
 |---|---|
-| `APTOS_AUTH_MODE` | `mock` / `challenge` |
+| `APTOS_AUTH_MODE` | `challenge` (wallet signature verification) |
+| `FLASHFOLDER_AUTH_SECRET` | HMAC secret for session signing (**required in production**) |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID (optional) |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret (optional) |
 
@@ -316,11 +316,9 @@ Open [localhost:3000](http://localhost:3000).
 
 | Variable | Description |
 |---|---|
-| `APTOS_MOCK_ENABLED` | `true` to use demo NFT data (default: `false`) |
 | `APTOS_FULLNODE_URL` | Aptos fullnode RPC (optional, public defaults used) |
 | `APTOS_INDEXER_URL` | Aptos indexer GraphQL (optional, public defaults used) |
-| `FLASHVAULT_USE_MOCK_NFTS` | `true` for mock NFT imports (default: `false`) |
-| `FLASHVAULT_ENCRYPTION_SECRET` | AES key for vault file encryption |
+| `FLASHVAULT_ENCRYPTION_SECRET` | AES key for vault file encryption (**required in production**) |
 | `NEXT_PUBLIC_FLASHVAULT_ADDRESS` | Deployed FlashVault Move contract address (testnet: `0x2b5ba2492a89fe038f033f91cdf95ce8873f15d4d55d61dbef436ba6642481c4`) |
 
 ### Other
@@ -378,7 +376,7 @@ The app auto-deploys from `main` to [flashfolder.vercel.app](https://flashfolder
 
 **Important:** `local` storage mode is ephemeral on Vercel. Use `blob` for durable uploads until Shelby access is approved.
 
-Minimum Vercel env vars: `DATABASE_URL`, `NEXT_PUBLIC_APTOS_NETWORK`, `NEXT_PUBLIC_DEFAULT_WALLET`, `FLASHFOLDER_STORAGE_MODE`, `APTOS_AUTH_MODE`, `NEXT_PUBLIC_FLASHVAULT_ADDRESS`.
+Minimum Vercel env vars: `DATABASE_URL`, `NEXT_PUBLIC_APTOS_NETWORK`, `FLASHFOLDER_STORAGE_MODE`, `APTOS_AUTH_MODE`, `FLASHFOLDER_AUTH_SECRET`, `FLASHVAULT_ENCRYPTION_SECRET`, `NEXT_PUBLIC_FLASHVAULT_ADDRESS`.
 
 ### FlashVault contract address
 The production deployment is wired to the live testnet contract:
@@ -397,6 +395,7 @@ This is already set in the Vercel production and preview environments.
 - [x] Social sharing (X, Facebook, WhatsApp, Telegram)
 - [x] File sorting and category filtering
 - [x] Crimson & Black dual-theme (dark/light) with CSS custom properties
+- [x] Production security hardening (no mock fallbacks, enforced secrets)
 - [ ] Shelby SDK integration (blocked on early access approval)
 - [x] Real Aptos wallet auth (challenge-response signing)
 - [ ] Micropayment-gated content via Shelby paid reads
