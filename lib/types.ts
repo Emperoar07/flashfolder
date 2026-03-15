@@ -77,13 +77,17 @@ export type OwnershipVerificationPayload = NftOwnershipVerificationResult & {
 
 export type FileSharedPayload = {
   resourceType: "file";
-  share: Share;
+  share: Share & {
+    downloadPriceApt?: number | null;
+    sharerWallet?: string | null;
+  };
   file: PrismaFile & {
     folder: Folder | null;
     user: User;
   };
   locked: boolean;
   expired: boolean;
+  requiresPayment?: boolean;
 };
 
 export type VaultSharedPayload = {

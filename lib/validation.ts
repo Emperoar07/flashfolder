@@ -20,6 +20,8 @@ export const shareSchema = z.object({
   shareType: z.enum(["PUBLIC", "PRIVATE", "PASSWORD"]),
   password: z.string().min(4).max(32).optional(),
   expiresAt: z.string().datetime().optional(),
+  downloadPriceApt: z.number().min(0).nullable().optional(),
+  sharerWallet: z.string().min(10).nullable().optional(),
 });
 
 export const walletAuthSchema = z.object({

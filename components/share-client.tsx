@@ -6,17 +6,24 @@ import { useQuery } from "@tanstack/react-query";
 
 import { FilePreview } from "@/components/file-preview";
 import { SocialShareButtons } from "@/components/social-share-buttons";
+import { useSharePurchase } from "@/lib/client/use-share-purchase";
 import { apiFetch } from "@/lib/client/api";
 import { VAULT_FILE_ROLES } from "@/lib/file-kinds";
 import type { SharedResourcePayload } from "@/lib/types";
 import { formatBytes, formatDate, shortenWallet } from "@/lib/utils";
+import { useWorkspaceWallet } from "@/components/wallet-status";
 
 type ShareClientProps = {
   token: string;
 };
 
 export function ShareClient({ token }: ShareClientProps) {
+  const { connected, walletAddress } = useWorkspaceWallet();
+  const { purchaseDownload, isPurchasing, error: purchaseError } = useSharePurchase();
   const [password, setPassword] = useState("");
+  const [purchasedDownloadId, setPurchasedDownloadId] = useState<string | null>(null);
+  const [purchaseError_state, setPurchaseError_state] = useState<string | null>(null);
+
   const query = useQuery({
     queryKey: ["share", token, password],
     queryFn: () =>
@@ -185,18 +192,91 @@ export function ShareClient({ token }: ShareClientProps) {
               </span>
             )}
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <Link
-              href={
-                isFile
-                  ? `/api/files/${data.file.id}/download?token=${token}${password ? `&password=${encodeURIComponent(password)}` : ""}`
-                  : `/api/vault/assets/${data.vaultAsset.id}/content?token=${token}&download=1${password ? `&password=${encodeURIComponent(password)}` : ""}`
-              }
-              className="btn-primary"
-              style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}
-            >
-              {isFile ? "Download" : "Open Vault Content"}
-            </Link>
+          <div style={{ display: "flex", gap: 8, flexDirection: "column" }}>
+            {/* Show price info if paid download */}
+            {isFile && data.share.downloadPriceApt && data.share.downloadPriceApt > 0 && (
+              <div
+                style={{
+                  background: "rgba(232,170,48,0.1)",
+                  border: "1px solid rgba(232,170,48,0.3)",
+                  borderRadius: 10,
+                  padding: 12,
+                  fontSize: 12,
+                  color: "var(--text-secondary)",
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ marginBottom: 4 }}>
+                  Download requires payment of{" "}
+                  <span style={{ fontWeight: "bold", color: "var(--accent-gold)" }}>
+                    {data.share.downloadPriceApt} APT
+                  </span>
+                </div>
+                <div style={{ fontSize: 10, opacity: 0.8 }}>
+                  Payment will be sent to {shortenWallet(data.share.sharerWallet || "")}
+                </div>
+              </div>
+            )}
+
+            {/* Download button - handle paid vs free */}
+            {isFile && data.share.downloadPriceApt && data.share.downloadPriceApt > 0 ? (
+              <button
+                onClick={async () => {
+                  if (!connected) {
+                    setPurchaseError_state("Please connect your wallet to download");
+                    return;
+                  }
+                  if (!walletAddress) {
+                    setPurchaseError_state("Wallet address not available");
+                    return;
+                  }
+
+                  try {
+                    const result = await purchaseDownload({
+                      shareToken: token,
+                      sharerWallet: data.share.sharerWallet || "",
+                      priceApt: data.share.downloadPriceApt,
+                    });
+
+                    // Trigger download with the download ID
+                    const downloadUrl = `/api/files/${data.file.id}/download?token=${token}&downloadId=${result.downloadId}${password ? `&password=${encodeURIComponent(password)}` : ""}`;
+                    window.location.href = downloadUrl;
+                  } catch (err) {
+                    setPurchaseError_state(err instanceof Error ? err.message : "Payment failed");
+                  }
+                }}
+                disabled={isPurchasing || !connected}
+                style={{
+                  padding: "12px 20px",
+                  borderRadius: 10,
+                  border: "none",
+                  background: connected ? "var(--accent-red)" : "rgba(255,255,255,0.1)",
+                  color: "var(--foreground)",
+                  cursor: connected && !isPurchasing ? "pointer" : "not-allowed",
+                  fontSize: 13,
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  opacity: !connected || isPurchasing ? 0.6 : 1,
+                }}
+              >
+                {isPurchasing ? "Processing Payment..." : connected ? "Pay & Download" : "Connect Wallet"}
+              </button>
+            ) : (
+              <Link
+                href={
+                  isFile
+                    ? `/api/files/${data.file.id}/download?token=${token}${password ? `&password=${encodeURIComponent(password)}` : ""}`
+                    : `/api/vault/assets/${data.vaultAsset.id}/content?token=${token}&download=1${password ? `&password=${encodeURIComponent(password)}` : ""}`
+                }
+                className="btn-primary"
+                style={{ textDecoration: "none" }}
+              >
+                {isFile ? "Download" : "Open Vault Content"}
+              </Link>
+            )}
+
+            {/* Home button */}
             <Link
               href="/"
               className="btn-secondary"
@@ -204,6 +284,23 @@ export function ShareClient({ token }: ShareClientProps) {
             >
               FlashFolder
             </Link>
+
+            {/* Error message */}
+            {(purchaseError_state || purchaseError) && (
+              <div
+                style={{
+                  background: "rgba(255,100,100,0.1)",
+                  border: "1px solid rgba(255,100,100,0.3)",
+                  borderRadius: 10,
+                  padding: 12,
+                  fontSize: 12,
+                  color: "#ff6464",
+                  textAlign: "center",
+                }}
+              >
+                {purchaseError_state || purchaseError}
+              </div>
+            )}
           </div>
           <div style={{ marginTop: 16 }}>
             <SocialShareButtons

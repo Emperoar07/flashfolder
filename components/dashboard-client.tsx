@@ -119,6 +119,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
     "PUBLIC" | "PRIVATE" | "PASSWORD"
   >("PUBLIC");
   const [sharePassword, setSharePassword] = useState("");
+  const [downloadPrice, setDownloadPrice] = useState<number | "">(0);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [selectedUpload, setSelectedUpload] = useState<File | null>(null);
   const [movingFileId, setMovingFileId] = useState<string | null>(null);
   const [moveTargetFolderId, setMoveTargetFolderId] = useState<string>("");
@@ -328,6 +330,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
       // Submit Aptos transaction first
       await submitTransaction("file_share");
 
+      const priceValue = downloadPrice === "" || downloadPrice === 0 ? null : downloadPrice;
+
       return apiFetch<{ share: ShareRecord }>(
         `/api/files/${fileId}/share`,
         {
@@ -336,6 +340,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           body: JSON.stringify({
             shareType,
             password: shareType === "PASSWORD" ? sharePassword : undefined,
+            downloadPriceApt: priceValue,
+            sharerWallet: walletAddress,
           }),
         },
         walletAddress,
@@ -343,6 +349,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
     },
     onSuccess: () => {
       setSharePassword("");
+      setDownloadPrice(0);
+      setShowShareModal(false);
       void queryClient.invalidateQueries({ queryKey: ["files", walletAddress] });
     },
   });
@@ -1188,7 +1196,10 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             <div className="detail-actions">
               <button
                 className="action-share"
-                onClick={() => connected && createShareMutation.mutate(selectedFile.id)}
+                onClick={() => {
+                  setDownloadPrice(0);
+                  setShowShareModal(true);
+                }}
                 disabled={!connected || createShareMutation.isPending}
                 type="button"
                 title={!connected ? "Connect wallet to share" : undefined}
@@ -1413,6 +1424,144 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           </div>
         </div>
       </aside>
+
+      {/* Share Modal */}
+      {showShareModal && selectedFile && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            background: "rgba(0,0,0,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+          }}
+          onClick={() => !createShareMutation.isPending && setShowShareModal(false)}
+        >
+          <div
+            style={{
+              background: "var(--card)",
+              borderRadius: 20,
+              padding: 32,
+              maxWidth: 400,
+              width: "100%",
+              border: "1px solid var(--border)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--font-bebas-neue)",
+                fontSize: 20,
+                letterSpacing: "0.08em",
+                marginBottom: 16,
+                color: "var(--foreground)",
+              }}
+            >
+              CREATE SHARE LINK
+            </h3>
+
+            <p
+              style={{
+                fontSize: 12,
+                color: "var(--text-secondary)",
+                marginBottom: 20,
+                lineHeight: 1.6,
+              }}
+            >
+              Share "{selectedFile.filename}" with others. Set a price for downloads (optional).
+            </p>
+
+            <div style={{ marginBottom: 16 }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "var(--text-secondary)",
+                  marginBottom: 8,
+                }}
+              >
+                Download Price (APT)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={downloadPrice}
+                onChange={(e) =>
+                  setDownloadPrice(e.target.value === "" ? "" : Number(e.target.value))
+                }
+                placeholder="0 for free download"
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  border: "1px solid var(--border)",
+                  background: "rgba(255,255,255,0.03)",
+                  color: "var(--foreground)",
+                  fontSize: 13,
+                  fontFamily: "var(--font-dm-mono)",
+                }}
+              />
+              <p
+                style={{
+                  fontSize: 10,
+                  color: "var(--text-muted)",
+                  marginTop: 6,
+                  fontStyle: "italic",
+                }}
+              >
+                Set 0 or leave empty for free download. Viewers get one free preview, payment required to download.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={() => !createShareMutation.isPending && setShowShareModal(false)}
+                disabled={createShareMutation.isPending}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: 8,
+                  border: "1px solid var(--border)",
+                  background: "transparent",
+                  color: "var(--text-secondary)",
+                  cursor: createShareMutation.isPending ? "not-allowed" : "pointer",
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  opacity: createShareMutation.isPending ? 0.5 : 1,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => selectedFile && createShareMutation.mutate(selectedFile.id)}
+                disabled={createShareMutation.isPending}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: "var(--accent-red)",
+                  color: "var(--foreground)",
+                  cursor: createShareMutation.isPending ? "not-allowed" : "pointer",
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  opacity: createShareMutation.isPending ? 0.7 : 1,
+                }}
+              >
+                {createShareMutation.isPending ? "Creating..." : "Create Share"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

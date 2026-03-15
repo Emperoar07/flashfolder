@@ -384,6 +384,8 @@ export async function createShare(
     shareType: ShareType;
     password?: string;
     expiresAt?: string;
+    downloadPriceApt?: number | null;
+    sharerWallet?: string | null;
   },
 ) {
   const user = await ensureUser(walletAddress);
@@ -407,6 +409,8 @@ export async function createShare(
       shareType: input.shareType,
       passwordHash,
       expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+      downloadPriceApt: input.downloadPriceApt ?? null,
+      sharerWallet: input.sharerWallet ?? null,
     },
   });
 }
@@ -533,6 +537,45 @@ export function getOptionalRequestWalletAddress(request: Request) {
   const session = getSessionForToken(sessionToken);
 
   return session?.walletAddress ?? requestWallet ?? getCookieValue(request, "ff_wallet");
+}
+
+export async function recordShareDownloadPayment(
+  shareToken: string,
+  txHash: string,
+  buyerWallet: string,
+) {
+  const share = await prisma.share.findUnique({
+    where: { token: shareToken },
+  });
+
+  if (!share) {
+    throw new Error("Share not found.");
+  }
+
+  // Create download record
+  const download = await prisma.shareDownload.create({
+    data: {
+      shareId: share.id,
+      txHash,
+      buyerWallet,
+    },
+  });
+
+  return download;
+}
+
+export async function getShareDownload(txHash: string) {
+  return prisma.shareDownload.findUnique({
+    where: { txHash },
+    include: { share: true },
+  });
+}
+
+export async function markShareDownloadAsUsed(txHash: string) {
+  return prisma.shareDownload.update({
+    where: { txHash },
+    data: { downloaded: true, downloadAt: new Date() },
+  });
 }
 
 export function getSettingsSnapshot() {
