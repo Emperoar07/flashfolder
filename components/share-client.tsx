@@ -191,6 +191,7 @@ export function ShareClient({ token }: ShareClientProps) {
               </span>
             )}
           </div>
+          <div style={{ display: "flex", gap: 8, flexDirection: "column" }}>
             {/* Download section - require wallet connection */}
             {!connected ? (
               <div
