@@ -107,23 +107,23 @@ export function WorkspaceDropdown({ activePage }: WorkspaceDropdownProps) {
           width: "100%",
           padding: "8px 10px 8px 7px",
           borderRadius: 8,
-          background: "#2a1f10",
-          borderLeft: "3px solid #e8aa30",
+          background: "var(--ws-bg)",
+          borderLeft: "3px solid var(--ws-accent)",
           border: "none",
           borderLeftWidth: 3,
           borderLeftStyle: "solid",
-          borderLeftColor: "#e8aa30",
+          borderLeftColor: "var(--ws-accent)",
           cursor: "pointer",
           textAlign: "left",
         }}
       >
-        <span style={{ display: "flex", flexShrink: 0, color: "#e8aa30" }}>
+        <span style={{ display: "flex", flexShrink: 0, color: "var(--ws-accent)" }}>
           <ActiveIcon />
         </span>
-        <span style={{ flex: 1, fontSize: 13.5, fontWeight: 500, color: "#e8c97a" }}>
+        <span style={{ flex: 1, fontSize: 13.5, fontWeight: 500, color: "var(--ws-accent-text)" }}>
           {activeLabel}
         </span>
-        <span style={{ color: "#e8aa30", opacity: 0.7 }}>
+        <span style={{ color: "var(--ws-accent)", opacity: 0.7 }}>
           <ChevronIcon open={open} />
         </span>
       </button>
@@ -134,10 +134,10 @@ export function WorkspaceDropdown({ activePage }: WorkspaceDropdownProps) {
           style={{
             marginTop: 4,
             borderRadius: 10,
-            background: "#161209",
-            border: "1px solid #2a2318",
+            background: "var(--ws-bg-deep)",
+            border: "1px solid var(--ws-border)",
             overflow: "hidden",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+            boxShadow: "0 8px 24px var(--overlay)",
           }}
         >
           <p
@@ -145,7 +145,7 @@ export function WorkspaceDropdown({ activePage }: WorkspaceDropdownProps) {
               fontSize: 10,
               fontWeight: 600,
               letterSpacing: "0.1em",
-              color: "#555",
+              color: "var(--ws-label)",
               textTransform: "uppercase",
               padding: "10px 12px 8px",
               margin: 0,
@@ -163,8 +163,8 @@ export function WorkspaceDropdown({ activePage }: WorkspaceDropdownProps) {
                 gap: 10,
                 padding: isActive ? "8px 10px 8px 7px" : "8px 10px",
                 borderRadius: 8,
-                background: isActive ? "#2a1f10" : "transparent",
-                borderLeft: isActive ? "3px solid #e8aa30" : "3px solid transparent",
+                background: isActive ? "var(--ws-bg)" : "transparent",
+                borderLeft: isActive ? "3px solid var(--ws-accent)" : "3px solid transparent",
                 textDecoration: "none",
                 transition: "background 0.15s",
                 cursor: "pointer",
@@ -174,14 +174,14 @@ export function WorkspaceDropdown({ activePage }: WorkspaceDropdownProps) {
               const svgWrapStyle: React.CSSProperties = {
                 display: "flex",
                 flexShrink: 0,
-                color: isActive ? "#e8aa30" : "#5a5650",
+                color: isActive ? "var(--ws-accent)" : "var(--ws-inactive)",
               };
 
               if (isActive) {
                 return (
                   <div key={id} style={sharedStyle} onClick={() => setOpen(false)}>
                     <span style={svgWrapStyle}><Icon /></span>
-                    <span style={{ fontSize: 13.5, fontWeight: 500, color: "#e8c97a" }}>
+                    <span style={{ fontSize: 13.5, fontWeight: 500, color: "var(--ws-accent-text)" }}>
                       {label}
                     </span>
                   </div>
@@ -195,14 +195,14 @@ export function WorkspaceDropdown({ activePage }: WorkspaceDropdownProps) {
                   style={sharedStyle}
                   onClick={() => setOpen(false)}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#1e1b15";
+                    e.currentTarget.style.background = "var(--ws-hover)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = "transparent";
                   }}
                 >
                   <span style={svgWrapStyle}><Icon /></span>
-                  <span style={{ fontSize: 13.5, fontWeight: 500, color: "#8a8680" }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 500, color: "var(--ws-inactive-text)" }}>
                     {label}
                   </span>
                 </Link>

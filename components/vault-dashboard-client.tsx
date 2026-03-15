@@ -72,7 +72,7 @@ export function VaultDashboardClient() {
           style={{
             marginTop: "auto",
             padding: 16,
-            background: "rgba(184,160,106,0.05)",
+            background: "var(--accent-gold-subtle)",
             border: "1px solid var(--border-gold)",
             borderRadius: "var(--radius-sm)",
           }}

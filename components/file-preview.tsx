@@ -85,7 +85,7 @@ const MAXIMIZE_BTN = (onClick: () => void) => (
       position: "absolute",
       bottom: 10,
       right: 10,
-      background: "rgba(0,0,0,0.6)",
+      background: "var(--overlay)",
       border: "none",
       borderRadius: 8,
       padding: "6px 8px",
@@ -98,7 +98,7 @@ const MAXIMIZE_BTN = (onClick: () => void) => (
     type="button"
     aria-label="Full screen"
   >
-    <Maximize2 style={{ width: 16, height: 16, color: "#fff" }} />
+    <Maximize2 style={{ width: 16, height: 16, color: "var(--foreground)" }} />
   </button>
 );
 
@@ -270,7 +270,7 @@ function VideoPreview({
               height: 288,
               width: "100%",
               borderRadius: 12,
-              background: "#0a0a0a",
+              background: "var(--background)",
               display: "block",
             }}
             controls
@@ -295,8 +295,8 @@ function AudioPreview({
     <div
       style={{
         borderRadius: 12,
-        border: "1px solid rgba(255,255,255,0.07)",
-        background: "#111",
+        border: "1px solid var(--border)",
+        background: "var(--card)",
         padding: 24,
       }}
     >
@@ -320,7 +320,7 @@ function AudioPreview({
           console.log("[AudioPreview] Audio can play from:", src);
         }}
       />
-      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 8, textAlign: "center" }}>
+      <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 8, textAlign: "center" }}>
         Playing from: {src.split("?")[0].split("/").pop()}
       </div>
     </div>
@@ -355,8 +355,8 @@ function DocumentPreview({
             height: 384,
             width: "100%",
             borderRadius: 12,
-            border: "1px solid rgba(255,255,255,0.07)",
-            background: "#111",
+            border: "1px solid var(--border)",
+            background: "var(--card)",
           }}
           src={src}
           title={title}
@@ -387,7 +387,7 @@ function DocumentViewer({
         position: "fixed",
         inset: 0,
         zIndex: 50,
-        background: "rgba(0,0,0,0.95)",
+        background: "var(--overlay-heavy)",
         backdropFilter: "blur(4px)",
         display: "flex",
         flexDirection: "column",
@@ -403,7 +403,7 @@ function DocumentViewer({
           top: 16,
           right: 16,
           zIndex: 10,
-          background: "rgba(255,255,255,0.1)",
+          background: "var(--surface-active)",
           border: "none",
           borderRadius: 8,
           padding: 8,
@@ -415,7 +415,7 @@ function DocumentViewer({
         onClick={onClose}
         type="button"
       >
-        <span style={{ color: "#fff", fontSize: 24 }}>×</span>
+        <span style={{ color: "var(--foreground)", fontSize: 24 }}>×</span>
       </button>
 
       <iframe
@@ -431,7 +431,7 @@ function DocumentViewer({
         onClick={(e) => e.stopPropagation()}
       />
 
-      <div style={{ padding: 16, textAlign: "center", color: "#fff", fontSize: 12 }}>
+      <div style={{ padding: 16, textAlign: "center", color: "var(--foreground)", fontSize: 12 }}>
         {title}
       </div>
     </div>
@@ -444,7 +444,7 @@ const placeholderStyle: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   fontSize: 11,
-  color: "rgba(255,255,255,0.3)",
+  color: "var(--text-muted)",
   borderRadius: 12,
-  border: "1px solid rgba(255,255,255,0.07)",
+  border: "1px solid var(--border)",
 };

@@ -59,20 +59,20 @@ export function WalletStatus() {
   return (
     <div className="flex flex-col items-end gap-3">
       {walletError ? (
-        <div className="max-w-sm rounded-2xl border border-[rgba(200,57,43,0.28)] bg-[rgba(200,57,43,0.12)] px-4 py-3 text-right text-sm text-[#ffb4ac]">
+        <div className="max-w-sm rounded-2xl border border-[var(--border-hover)] bg-[var(--accent-red-subtle)] px-4 py-3 text-right text-sm text-[var(--error-text)]">
           {walletError}
         </div>
       ) : null}
       <div className="flex flex-wrap items-center justify-end gap-3">
-      <div className="rounded-full border border-[rgba(255,255,255,0.07)] bg-[#111] px-4 py-2 text-sm text-[rgba(240,237,230,0.55)]">
+      <div className="rounded-full border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm text-[var(--text-secondary)]">
         Wallet:{" "}
-        <span className="font-semibold text-[#f0ede6]">
+        <span className="font-semibold text-[var(--foreground)]">
           {walletAddress ? shortenWallet(walletAddress) : "Not connected"}
         </span>
       </div>
       {connected ? (
         <button
-          className="inline-flex items-center gap-2 rounded-full bg-[#c8392b] px-4 py-2 text-sm font-medium text-[#f0ede6]"
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--accent-red)] px-4 py-2 text-sm font-medium text-[var(--foreground)]"
           onClick={() => void disconnect()}
           type="button"
         >
@@ -83,7 +83,7 @@ export function WalletStatus() {
         wallets.slice(0, 2).map((wallet) => (
           <button
             key={wallet.name}
-            className="inline-flex items-center gap-2 rounded-full bg-[#c8392b] px-4 py-2 text-sm font-medium text-[#f0ede6]"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--accent-red)] px-4 py-2 text-sm font-medium text-[var(--foreground)]"
             disabled={isLoading || isAuthenticating}
             onClick={() => void connect(wallet.name)}
             type="button"
@@ -94,7 +94,7 @@ export function WalletStatus() {
         ))
       )}
       {!connected && wallets.length === 0 ? (
-        <div className="rounded-full border border-[rgba(184,160,106,0.2)] bg-[rgba(184,160,106,0.08)] px-4 py-2 text-sm text-[#b8a06a]">
+        <div className="rounded-full border border-[var(--border-gold)] bg-[var(--accent-gold-subtle)] px-4 py-2 text-sm text-[var(--accent-gold)]">
           Install an Aptos wallet to connect on testnet.
         </div>
       ) : null}

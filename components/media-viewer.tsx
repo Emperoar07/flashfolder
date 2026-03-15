@@ -42,18 +42,18 @@ export function MediaViewer({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--overlay-heavy)] backdrop-blur"
       onClick={onClose}
       onKeyDown={(e) => {
         if (e.key === "Escape") onClose();
       }}
     >
       <button
-        className="absolute right-4 top-4 z-10 rounded-full bg-white/10 p-2 hover:bg-white/20"
+        className="absolute right-4 top-4 z-10 rounded-full bg-[var(--surface-active)] p-2 hover:bg-[var(--surface-hover)]"
         onClick={onClose}
         type="button"
       >
-        <X className="h-6 w-6 text-white" />
+        <X className="h-6 w-6 text-[var(--foreground)]" />
       </button>
 
       {type === "image" && (
@@ -65,7 +65,7 @@ export function MediaViewer({
             className="max-h-[90vh] max-w-[90vw] object-contain"
             onClick={(e) => e.stopPropagation()}
           />
-          <p className="text-sm text-white/60">{title}</p>
+          <p className="text-sm text-[var(--text-secondary)]">{title}</p>
         </div>
       )}
 
@@ -85,8 +85,8 @@ export function MediaViewer({
                   key={res.label}
                   className={`rounded px-3 py-1 text-sm font-medium transition ${
                     selectedResolution === res.url
-                      ? "bg-[#e8aa30] text-black"
-                      : "bg-white/10 text-white hover:bg-white/20"
+                      ? "bg-[var(--ws-accent)] text-[var(--background)]"
+                      : "bg-[var(--surface-active)] text-[var(--foreground)] hover:bg-[var(--surface-hover)]"
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();

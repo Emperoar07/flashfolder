@@ -218,7 +218,6 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-3 sm:hidden">
-          <ThemeToggle />
           <button
             onClick={() => setConnectDropdownOpen((open) => !open)}
             className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] px-3 py-1.5 text-[10px] text-[var(--foreground)] transition hover:border-[var(--accent-red)]"
@@ -318,13 +317,18 @@ export function Navbar() {
           />
           <div className="mobile-nav-drawer">
             <div style={{ marginBottom: 8, paddingBottom: 16, borderBottom: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-muted)", marginBottom: 4 }}>
-                Network
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-muted)", marginBottom: 4 }}>
+                    Network
+                  </div>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-secondary)" }}>
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-red)", display: "inline-block" }} />
+                    Testnet
+                  </span>
+                </div>
+                <ThemeToggle />
               </div>
-              <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-secondary)" }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-red)", display: "inline-block" }} />
-                Testnet
-              </span>
             </div>
             {navLinks.map((link) => (
               <Link

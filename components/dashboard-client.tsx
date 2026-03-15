@@ -740,7 +740,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             style={{
               padding: "10px 16px",
               marginBottom: 16,
-              background: "rgba(200, 57, 43, 0.15)",
+              background: "var(--accent-red-subtle)",
               border: "1px solid var(--accent-red)",
               borderRadius: "var(--radius-sm)",
               color: "var(--accent-red)",
@@ -882,7 +882,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                       display: "flex",
                       justifyContent: "space-between",
                       fontSize: 10,
-                      color: "rgba(240,237,230,0.5)",
+                      color: "var(--text-secondary)",
                       marginBottom: 5,
                     }}>
                       <span>
@@ -902,8 +902,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                         height: "100%",
                         borderRadius: 999,
                         background: uploadPhase === "signing"
-                          ? "linear-gradient(90deg, #b8a06a, #e8aa30)"
-                          : "linear-gradient(90deg, #c8392b, #e8aa30)",
+                          ? "linear-gradient(90deg, var(--accent-gold), #e8aa30)"
+                          : "linear-gradient(90deg, var(--accent-red), #e8aa30)",
                         width: uploadPhase === "signing" ? "30%" : `${uploadProgress}%`,
                         transition: uploadPhase === "signing"
                           ? "none"
@@ -941,8 +941,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                     style={{
                       marginTop: 8,
                       padding: "8px 12px",
-                      background: "rgba(200,57,43,0.1)",
-                      border: "1px solid rgba(200,57,43,0.25)",
+                      background: "var(--accent-red-subtle)",
+                      border: "1px solid var(--border-hover)",
                       borderRadius: 8,
                       fontSize: 11,
                       color: "var(--accent-red)",
@@ -1269,7 +1269,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                       padding: "7px 10px",
                       borderRadius: 6,
                       border: "1px solid var(--border-hover)",
-                      background: "#111",
+                      background: "var(--card)",
                       color: "var(--text-primary)",
                       fontSize: 12,
                       marginBottom: 8,

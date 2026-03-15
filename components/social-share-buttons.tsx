@@ -85,14 +85,14 @@ export function SocialShareButtons({ url, title }: SocialShareButtonsProps) {
             width: 32,
             height: 32,
             borderRadius: 10,
-            background: "rgba(255,255,255,0.05)",
+            background: "var(--surface-subtle-hover)",
             border: "1px solid var(--border)",
             color: "var(--text-secondary)",
             transition: "all 0.2s",
             textDecoration: "none",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(200,57,43,0.12)";
+            e.currentTarget.style.background = "var(--accent-red-subtle)";
             e.currentTarget.style.borderColor = "var(--accent-red)";
             e.currentTarget.style.color = "var(--accent-red)";
           }}

@@ -33,18 +33,18 @@ export function UploadDropzone({
       className={cn(
         "rounded-[2rem] border border-dashed px-6 py-10 text-center transition",
         isDragActive
-          ? "border-[#c8392b] bg-[rgba(200,57,43,0.08)]"
-          : "border-[rgba(200,57,43,0.3)] bg-[rgba(200,57,43,0.02)] hover:border-[#c8392b]",
+          ? "border-[var(--accent-red)] bg-[var(--accent-red-subtle)]"
+          : "border-[var(--border-hover)] bg-transparent hover:border-[var(--accent-red)]",
       )}
     >
       <input {...getInputProps()} />
-      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#c8392b] text-[#f0ede6]">
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent-red)] text-[var(--foreground)]">
         <UploadCloud className="h-6 w-6" />
       </div>
-      <p className="text-sm font-medium text-[#f0ede6]">
+      <p className="text-sm font-medium text-[var(--foreground)]">
         Drop a file here or click to browse
       </p>
-      <p className="mt-2 text-sm text-[rgba(240,237,230,0.35)]">
+      <p className="mt-2 text-sm text-[var(--text-muted)]">
         {selectedFile
           ? `Selected: ${selectedFile.name}`
           : "Images, videos, audio, PDFs, and text files preview best."}

@@ -536,8 +536,8 @@ export function SettingsClient() {
               style={{
                 marginTop: 12,
                 padding: 12,
-                background: "rgba(184,160,106,0.08)",
-                border: "1px solid rgba(184,160,106,0.2)",
+                background: "var(--accent-gold-subtle)",
+                border: "1px solid var(--border-gold)",
                 borderRadius: 10,
                 fontSize: 11,
                 color: "var(--accent-gold)",
