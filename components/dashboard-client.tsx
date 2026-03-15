@@ -1500,7 +1500,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                   fontStyle: "italic",
                 }}
               >
-                Set 0 or leave empty for free download. Viewers get one free preview, payment required to download.
+                Receiver pays this amount to download. Set 0 or leave empty for free download. Viewers get one free preview.
               </p>
             </div>
 
@@ -1546,7 +1546,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                   fontStyle: "italic",
                 }}
               >
-                How many times can the receiver download this file with one payment? (1-999)
+                How many downloads does the receiver get per payment? (1-999)
               </p>
             </div>
 
