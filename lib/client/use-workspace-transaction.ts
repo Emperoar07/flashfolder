@@ -1,7 +1,7 @@
 "use client";
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { Account, Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
+import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { useState } from "react";
 
 type WorkspaceOperation =
@@ -43,26 +43,18 @@ export function useWorkspaceTransaction() {
                           Network.TESTNET;
 
       const aptos = new Aptos(new AptosConfig({ network: networkEnum }));
-
-      // Create a simple coin transfer as a marker transaction for this operation
-      // In production, this would call a smart contract module
       const cost = OPERATION_COSTS[operation];
 
-      const transaction = await aptos.transaction.build.simple({
-        sender: account.address,
+      // Submit via wallet adapter using InputTransactionData format
+      const response = await signAndSubmitTransaction({
         data: {
           function: "0x1::coin::transfer",
           typeArguments: ["0x1::aptos_coin::AptosCoin"],
           functionArguments: [
-            // Transfer to a fee collection address (replace with real contract)
             "0x0000000000000000000000000000000000000000000000000000000000000fee",
             cost,
           ],
         },
-      });
-
-      const response = await signAndSubmitTransaction({
-        transaction,
       });
 
       // Wait for transaction confirmation
