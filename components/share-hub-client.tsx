@@ -461,22 +461,6 @@ export function ShareHubClient() {
 
                     {/* Action buttons */}
                     <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                      <Link
-                        href={`/share/${share.token}`}
-                        style={{
-                          fontSize: 10,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.1em",
-                          padding: "8px 20px",
-                          background: "var(--accent-red)",
-                          color: "var(--foreground)",
-                          borderRadius: 999,
-                          textDecoration: "none",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        View
-                      </Link>
                       <button
                         onClick={() => {
                           setRevokingId(share.id);
