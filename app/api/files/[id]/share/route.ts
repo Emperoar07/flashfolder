@@ -29,7 +29,7 @@ export async function POST(request: Request, context: Context) {
       expiresAt: parsed.data.expiresAt,
       downloadPriceApt: parsed.data.downloadPriceApt,
       sharerWallet: parsed.data.sharerWallet,
-      maxDownloadsPerPayment: parsed.data.maxDownloadsPerPayment,
+      maxDownloadsPerPayment: parsed.data.maxDownloadsPerPayment ?? undefined,
     });
 
     return NextResponse.json({ share }, { status: 201 });
