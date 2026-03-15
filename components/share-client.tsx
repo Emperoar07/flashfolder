@@ -228,8 +228,8 @@ export function ShareClient({ token }: ShareClientProps) {
             {alreadyPurchased && connected && (
               <div
                 style={{
-                  background: "rgba(100,200,100,0.1)",
-                  border: "1px solid rgba(100,200,100,0.3)",
+                  background: "var(--success-subtle)",
+                  border: "1px solid var(--success-border)",
                   borderRadius: 10,
                   padding: 12,
                   fontSize: 12,
@@ -237,7 +237,7 @@ export function ShareClient({ token }: ShareClientProps) {
                   textAlign: "center",
                 }}
               >
-                <div style={{ marginBottom: 4, color: "rgba(100,200,100,0.9)", fontWeight: "bold" }}>
+                <div style={{ marginBottom: 4, color: "var(--success)", fontWeight: "bold" }}>
                   ✓ Already purchased with this wallet
                 </div>
                 <div style={{ fontSize: 10, opacity: 0.8 }}>
@@ -252,8 +252,8 @@ export function ShareClient({ token }: ShareClientProps) {
             {connected && checkingPurchase && (
               <div
                 style={{
-                  background: "rgba(150,150,150,0.1)",
-                  border: "1px solid rgba(150,150,150,0.3)",
+                  background: "var(--neutral-bg)",
+                  border: "1px solid var(--neutral-border)",
                   borderRadius: 10,
                   padding: 12,
                   fontSize: 12,
@@ -269,8 +269,8 @@ export function ShareClient({ token }: ShareClientProps) {
             {!connected ? (
               <div
                 style={{
-                  background: "rgba(100,150,255,0.1)",
-                  border: "1px solid rgba(100,150,255,0.3)",
+                  background: "var(--info-bg)",
+                  border: "1px solid var(--info-border)",
                   borderRadius: 10,
                   padding: 12,
                   fontSize: 12,
@@ -300,7 +300,7 @@ export function ShareClient({ token }: ShareClientProps) {
                     padding: "12px 20px",
                     borderRadius: 10,
                     border: "none",
-                    background: "rgba(255,255,255,0.1)",
+                    background: "var(--surface-active)",
                     color: "var(--foreground)",
                     cursor: "not-allowed",
                     fontSize: 13,
@@ -318,8 +318,8 @@ export function ShareClient({ token }: ShareClientProps) {
                 {/* Paid download */}
                 <div
                   style={{
-                    background: "rgba(232,170,48,0.1)",
-                    border: "1px solid rgba(232,170,48,0.3)",
+                    background: "var(--gold-bg)",
+                    border: "1px solid var(--gold-border)",
                     borderRadius: 10,
                     padding: 12,
                     fontSize: 12,
@@ -368,7 +368,7 @@ export function ShareClient({ token }: ShareClientProps) {
                     padding: "12px 20px",
                     borderRadius: 10,
                     border: "none",
-                    background: purchasedDownloadId ? "rgba(255,255,255,0.1)" : "var(--accent-red)",
+                    background: purchasedDownloadId ? "var(--surface-active)" : "var(--accent-red)",
                     color: "var(--foreground)",
                     cursor: purchasedDownloadId || isPurchasing ? "not-allowed" : "pointer",
                     fontSize: 13,
@@ -408,12 +408,12 @@ export function ShareClient({ token }: ShareClientProps) {
             {(purchaseError_state || purchaseError) && (
               <div
                 style={{
-                  background: "rgba(255,100,100,0.1)",
-                  border: "1px solid rgba(255,100,100,0.3)",
+                  background: "var(--error-subtle)",
+                  border: "1px solid var(--error-border)",
                   borderRadius: 10,
                   padding: 12,
                   fontSize: 12,
-                  color: "#ff6464",
+                  color: "var(--error)",
                   textAlign: "center",
                 }}
               >

@@ -97,7 +97,7 @@ export function SocialShareButtons({ url, title }: SocialShareButtonsProps) {
             e.currentTarget.style.color = "var(--accent-red)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+            e.currentTarget.style.background = "var(--surface-subtle-hover)";
             e.currentTarget.style.borderColor = "var(--border)";
             e.currentTarget.style.color = "var(--text-secondary)";
           }}
@@ -116,9 +116,9 @@ export function SocialShareButtons({ url, title }: SocialShareButtonsProps) {
           width: 32,
           height: 32,
           borderRadius: 10,
-          background: copied ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.05)",
-          border: `1px solid ${copied ? "rgba(52,211,153,0.4)" : "var(--border)"}`,
-          color: copied ? "#34d399" : "var(--text-secondary)",
+          background: copied ? "var(--success-subtle)" : "var(--surface-subtle-hover)",
+          border: `1px solid ${copied ? "var(--success-border)" : "var(--border)"}`,
+          color: copied ? "var(--success)" : "var(--text-secondary)",
           cursor: "pointer",
           transition: "all 0.2s",
         }}

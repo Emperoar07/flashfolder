@@ -78,7 +78,7 @@ function StatusBadge({ active, label }: { active: boolean; label: string }) {
         gap: 6,
         fontSize: 12,
         fontWeight: 500,
-        color: active ? "#34d399" : "var(--accent-gold)",
+        color: active ? "var(--success)" : "var(--accent-gold)",
       }}
     >
       <span
@@ -86,7 +86,7 @@ function StatusBadge({ active, label }: { active: boolean; label: string }) {
           width: 7,
           height: 7,
           borderRadius: "50%",
-          background: active ? "#34d399" : "var(--accent-gold)",
+          background: active ? "var(--success)" : "var(--accent-gold)",
           display: "inline-block",
         }}
       />
@@ -102,7 +102,7 @@ function ReadOnlyValue({ value }: { value: string }) {
         fontSize: 13,
         fontFamily: "var(--font-dm-mono)",
         color: "var(--foreground)",
-        background: "rgba(255,255,255,0.03)",
+        background: "var(--surface-subtle)",
         padding: "6px 14px",
         borderRadius: 8,
         border: "1px solid var(--border)",
@@ -193,7 +193,7 @@ export function SettingsClient() {
           <div className="sidebar-section-label">Account</div>
           <div
             style={{
-              background: "rgba(255,255,255,0.03)",
+              background: "var(--surface-subtle)",
               borderRadius: 12,
               padding: 16,
               marginTop: 8,
@@ -255,7 +255,7 @@ export function SettingsClient() {
                 <div
                   key={s.label}
                   style={{
-                    background: "rgba(255,255,255,0.03)",
+                    background: "var(--surface-subtle)",
                     borderRadius: 10,
                     padding: 12,
                     textAlign: "center",
@@ -407,8 +407,8 @@ export function SettingsClient() {
                 }}
                 style={{
                   fontSize: 12,
-                  color: nameSaved ? "#34d399" : "var(--foreground)",
-                  background: "rgba(255,255,255,0.03)",
+                  color: nameSaved ? "var(--success)" : "var(--foreground)",
+                  background: "var(--surface-subtle)",
                   padding: "6px 14px",
                   borderRadius: 8,
                   border: "1px solid var(--border)",
@@ -676,7 +676,7 @@ export function SettingsClient() {
           <div className="sidebar-section-label">Quick Info</div>
           <div className="activity-list">
             <div className="activity-item">
-              <div className="activity-dot" style={{ background: "#34d399" }} />
+              <div className="activity-dot" style={{ background: "var(--success)" }} />
               <div>
                 <div className="activity-text">Aptos Testnet</div>
                 <div className="activity-time">Connected</div>
@@ -687,7 +687,7 @@ export function SettingsClient() {
                 className="activity-dot"
                 style={{
                   background:
-                    settings?.storageState === "active" ? "#34d399" : "var(--accent-gold)",
+                    settings?.storageState === "active" ? "var(--success)" : "var(--accent-gold)",
                 }}
               />
               <div>
@@ -704,7 +704,7 @@ export function SettingsClient() {
                 style={{
                   background:
                     settings?.aptos.integrationState === "active"
-                      ? "#34d399"
+                      ? "var(--success)"
                       : "var(--accent-gold)",
                 }}
               />

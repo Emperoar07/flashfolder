@@ -38,6 +38,13 @@
   --error: #ff6464;
   --error-subtle: rgba(255, 100, 100, 0.1);
   --error-border: rgba(255, 100, 100, 0.3);
+  --success-border: rgba(52, 211, 153, 0.3);
+  --neutral-bg: rgba(150, 150, 150, 0.1);
+  --neutral-border: rgba(150, 150, 150, 0.3);
+  --info-bg: rgba(100, 150, 255, 0.1);
+  --info-border: rgba(100, 150, 255, 0.3);
+  --gold-bg: rgba(232, 170, 48, 0.1);
+  --gold-border: rgba(232, 170, 48, 0.3);
   /* Overlays & surfaces */
   --overlay: rgba(0, 0, 0, 0.7);
   --overlay-heavy: rgba(0, 0, 0, 0.95);
@@ -87,6 +94,13 @@
   --error: #dc2626;
   --error-subtle: rgba(220, 38, 38, 0.1);
   --error-border: rgba(220, 38, 38, 0.3);
+  --success-border: rgba(5, 150, 105, 0.3);
+  --neutral-bg: rgba(100, 100, 100, 0.1);
+  --neutral-border: rgba(100, 100, 100, 0.3);
+  --info-bg: rgba(60, 100, 220, 0.1);
+  --info-border: rgba(60, 100, 220, 0.3);
+  --gold-bg: rgba(154, 122, 69, 0.1);
+  --gold-border: rgba(154, 122, 69, 0.3);
   /* Overlays & surfaces */
   --overlay: rgba(0, 0, 0, 0.5);
   --overlay-heavy: rgba(0, 0, 0, 0.9);

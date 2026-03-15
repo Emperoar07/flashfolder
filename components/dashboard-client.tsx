@@ -461,7 +461,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             position: "fixed",
             inset: 0,
             zIndex: 38,
-            background: "rgba(0, 0, 0, 0.4)",
+            background: "var(--overlay)",
           }}
           className="mobile-sidebar-overlay"
           onClick={() => setMobileSidebarOpen(false)}
@@ -691,8 +691,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               marginBottom: 20,
               padding: "20px 20px",
               borderRadius: 12,
-              border: "1px solid rgba(232,170,48,0.25)",
-              background: "rgba(232,170,48,0.05)",
+              border: "1px solid var(--border-gold)",
+              background: "var(--accent-gold-subtle)",
               display: "flex",
               alignItems: "center",
               gap: 16,
@@ -773,7 +773,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               padding: "20px 16px",
               borderRadius: 10,
               border: "1px dashed var(--border-hover)",
-              background: "rgba(232,170,48,0.04)",
+              background: "var(--accent-gold-subtle)",
               textAlign: "center",
             }}
           >
@@ -801,8 +801,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               style={{
                 marginBottom: 10,
                 padding: "6px 10px",
-                background: "rgba(232,170,48,0.08)",
-                border: "1px solid rgba(232,170,48,0.2)",
+                background: "var(--accent-gold-subtle)",
+                border: "1px solid var(--border-gold)",
                 borderRadius: 8,
                 fontSize: 11,
                 color: "var(--accent-gold)",
@@ -895,15 +895,15 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                     <div style={{
                       height: 4,
                       borderRadius: 999,
-                      background: "rgba(255,255,255,0.07)",
+                      background: "var(--surface-hover)",
                       overflow: "hidden",
                     }}>
                       <div style={{
                         height: "100%",
                         borderRadius: 999,
                         background: uploadPhase === "signing"
-                          ? "linear-gradient(90deg, var(--accent-gold), #e8aa30)"
-                          : "linear-gradient(90deg, var(--accent-red), #e8aa30)",
+                          ? "linear-gradient(90deg, var(--accent-gold), var(--ws-accent))"
+                          : "linear-gradient(90deg, var(--accent-red), var(--ws-accent))",
                         width: uploadPhase === "signing" ? "30%" : `${uploadProgress}%`,
                         transition: uploadPhase === "signing"
                           ? "none"
@@ -920,17 +920,17 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                     <div style={{
                       height: 4,
                       borderRadius: 999,
-                      background: "rgba(255,255,255,0.07)",
+                      background: "var(--surface-hover)",
                       overflow: "hidden",
                     }}>
                       <div style={{
                         height: "100%",
                         width: "100%",
                         borderRadius: 999,
-                        background: "linear-gradient(90deg, #22c55e, #16a34a)",
+                        background: "linear-gradient(90deg, var(--success), var(--success))",
                       }} />
                     </div>
-                    <div style={{ fontSize: 10, color: "#22c55e", marginTop: 4 }}>
+                    <div style={{ fontSize: 10, color: "var(--success)", marginTop: 4 }}>
                       File uploaded successfully
                     </div>
                   </div>
@@ -1157,7 +1157,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                   <button
                     type="button"
                     onClick={() => setSelectedFileId(prev.id)}
-                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "4px 12px", color: "var(--text-secondary)", cursor: "pointer", fontSize: 13 }}
+                    style={{ background: "var(--surface-subtle-hover)", border: "1px solid var(--surface-hover)", borderRadius: 8, padding: "4px 12px", color: "var(--text-secondary)", cursor: "pointer", fontSize: 13 }}
                   >
                     ← Prev
                   </button>
@@ -1167,7 +1167,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                   <button
                     type="button"
                     onClick={() => setSelectedFileId(next.id)}
-                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "4px 12px", color: "var(--text-secondary)", cursor: "pointer", fontSize: 13 }}
+                    style={{ background: "var(--surface-subtle-hover)", border: "1px solid var(--surface-hover)", borderRadius: 8, padding: "4px 12px", color: "var(--text-secondary)", cursor: "pointer", fontSize: 13 }}
                   >
                     Next →
                   </button>
@@ -1255,7 +1255,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                     padding: "12px",
                     borderRadius: 10,
                     border: "1px solid var(--border-hover)",
-                    background: "rgba(232,170,48,0.04)",
+                    background: "var(--accent-gold-subtle)",
                   }}
                 >
                   <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 8 }}>
@@ -1417,7 +1417,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             position: "fixed",
             inset: 0,
             zIndex: 1000,
-            background: "rgba(0,0,0,0.7)",
+            background: "var(--overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -1486,7 +1486,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                   padding: "10px 12px",
                   borderRadius: 8,
                   border: "1px solid var(--border)",
-                  background: "rgba(255,255,255,0.03)",
+                  background: "var(--surface-subtle)",
                   color: "var(--foreground)",
                   fontSize: 13,
                   fontFamily: "var(--font-dm-mono)",
@@ -1532,7 +1532,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                   padding: "10px 12px",
                   borderRadius: 8,
                   border: "1px solid var(--border)",
-                  background: "rgba(255,255,255,0.03)",
+                  background: "var(--surface-subtle)",
                   color: "var(--foreground)",
                   fontSize: 13,
                   fontFamily: "var(--font-dm-mono)",

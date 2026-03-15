@@ -98,7 +98,7 @@ export function ShareHubClient() {
           >
             <div
               style={{
-                background: "rgba(255,255,255,0.03)",
+                background: "var(--surface-subtle)",
                 borderRadius: 12,
                 padding: 16,
                 textAlign: "center",
@@ -126,7 +126,7 @@ export function ShareHubClient() {
             </div>
             <div
               style={{
-                background: "rgba(255,255,255,0.03)",
+                background: "var(--surface-subtle)",
                 borderRadius: 12,
                 padding: 16,
                 textAlign: "center",
@@ -419,7 +419,7 @@ export function ShareHubClient() {
                               share.shareType === "PASSWORD"
                                 ? "var(--accent-gold)"
                                 : isExpired
-                                  ? "rgba(255,255,255,0.1)"
+                                  ? "var(--surface-active)"
                                   : "var(--accent-red)"
                             }`,
                             color:
@@ -488,9 +488,9 @@ export function ShareHubClient() {
                           textTransform: "uppercase",
                           letterSpacing: "0.1em",
                           padding: "8px 20px",
-                          background: "rgba(255,100,100,0.1)",
-                          border: "1px solid rgba(255,100,100,0.3)",
-                          color: "#ff6464",
+                          background: "var(--error-subtle)",
+                          border: "1px solid var(--error-border)",
+                          color: "var(--error)",
                           borderRadius: 999,
                           cursor: revokingId === share.id ? "not-allowed" : "pointer",
                           whiteSpace: "nowrap",
@@ -517,7 +517,7 @@ export function ShareHubClient() {
                         style={{
                           flex: 1,
                           minWidth: 200,
-                          background: "rgba(255,255,255,0.03)",
+                          background: "var(--surface-subtle)",
                           border: "1px solid var(--border)",
                           borderRadius: 10,
                           padding: "6px 12px",
@@ -544,8 +544,8 @@ export function ShareHubClient() {
                       style={{
                         marginTop: 16,
                         padding: 12,
-                        background: "rgba(232,170,48,0.08)",
-                        border: "1px solid rgba(232,170,48,0.2)",
+                        background: "var(--accent-gold-subtle)",
+                        border: "1px solid var(--border-gold)",
                         borderRadius: 10,
                       }}
                     >
@@ -567,7 +567,7 @@ export function ShareHubClient() {
                             key={download.id}
                             style={{
                               padding: "4px 0",
-                              borderBottom: idx < share.downloads!.length - 1 ? "1px solid rgba(232,170,48,0.1)" : "none",
+                              borderBottom: idx < share.downloads!.length - 1 ? "1px solid var(--accent-gold-subtle)" : "none",
                             }}
                           >
                             <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
@@ -579,7 +579,7 @@ export function ShareHubClient() {
                               </span>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>
-                              <div style={{ color: "rgba(100,200,100,0.8)", fontSize: 8 }}>
+                              <div style={{ color: "var(--success)", fontSize: 8 }}>
                                 ✓ Downloaded {download.downloadCount} of {share.maxDownloadsPerPayment ?? 1} time{download.downloadCount !== 1 ? "s" : ""}
                                 {download.lastDownloadAt && ` (Last: ${formatDate(new Date(download.lastDownloadAt).toISOString())})`}
                               </div>
@@ -591,7 +591,7 @@ export function ShareHubClient() {
                                   fontSize: 8,
                                   color: "var(--accent-gold)",
                                   textDecoration: "none",
-                                  border: "1px solid rgba(232,170,48,0.3)",
+                                  border: "1px solid var(--border-gold)",
                                   borderRadius: 4,
                                   padding: "1px 5px",
                                   whiteSpace: "nowrap",
