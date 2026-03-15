@@ -486,6 +486,9 @@ export async function getUserShares(walletAddress?: string | null) {
           folder: true,
         },
       },
+      downloads: {
+        orderBy: { paidAt: "desc" },
+      },
     },
     orderBy: { createdAt: "desc" },
   });

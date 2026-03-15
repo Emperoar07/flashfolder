@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzzing Lighting Motion Effects - 10 Variations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            font-family: 'Bebas Neue', sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: 0.1em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 60px;
+            font-size: 0.9rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .preview-card {
+            background: linear-gradient(135deg, rgba(20,20,30,0.8), rgba(30,20,40,0.8));
+            border: 1px solid rgba(232,170,48,0.2);
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 350px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(232,170,48,0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3.5rem;
+            font-weight: bold;
+            letter-spacing: 0.2em;
+            color: #fff;
+            text-transform: uppercase;
+            z-index: 1;
+            position: relative;
+        }
+
+        .flash {
+            color: #e8aa30;
+        }
+
+        .card-title {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            font-size: 0.85rem;
+            color: #e8aa30;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            z-index: 2;
+        }
+
+        /* ===== VARIATION 1: Pulse Glow ===== */
+        .effect-1 .logo {
+            animation: pulseglow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseglow {
+            0%, 100% {
+                text-shadow: 0 0 5px rgba(232,170,48,0.3),
+                            0 0 10px rgba(232,170,48,0.1);
+                filter: brightness(1);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(232,170,48,0.8),
+                            0 0 40px rgba(232,170,48,0.4),
+                            0 0 60px rgba(232,170,48,0.2);
+                filter: brightness(1.3);
+            }
+        }
+
+        /* ===== VARIATION 2: Flicker Lightning ===== */
+        .effect-2 .logo {
+            animation: flicker 0.15s ease-in-out infinite, flicker-delay 2s ease-in-out infinite;
+        }
+
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                text-shadow: 0 0 5px rgba(232,170,48,0.3);
+                filter: brightness(1);
+            }
+            20%, 24%, 55% {
+                text-shadow: 0 0 30px rgba(232,170,48,1),
+                            0 0 60px rgba(232,170,48,0.6);
+                filter: brightness(1.5);
+            }
+        }
+
+        @keyframes flicker-delay {
+            0%, 100% {
+                opacity: 1;
+            }
+            48%, 50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* ===== VARIATION 3: Buzz Wave ===== */
+        .effect-3 .logo {
+            animation: buzzwave 0.8s ease-in-out infinite;
+        }
+
+        @keyframes buzzwave {
+            0%, 100% {
+                transform: translateX(0) translateY(0);
+                text-shadow: 0 0 5px rgba(232,170,48,0.3);
+            }
+            25% {
+                transform: translateX(-2px) translateY(-2px);
+                text-shadow: 0 0 15px rgba(232,170,48,0.6);
+            }
+            50% {
+                transform: translateX(2px) translateY(2px);
+                text-shadow: 0 0 25px rgba(232,170,48,0.8);
+            }
+            75% {
+                transform: translateX(-1px) translateY(1px);
+                text-shadow: 0 0 15px rgba(232,170,48,0.6);
+            }
+        }
+
+        /* ===== VARIATION 4: Shimmer Cascade ===== */
+        .effect-4 .logo {
+            background: linear-gradient(90deg, 
+                rgba(232,170,48,0) 0%,
+                rgba(232,170,48,0.6) 50%,
+                rgba(232,170,48,0) 100%);
+            background-size: 200% 100%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% {
+                background-position: 200% 0;
+            }
+            50% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* ===== VARIATION 5: Rotating Aura ===== */
+        .effect-5 .logo {
+            animation: rotatingaura 3s linear infinite;
+            text-shadow: 0 0 5px rgba(232,170,48,0.3);
+            filter: drop-shadow(0 0 10px rgba(232,170,48,0.2));
+        }
+
+        @keyframes rotatingaura {
+            0% {
+                filter: drop-shadow(0 0 10px rgba(232,170,48,0.2)) 
+                        drop-shadow(20px 0 15px rgba(232,170,48,0.1));
+                transform: rotate(0deg);
+            }
+            50% {
+                filter: drop-shadow(0 0 20px rgba(232,170,48,0.5)) 
+                        drop-shadow(0 20px 20px rgba(232,170,48,0.2));
+                transform: rotate(180deg);
+            }
+            100% {
+                filter: drop-shadow(0 0 10px rgba(232,170,48,0.2)) 
+                        drop-shadow(-20px 0 15px rgba(232,170,48,0.1));
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== VARIATION 6: Neon Strobe ===== */
+        .effect-6 .logo {
+            animation: neonstrube 0.6s steps(4, start) infinite;
+        }
+
+        @keyframes neonstrube {
+            0% {
+                text-shadow: 0 0 5px rgba(232,170,48,0.2);
+                color: #fff;
+            }
+            25% {
+                text-shadow: 0 0 15px rgba(232,170,48,0.6);
+                color: #e8aa30;
+            }
+            50% {
+                text-shadow: 0 0 30px rgba(232,170,48,0.9);
+                color: #ffd700;
+            }
+            75% {
+                text-shadow: 0 0 15px rgba(232,170,48,0.6);
+                color: #e8aa30;
+            }
+        }
+
+        /* ===== VARIATION 7: Orbital Glow ===== */
+        .effect-7 {
+            position: relative;
+        }
+
+        .effect-7::after {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: conic-gradient(from 0deg at 50% 50%,
+                rgba(232,170,48,0) 0deg,
+                rgba(232,170,48,0.3) 90deg,
+                rgba(232,170,48,0) 180deg);
+            animation: orbital 3s linear infinite;
+            border-radius: 50%;
+        }
+
+        .effect-7 .logo {
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(232,170,48,0.4);
+        }
+
+        @keyframes orbital {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== VARIATION 8: Pulse Ring ===== */
+        .effect-8 {
+            position: relative;
+        }
+
+        .effect-8::after {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid rgba(232,170,48,0.3);
+            border-radius: 50%;
+            animation: pulsering 1.5s ease-out infinite;
+        }
+
+        .effect-8 .logo {
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes pulsering {
+            0% {
+                width: 150%;
+                height: 150%;
+                opacity: 1;
+                border-color: rgba(232,170,48,0.8);
+            }
+            100% {
+                width: 300%;
+                height: 300%;
+                opacity: 0;
+                border-color: rgba(232,170,48,0);
+            }
+        }
+
+        /* ===== VARIATION 9: Electric Jitter ===== */
+        .effect-9 .logo {
+            animation: electricjitter 0.1s linear infinite, electricpulse 2s ease-in-out infinite;
+        }
+
+        @keyframes electricjitter {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+            10% {
+                transform: translate(-1px, -1px);
+            }
+            20% {
+                transform: translate(1px, 1px);
+            }
+            30% {
+                transform: translate(-1px, 1px);
+            }
+            40% {
+                transform: translate(1px, -1px);
+            }
+            50% {
+                transform: translate(0, 0);
+            }
+            60% {
+                transform: translate(-2px, 0);
+            }
+            70% {
+                transform: translate(2px, 0);
+            }
+            80% {
+                transform: translate(0, -2px);
+            }
+            90% {
+                transform: translate(0, 2px);
+            }
+        }
+
+        @keyframes electricpulse {
+            0%, 100% {
+                text-shadow: 0 0 5px rgba(232,170,48,0.3);
+                filter: brightness(1);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(232,170,48,0.9),
+                            0 0 40px rgba(232,170,48,0.5);
+                filter: brightness(1.4);
+            }
+        }
+
+        /* ===== VARIATION 10: Chromatic Shift ===== */
+        .effect-10 .logo {
+            animation: chromaticshift 2s ease-in-out infinite;
+            position: relative;
+        }
+
+        .effect-10 .logo::before {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: -1;
+            color: #ff006e;
+            clip-path: polygon(0 0, 100% 0, 100% 33%, 0 100%);
+            animation: chromaticoffset1 2s ease-in-out infinite;
+        }
+
+        .effect-10 .logo::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: -2;
+            color: #00d9ff;
+            clip-path: polygon(0 66%, 100% 33%, 100% 100%, 0 100%);
+            animation: chromaticoffset2 2s ease-in-out infinite;
+        }
+
+        @keyframes chromaticshift {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(232,170,48,0.4);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(232,170,48,0.8),
+                            -2px 0 10px rgba(255,0,110,0.3),
+                            2px 0 10px rgba(0,217,255,0.3);
+            }
+        }
+
+        @keyframes chromaticoffset1 {
+            0%, 100% { transform: translate(-2px, 0); }
+            50% { transform: translate(2px, -2px); }
+        }
+
+        @keyframes chromaticoffset2 {
+            0%, 100% { transform: translate(2px, 0); }
+            50% { transform: translate(-2px, 2px); }
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(232,170,48,0.2);
+        }
+
+        .controls p {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .controls button {
+            background: #e8aa30;
+            border: none;
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 10px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .controls button:hover {
+            background: #ffd700;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <h1>✨ BUZZING LIGHTING MOTION EFFECTS ✨</h1>
+    <p class="subtitle">10 Unique Motion Variations for Logo Animation</p>
+
+    <div class="grid">
+        <!-- Variation 1: Pulse Glow -->
+        <div class="preview-card effect-1">
+            <div class="logo">FLASH</div>
+            <div class="card-title">1. PULSE GLOW</div>
+        </div>
+
+        <!-- Variation 2: Flicker Lightning -->
+        <div class="preview-card effect-2">
+            <div class="logo">FLASH</div>
+            <div class="card-title">2. FLICKER LIGHTNING</div>
+        </div>
+
+        <!-- Variation 3: Buzz Wave -->
+        <div class="preview-card effect-3">
+            <div class="logo">FLASH</div>
+            <div class="card-title">3. BUZZ WAVE</div>
+        </div>
+
+        <!-- Variation 4: Shimmer Cascade -->
+        <div class="preview-card effect-4">
+            <div class="logo">FLASH</div>
+            <div class="card-title">4. SHIMMER CASCADE</div>
+        </div>
+
+        <!-- Variation 5: Rotating Aura -->
+        <div class="preview-card effect-5">
+            <div class="logo">FLASH</div>
+            <div class="card-title">5. ROTATING AURA</div>
+        </div>
+
+        <!-- Variation 6: Neon Strobe -->
+        <div class="preview-card effect-6">
+            <div class="logo">FLASH</div>
+            <div class="card-title">6. NEON STROBE</div>
+        </div>
+
+        <!-- Variation 7: Orbital Glow -->
+        <div class="preview-card effect-7">
+            <div class="logo">FLASH</div>
+            <div class="card-title">7. ORBITAL GLOW</div>
+        </div>
+
+        <!-- Variation 8: Pulse Ring -->
+        <div class="preview-card effect-8">
+            <div class="logo">FLASH</div>
+            <div class="card-title">8. PULSE RING</div>
+        </div>
+
+        <!-- Variation 9: Electric Jitter -->
+        <div class="preview-card effect-9">
+            <div class="logo">FLASH</div>
+            <div class="card-title">9. ELECTRIC JITTER</div>
+        </div>
+
+        <!-- Variation 10: Chromatic Shift -->
+        <div class="preview-card effect-10">
+            <div class="logo" data-text="FLASH">FLASH</div>
+            <div class="card-title">10. CHROMATIC SHIFT</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <p>💡 Hover over effects to interact • Click button to copy your favorite</p>
+        <button onclick="alert('Effect 1: Pulse Glow - Use for smooth, continuous glow effect')">INFO</button>
+        <button onclick="window.location.reload()">REFRESH ALL</button>
+        <button onclick="downloadPreview()">SAVE PREVIEW</button>
+    </div>
+
+    <script>
+        function downloadPreview() {
+            alert('💾 To save this preview:\n\n1. Right-click → Save As\n2. Name: motion-preview.html\n3. Save to your project folder');
+        }
+    </script>
+</body>
+</html>

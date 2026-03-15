@@ -11,6 +11,15 @@ import { apiFetch } from "@/lib/client/api";
 import { formatBytes, formatDate } from "@/lib/utils";
 import type { ShareRecord } from "@/lib/types";
 
+type ShareDownload = {
+  id: string;
+  buyerWallet: string;
+  txHash: string;
+  paidAt: string;
+  downloaded: boolean;
+  downloadAt: string | null;
+};
+
 type ShareWithFile = ShareRecord & {
   file: {
     id: string;
@@ -20,6 +29,8 @@ type ShareWithFile = ShareRecord & {
     mimeType: string;
     folder: { name: string } | null;
   };
+  downloadPriceApt?: number | null;
+  downloads?: ShareDownload[];
 };
 
 export function ShareHubClient() {
@@ -167,6 +178,64 @@ export function ShareHubClient() {
                 </div>
               );
             })}
+          </div>
+        </div>
+
+        <div>
+          <div className="sidebar-section-label">Payment Stats</div>
+          <div style={{ marginTop: 8 }}>
+            {(() => {
+              const totalPayments = shares.reduce((acc, s) => acc + (s.downloads?.length ?? 0), 0);
+              const totalEarningsApt = shares.reduce((acc, s) => {
+                const price = s.downloadPriceApt ?? 0;
+                const payments = s.downloads?.length ?? 0;
+                return acc + (price * payments);
+              }, 0);
+
+              return (
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "8px 0",
+                      borderBottom: "1px solid var(--border)",
+                    }}
+                  >
+                    <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>Payments</span>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-bebas-neue)",
+                        fontSize: 16,
+                        color: totalPayments > 0 ? "var(--accent-gold)" : "var(--text-muted)",
+                      }}
+                    >
+                      {totalPayments}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "8px 0",
+                    }}
+                  >
+                    <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>Earnings</span>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-bebas-neue)",
+                        fontSize: 14,
+                        color: totalEarningsApt > 0 ? "var(--accent-gold)" : "var(--text-muted)",
+                      }}
+                    >
+                      {totalEarningsApt.toFixed(2)} APT
+                    </span>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       </aside>
@@ -457,6 +526,57 @@ export function ShareHubClient() {
                         url={shareUrl}
                         title={`Check out "${share.file.filename}" on FlashFolder`}
                       />
+                    </div>
+                  )}
+
+                  {/* Payment History - Show for paid downloads */}
+                  {share.downloadPriceApt && share.downloadPriceApt > 0 && share.downloads && share.downloads.length > 0 && (
+                    <div
+                      style={{
+                        marginTop: 16,
+                        padding: 12,
+                        background: "rgba(232,170,48,0.08)",
+                        border: "1px solid rgba(232,170,48,0.2)",
+                        borderRadius: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 10,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.1em",
+                          color: "var(--accent-gold)",
+                          fontWeight: "bold",
+                          marginBottom: 8,
+                        }}
+                      >
+                        ✓ {share.downloads.length} Payment{share.downloads.length !== 1 ? "s" : ""} Received
+                      </div>
+                      <div style={{ fontSize: 9, color: "var(--text-muted)", maxHeight: 100, overflowY: "auto" }}>
+                        {share.downloads.map((download, idx) => (
+                          <div
+                            key={download.id}
+                            style={{
+                              padding: "4px 0",
+                              borderBottom: idx < share.downloads!.length - 1 ? "1px solid rgba(232,170,48,0.1)" : "none",
+                            }}
+                          >
+                            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                              <span style={{ color: "var(--accent-gold)" }}>
+                                {download.buyerWallet.slice(0, 6)}...{download.buyerWallet.slice(-4)}
+                              </span>
+                              <span style={{ color: "var(--text-muted)" }}>
+                                {formatDate(new Date(download.paidAt).toISOString())}
+                              </span>
+                            </div>
+                            {download.downloaded && (
+                              <div style={{ color: "rgba(100,200,100,0.8)", fontSize: 8, marginTop: 2 }}>
+                                ✓ Downloaded {download.downloadAt ? formatDate(new Date(download.downloadAt).toISOString()) : ""}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
