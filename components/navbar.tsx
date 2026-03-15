@@ -18,36 +18,63 @@ function GoogleIcon() {
   );
 }
 
+function WalletIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+      <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+      <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+    </svg>
+  );
+}
+
 export function Navbar() {
   const pathname = usePathname();
-  const { walletAddress, connected, connect, disconnect, wallets } =
+  const { walletAddress, connected, connect, disconnect, wallets, isDemo } =
     useWorkspaceWallet();
-  const [walletDropdownOpen, setWalletDropdownOpen] = useState(false);
+  const [connectDropdownOpen, setConnectDropdownOpen] = useState(false);
   const [googleModalOpen, setGoogleModalOpen] = useState(false);
   const [googleEmail, setGoogleEmail] = useState("");
   const [googlePassword, setGooglePassword] = useState("");
   const [googleMode, setGoogleMode] = useState<"signin" | "signup">("signin");
   const [googleLoading, setGoogleLoading] = useState(false);
   const [googleError, setGoogleError] = useState<string | null>(null);
-  const walletRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close wallet dropdown on outside click
+  // Detect if logged in via email (stored in localStorage)
+  const [emailUser, setEmailUser] = useState<string | null>(null);
+  useEffect(() => {
+    const stored = localStorage.getItem("flashfolder.wallet");
+    if (stored?.startsWith("email:")) {
+      setEmailUser(stored.replace("email:", ""));
+    }
+  }, []);
+
+  const isLoggedIn = connected || !!emailUser;
+  const displayName = connected
+    ? shortenWallet(walletAddress)
+    : emailUser
+      ? emailUser.length > 20 ? emailUser.slice(0, 18) + "..." : emailUser
+      : null;
+  const connectionType: "wallet" | "email" | null = connected ? "wallet" : emailUser ? "email" : null;
+
+  // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (walletRef.current && !walletRef.current.contains(e.target as Node)) {
-        setWalletDropdownOpen(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setConnectDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close modal on Escape
+  // Close on Escape
   useEffect(() => {
     function handleEscape(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setGoogleModalOpen(false);
-        setWalletDropdownOpen(false);
+        setConnectDropdownOpen(false);
       }
     }
     document.addEventListener("keydown", handleEscape);
@@ -75,6 +102,20 @@ export function Navbar() {
     return pathname.startsWith(href);
   }
 
+  function handleDisconnect() {
+    setConnectDropdownOpen(false);
+    if (connected) {
+      void disconnect();
+    }
+    if (emailUser) {
+      localStorage.removeItem("flashfolder.wallet");
+      document.cookie = "ff_session=; path=/; max-age=0";
+      document.cookie = "ff_wallet=; path=/; max-age=0";
+      setEmailUser(null);
+      window.location.reload();
+    }
+  }
+
   async function handleGoogleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setGoogleLoading(true);
@@ -95,7 +136,6 @@ export function Navbar() {
         return;
       }
 
-      // Store the google wallet and reload
       if (data.wallet) {
         localStorage.setItem("flashfolder.wallet", data.wallet);
       }
@@ -107,6 +147,9 @@ export function Navbar() {
       setGoogleLoading(false);
     }
   }
+
+  const btnClass =
+    "rounded-full border border-[rgba(255,255,255,0.07)] px-5 py-2 text-[11px] tracking-[0.05em] text-[#f0ede6] transition hover:border-[#c8392b] hover:bg-[rgba(200,57,43,0.08)]";
 
   return (
     <>
@@ -141,67 +184,102 @@ export function Navbar() {
             Testnet
           </span>
 
-          {/* Wallet connect with dropdown */}
-          <div className="relative" ref={walletRef}>
-            {connected ? (
+          {/* Single connect button / account dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            {isLoggedIn ? (
+              /* ── Connected state: show identity, click for dropdown ── */
               <button
-                onClick={() => setWalletDropdownOpen((o) => !o)}
-                className="rounded-full border border-[rgba(255,255,255,0.07)] px-5 py-2 text-[11px] tracking-[0.05em] text-[#f0ede6] transition hover:border-[#c8392b] hover:bg-[rgba(200,57,43,0.08)]"
+                onClick={() => setConnectDropdownOpen((o) => !o)}
+                className={`inline-flex items-center gap-2 ${btnClass}`}
                 type="button"
               >
-                {shortenWallet(walletAddress)}
-              </button>
-            ) : wallets.length > 0 ? (
-              <button
-                onClick={() => void connect(wallets[0].name)}
-                className="rounded-full border border-[rgba(255,255,255,0.07)] px-5 py-2 text-[11px] tracking-[0.05em] text-[#f0ede6] transition hover:border-[#c8392b] hover:bg-[rgba(200,57,43,0.08)]"
-                type="button"
-              >
-                Connect Wallet
+                {connectionType === "wallet" ? <WalletIcon /> : <GoogleIcon />}
+                {displayName}
               </button>
             ) : (
-              <span className="rounded-full border border-[rgba(255,255,255,0.07)] px-5 py-2 text-[11px] tracking-[0.05em] text-[#f0ede6]">
-                {shortenWallet(walletAddress)}
-              </span>
+              /* ── Not connected: single "Connect" button opens method picker ── */
+              <button
+                onClick={() => setConnectDropdownOpen((o) => !o)}
+                className={btnClass}
+                type="button"
+              >
+                Connect
+              </button>
             )}
 
-            {/* Wallet dropdown */}
-            {walletDropdownOpen && connected && (
-              <div className="absolute right-0 top-full mt-2 min-w-[200px] rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#111] p-2 shadow-xl backdrop-blur-xl">
-                <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[rgba(240,237,230,0.35)]">
-                  Connected wallet
-                </div>
-                <div className="px-3 py-1 text-[11px] text-[#f0ede6] break-all">
-                  {walletAddress}
-                </div>
-                <div className="my-2 h-px bg-[rgba(255,255,255,0.07)]" />
-                <button
-                  onClick={() => {
-                    setWalletDropdownOpen(false);
-                    void disconnect();
-                  }}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[11px] text-[#c8392b] transition hover:bg-[rgba(200,57,43,0.08)]"
-                  type="button"
-                >
-                  <span>&#x23FB;</span>
-                  Disconnect Wallet
-                </button>
+            {/* Dropdown */}
+            {connectDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 min-w-[240px] rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#111] p-2 shadow-2xl backdrop-blur-xl">
+                {isLoggedIn ? (
+                  /* ── Logged-in dropdown: show info + disconnect ── */
+                  <>
+                    <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[rgba(240,237,230,0.35)]">
+                      {connectionType === "wallet" ? "Connected wallet" : "Signed in as"}
+                    </div>
+                    <div className="px-3 py-1 text-[11px] text-[#f0ede6] break-all">
+                      {connectionType === "wallet" ? walletAddress : emailUser}
+                    </div>
+                    <div className="my-2 h-px bg-[rgba(255,255,255,0.07)]" />
+                    <button
+                      onClick={handleDisconnect}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[11px] text-[#c8392b] transition hover:bg-[rgba(200,57,43,0.08)]"
+                      type="button"
+                    >
+                      <span>&#x23FB;</span>
+                      {connectionType === "wallet" ? "Disconnect Wallet" : "Sign Out"}
+                    </button>
+                  </>
+                ) : (
+                  /* ── Not logged-in dropdown: choose connection method ── */
+                  <>
+                    <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[rgba(240,237,230,0.35)]">
+                      Choose connection method
+                    </div>
+                    <div className="my-1 h-px bg-[rgba(255,255,255,0.07)]" />
+
+                    {/* Wallet option */}
+                    {wallets.length > 0 ? (
+                      wallets.slice(0, 3).map((wallet) => (
+                        <button
+                          key={wallet.name}
+                          onClick={() => {
+                            setConnectDropdownOpen(false);
+                            void connect(wallet.name);
+                          }}
+                          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[11px] text-[#f0ede6] transition hover:bg-[rgba(255,255,255,0.05)]"
+                          type="button"
+                        >
+                          <WalletIcon />
+                          {wallet.name}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[11px] text-[rgba(240,237,230,0.35)]">
+                        <WalletIcon />
+                        No wallet detected
+                      </div>
+                    )}
+
+                    <div className="my-1 h-px bg-[rgba(255,255,255,0.07)]" />
+
+                    {/* Google/Email option */}
+                    <button
+                      onClick={() => {
+                        setConnectDropdownOpen(false);
+                        setGoogleModalOpen(true);
+                        setGoogleError(null);
+                      }}
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[11px] text-[#f0ede6] transition hover:bg-[rgba(255,255,255,0.05)]"
+                      type="button"
+                    >
+                      <GoogleIcon />
+                      Sign in with Google / Email
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
-
-          {/* Google sign-in button */}
-          <button
-            onClick={() => {
-              setGoogleModalOpen(true);
-              setGoogleError(null);
-            }}
-            className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.07)] px-5 py-2 text-[11px] tracking-[0.05em] text-[#f0ede6] transition hover:border-[#c8392b] hover:bg-[rgba(200,57,43,0.08)]"
-            type="button"
-          >
-            <GoogleIcon />
-            Google
-          </button>
         </div>
       </nav>
 
@@ -214,7 +292,6 @@ export function Navbar() {
           }}
         >
           <div className="relative w-full max-w-[400px] rounded-2xl border border-[rgba(255,255,255,0.07)] bg-[#111] p-8 shadow-2xl">
-            {/* Close button */}
             <button
               onClick={() => setGoogleModalOpen(false)}
               className="absolute right-4 top-4 text-[rgba(240,237,230,0.35)] transition hover:text-[#f0ede6]"
@@ -223,7 +300,6 @@ export function Navbar() {
               &#x2715;
             </button>
 
-            {/* Logo */}
             <div className="text-center">
               <h2 className="font-[family-name:var(--font-bebas-neue)] text-[28px] tracking-[0.1em] text-[#f0ede6]">
                 <span className="text-[#c8392b]">FLASH</span>FOLDER
@@ -233,7 +309,6 @@ export function Navbar() {
               </p>
             </div>
 
-            {/* Tabs */}
             <div className="mt-6 flex rounded-xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-1">
               <button
                 type="button"
@@ -259,7 +334,6 @@ export function Navbar() {
               </button>
             </div>
 
-            {/* Form */}
             <form onSubmit={handleGoogleSubmit} className="mt-6 space-y-4">
               <div>
                 <label className="block text-[10px] uppercase tracking-[0.15em] text-[rgba(240,237,230,0.35)] mb-2">
@@ -308,14 +382,12 @@ export function Navbar() {
               </button>
             </form>
 
-            {/* Divider */}
             <div className="mt-5 flex items-center gap-3">
               <div className="flex-1 h-px bg-[rgba(255,255,255,0.07)]" />
               <span className="text-[10px] text-[rgba(240,237,230,0.25)] uppercase tracking-[0.1em]">or</span>
               <div className="flex-1 h-px bg-[rgba(255,255,255,0.07)]" />
             </div>
 
-            {/* Google OAuth button */}
             <button
               type="button"
               onClick={() => { window.location.href = "/api/auth/google"; }}
