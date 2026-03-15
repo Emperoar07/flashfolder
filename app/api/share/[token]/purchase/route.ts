@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { nanoid } from "nanoid";
 
 import {
   getFileShare,
   recordShareDownloadPayment,
   getShareDownload,
 } from "@/lib/server/workspace";
+import { rateLimit } from "@/lib/server/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -14,6 +14,9 @@ type Context = {
 };
 
 export async function POST(request: Request, context: Context) {
+  const rl = rateLimit(request, { keyPrefix: "purchase", maxRequests: 10, windowMs: 60_000 });
+  if (rl) return rl;
+
   const { token } = await context.params;
 
   try {
@@ -26,6 +29,15 @@ export async function POST(request: Request, context: Context) {
     if (!body.txHash || !body.buyerWallet) {
       return NextResponse.json(
         { error: "Missing txHash or buyerWallet" },
+        { status: 400 },
+      );
+    }
+
+    // Validate txHash looks like a real Aptos transaction hash (0x-prefixed hex, 64 chars)
+    const txHash = String(body.txHash).trim();
+    if (!/^0x[0-9a-fA-F]{64}$/.test(txHash)) {
+      return NextResponse.json(
+        { error: "Invalid transaction hash format" },
         { status: 400 },
       );
     }
@@ -79,19 +91,20 @@ export async function POST(request: Request, context: Context) {
       );
     }
 
-    // Record the payment (in production, you'd verify the txHash on-chain)
-    // For now, we trust that the wallet signed a valid transaction
+    // Record the payment
+    // TODO: verify txHash on-chain via Aptos SDK before recording
+    // (check that the transaction exists, succeeded, transferred the correct amount
+    //  to the sharer wallet, and references the correct share)
     const download = await recordShareDownloadPayment(
       token,
-      body.txHash,
+      txHash,
       buyerWallet,
     );
 
-    // Return the txHash which will be used as downloadId in the download endpoint
     return NextResponse.json(
       {
         success: true,
-        downloadId: body.txHash,
+        downloadId: txHash,
       },
       { status: 200 },
     );

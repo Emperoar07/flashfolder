@@ -260,5 +260,10 @@ export function getSessionForToken(sessionToken?: string | null) {
     return null;
   }
 
+  // Reject sessions created for a different network
+  if (session.network !== appConfig.aptos.network) {
+    return null;
+  }
+
   return session;
 }

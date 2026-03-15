@@ -5,8 +5,9 @@ import {
   verifySignedChallenge,
 } from "@/lib/server/aptos";
 import { getSessionForToken } from "@/lib/server/aptos/auth";
-import { ensureUser, getRequestWalletAddress } from "@/lib/server/workspace";
+import { ensureUser, getRequestWalletAddress, sanitizeUserForClient } from "@/lib/server/workspace";
 import { toAptosResponse } from "@/lib/server/aptos/errors";
+import { rateLimit } from "@/lib/server/rate-limit";
 import { walletChallengeVerifySchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -32,7 +33,7 @@ export async function GET(request: Request) {
     const user = await ensureUser(walletAddress);
 
     return NextResponse.json({
-      user,
+      user: sanitizeUserForClient(user),
       session: {
         walletAddress: session.walletAddress,
         sessionToken: sessionToken!,
@@ -49,6 +50,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const rl = rateLimit(request, { keyPrefix: "auth-verify", maxRequests: 10, windowMs: 60_000 });
+  if (rl) return rl;
+
   try {
     const payload = await request.json();
     const parsed = walletChallengeVerifySchema.safeParse(payload);
@@ -60,7 +64,7 @@ export async function POST(request: Request) {
     const verification = await verifySignedChallenge(parsed.data);
     const user = await ensureUser(parsed.data.walletAddress);
     const response = NextResponse.json({
-      user,
+      user: sanitizeUserForClient(user),
       session: verification.session,
       verified: verification.verified,
       reason: verification.reason,
@@ -70,14 +74,14 @@ export async function POST(request: Request) {
     response.cookies.set("ff_session", verification.session.sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 86400,
       path: "/",
     });
     response.cookies.set("ff_wallet", parsed.data.walletAddress, {
-      httpOnly: false,
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 86400,
       path: "/",
     });

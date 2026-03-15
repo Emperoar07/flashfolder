@@ -3,10 +3,14 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/prisma";
 import { createSessionForWallet } from "@/lib/server/aptos";
+import { rateLimit } from "@/lib/server/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const rl = rateLimit(request, { keyPrefix: "auth-login", maxRequests: 5, windowMs: 60_000 });
+  if (rl) return rl;
+
   try {
     const { email, password } = (await request.json()) as {
       email?: string;
@@ -21,25 +25,34 @@ export async function POST(request: Request) {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+
+    // RFC 5322 email format validation
+    if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(normalizedEmail)) {
+      return NextResponse.json(
+        { error: "Please provide a valid email address." },
+        { status: 400 },
+      );
+    }
+
     const walletId = `email:${normalizedEmail}`;
 
     const user = await prisma.user.findUnique({
       where: { walletAddress: walletId },
     });
 
-    if (!user || !user.username?.includes("::")) {
+    if (!user) {
       return NextResponse.json(
         { error: "No account found with this email. Please sign up first." },
         { status: 401 },
       );
     }
 
-    // Extract stored password hash
-    const storedHash = user.username.split("::")[1];
+    // Read from dedicated column, fall back to legacy username::hash format
+    const storedHash = user.passwordHash ?? (user.username?.includes("::") ? user.username.split("::")[1] : null);
     if (!storedHash) {
       return NextResponse.json(
-        { error: "Account configuration error. Please contact support." },
-        { status: 500 },
+        { error: "No account found with this email. Please sign up first." },
+        { status: 401 },
       );
     }
 
@@ -61,14 +74,14 @@ export async function POST(request: Request) {
     response.cookies.set("ff_session", session.sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 86400,
       path: "/",
     });
     response.cookies.set("ff_wallet", walletId, {
-      httpOnly: false,
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 86400,
       path: "/",
     });

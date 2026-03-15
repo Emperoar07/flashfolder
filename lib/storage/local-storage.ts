@@ -7,7 +7,15 @@ import { StorageError } from "@/lib/storage/errors";
 import type { StorageAdapter } from "@/lib/storage/types";
 
 function resolveBlobPath(blobKey: string) {
-  return path.join(process.cwd(), appConfig.storageRoot, blobKey);
+  const storageRoot = path.resolve(process.cwd(), appConfig.storageRoot);
+  const resolved = path.resolve(storageRoot, blobKey);
+
+  // Prevent path traversal attacks — resolved path must be inside the storage root
+  if (!resolved.startsWith(storageRoot + path.sep) && resolved !== storageRoot) {
+    throw new StorageError("UPLOAD_FAILED", "Invalid storage path.", { status: 400 });
+  }
+
+  return resolved;
 }
 
 async function walk(currentPath: string): Promise<string[]> {

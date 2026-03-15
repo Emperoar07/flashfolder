@@ -4,6 +4,12 @@ import { NextResponse } from "next/server";
 import { StorageError } from "@/lib/storage/errors";
 import type { StorageAdapter } from "@/lib/storage/types";
 
+/** Sanitize a filename for use in Content-Disposition headers. */
+function sanitizeFilenameForHeader(name: string) {
+  // Remove characters that could cause header injection
+  return name.replace(/[\r\n"]/g, "_");
+}
+
 export function parseByteRange(rangeHeader: string, totalSize: number) {
   const [rawStart, rawEnd] = rangeHeader.replace("bytes=", "").split("-");
   const start = Number.parseInt(rawStart, 10);
@@ -39,6 +45,7 @@ export async function respondWithStoredFile(args: {
     const { start, end } = parseByteRange(rangeHeader, args.size);
     const ranged = await args.adapter.getFileRange(args.blobKey, start, end);
 
+    const safeName = sanitizeFilenameForHeader(args.originalName);
     return new NextResponse(Readable.toWeb(ranged.stream) as ReadableStream, {
       status: 206,
       headers: {
@@ -46,19 +53,20 @@ export async function respondWithStoredFile(args: {
         "Content-Length": String(ranged.contentLength),
         "Content-Range": `bytes ${ranged.start}-${ranged.end}/${ranged.totalSize}`,
         "Content-Type": args.mimeType,
-        "Content-Disposition": `${args.inline ? "inline" : "attachment"}; filename="${args.originalName}"`,
+        "Content-Disposition": `${args.inline ? "inline" : "attachment"}; filename="${safeName}"`,
       },
     });
   }
 
   const streamed = await args.adapter.getFileStream(args.blobKey);
+  const safeName = sanitizeFilenameForHeader(args.originalName);
 
   return new NextResponse(Readable.toWeb(streamed.stream) as ReadableStream, {
     headers: {
       "Accept-Ranges": "bytes",
       "Content-Length": String(streamed.metadata.byteLength ?? args.size),
       "Content-Type": args.mimeType,
-      "Content-Disposition": `${args.inline ? "inline" : "attachment"}; filename="${args.originalName}"`,
+      "Content-Disposition": `${args.inline ? "inline" : "attachment"}; filename="${safeName}"`,
     },
   });
 }

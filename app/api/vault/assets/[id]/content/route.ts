@@ -51,12 +51,13 @@ export async function GET(request: Request, context: Context) {
       encryptedKeyRef: resolved.vaultFile.encryptedKeyRef,
     });
 
+    const safeName = resolved.vaultFile.file.originalName.replace(/[\r\n"]/g, "_");
     return new NextResponse(new Uint8Array(contentBuffer), {
       headers: {
         "Accept-Ranges": "none",
         "Content-Type": resolved.vaultFile.file.mimeType,
         "Content-Length": String(contentBuffer.byteLength),
-        "Content-Disposition": `${inline ? "inline" : "attachment"}; filename="${resolved.vaultFile.file.originalName}"`,
+        "Content-Disposition": `${inline ? "inline" : "attachment"}; filename="${safeName}"`,
       },
     });
   } catch (error) {

@@ -15,9 +15,22 @@ export const runtime = "nodejs";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
+  const state = searchParams.get("state");
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   if (!code) {
+    return NextResponse.redirect(`${baseUrl}/?auth=error`);
+  }
+
+  // Validate the state parameter to prevent CSRF
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const storedState = cookieHeader
+    .split(";")
+    .map((c) => c.trim())
+    .find((c) => c.startsWith("ff_oauth_state="))
+    ?.slice("ff_oauth_state=".length);
+
+  if (!state || !storedState || state !== decodeURIComponent(storedState)) {
     return NextResponse.redirect(`${baseUrl}/?auth=error`);
   }
 
@@ -75,14 +88,20 @@ export async function GET(request: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 86400, // 24 hours
+      maxAge: 86400,
       path: "/",
     });
     response.cookies.set("ff_wallet", googleWalletId, {
-      httpOnly: false,
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 86400,
+      path: "/",
+    });
+    // Clear the OAuth state cookie
+    response.cookies.set("ff_oauth_state", "", {
+      httpOnly: true,
+      maxAge: 0,
       path: "/",
     });
 

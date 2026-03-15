@@ -21,6 +21,13 @@ export async function PATCH(request: Request) {
     const body = (await request.json()) as { username?: string };
 
     if (body.username !== undefined) {
+      if (typeof body.username !== "string" || body.username.length < 1 || body.username.length > 64) {
+        return NextResponse.json(
+          { error: "Username must be between 1 and 64 characters." },
+          { status: 400 },
+        );
+      }
+
       // Preserve password hash if stored in username field (email::{hash} format)
       const existingUsername = user.username ?? "";
       const hasHash = existingUsername.includes("::");

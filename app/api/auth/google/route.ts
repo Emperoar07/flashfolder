@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -7,18 +8,20 @@ export const runtime = "nodejs";
  *
  * Requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET env vars.
  * When configured, this redirects to Google's OAuth consent screen.
- * For now it returns a scaffolded response until credentials are set.
  */
 export async function GET() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/api/auth/google/callback`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
   if (!clientId) {
-    // Not configured yet — redirect back with a notice
     return NextResponse.redirect(
-      new URL("/?auth=google-not-configured", process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+      new URL("/?auth=google-not-configured", baseUrl),
     );
   }
+
+  // Generate a random state parameter to prevent CSRF attacks
+  const state = randomBytes(32).toString("base64url");
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -27,9 +30,21 @@ export async function GET() {
     scope: "openid email profile",
     access_type: "offline",
     prompt: "consent",
+    state,
   });
 
-  return NextResponse.redirect(
+  const response = NextResponse.redirect(
     `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
   );
+
+  // Store state in an httpOnly cookie for validation in the callback
+  response.cookies.set("ff_oauth_state", state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 600, // 10 minutes
+    path: "/",
+  });
+
+  return response;
 }

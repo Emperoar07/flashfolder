@@ -4,10 +4,14 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { createSessionForWallet } from "@/lib/server/aptos";
 import { ensureUser } from "@/lib/server/workspace";
+import { rateLimit } from "@/lib/server/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const rl = rateLimit(request, { keyPrefix: "auth-register", maxRequests: 5, windowMs: 60_000 });
+  if (rl) return rl;
+
   try {
     const { email, password } = (await request.json()) as {
       email?: string;
@@ -22,6 +26,15 @@ export async function POST(request: Request) {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+
+    // RFC 5322 email format validation
+    if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(normalizedEmail)) {
+      return NextResponse.json(
+        { error: "Please provide a valid email address." },
+        { status: 400 },
+      );
+    }
+
     const walletId = `email:${normalizedEmail}`;
 
     // Check if user already exists
@@ -37,14 +50,13 @@ export async function POST(request: Request) {
     }
 
     // Hash password and create user
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 12);
     const user = await ensureUser(walletId, normalizedEmail);
 
-    // Store password hash in user metadata (using username field temporarily)
-    // In production, add a dedicated passwordHash column
+    // Store password hash in dedicated column
     await prisma.user.update({
       where: { id: user.id },
-      data: { username: `${normalizedEmail}::${passwordHash}` },
+      data: { passwordHash },
     });
 
     const session = await createSessionForWallet(walletId);
@@ -57,14 +69,14 @@ export async function POST(request: Request) {
     response.cookies.set("ff_session", session.sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 86400,
       path: "/",
     });
     response.cookies.set("ff_wallet", walletId, {
-      httpOnly: false,
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 86400,
       path: "/",
     });

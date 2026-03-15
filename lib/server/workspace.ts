@@ -75,6 +75,15 @@ export async function ensureUser(
   });
 }
 
+/** Strip legacy password hash from username field (backward compat). */
+export function sanitizeUserForClient<T extends { username?: string | null; passwordHash?: string | null }>(user: T): Omit<T, "passwordHash"> {
+  const { passwordHash: _pw, ...rest } = user;
+  return {
+    ...rest,
+    username: rest.username?.includes("::") ? rest.username.split("::")[0] : rest.username,
+  } as Omit<T, "passwordHash">;
+}
+
 export async function getFolders(walletAddress?: string | null) {
   const user = await ensureUser(walletAddress);
   return prisma.folder.findMany({
@@ -111,8 +120,11 @@ export async function getCurrentUserProfile(walletAddress?: string | null) {
       }),
     ]);
 
+  // Strip sensitive data before returning
+  const safeUser = sanitizeUserForClient(user);
+
   return {
-    user,
+    user: safeUser,
     stats: {
       folderCount,
       fileCount,
@@ -541,8 +553,6 @@ export async function recordFileEvent(
 }
 
 export function getRequestWalletAddress(request: Request) {
-  const requestWallet = request.headers.get("x-wallet-address");
-  const cookieWallet = getCookieValue(request, "ff_wallet");
   const sessionToken = getCookieValue(request, "ff_session");
   const session = getSessionForToken(sessionToken);
 
@@ -550,23 +560,33 @@ export function getRequestWalletAddress(request: Request) {
     return session.walletAddress;
   }
 
-  if (requestWallet) {
-    return requestWallet;
-  }
-
-  if (cookieWallet) {
-    return cookieWallet;
+  // Fallback to header/cookie only in development for convenience;
+  // in production, a valid session is required to prevent spoofing.
+  if (process.env.NODE_ENV !== "production") {
+    const requestWallet = request.headers.get("x-wallet-address");
+    const cookieWallet = getCookieValue(request, "ff_wallet");
+    if (requestWallet) return requestWallet;
+    if (cookieWallet) return cookieWallet;
   }
 
   throw new Error("Wallet not connected. Please connect your Aptos wallet.");
 }
 
 export function getOptionalRequestWalletAddress(request: Request) {
-  const requestWallet = request.headers.get("x-wallet-address");
   const sessionToken = getCookieValue(request, "ff_session");
   const session = getSessionForToken(sessionToken);
 
-  return session?.walletAddress ?? requestWallet ?? getCookieValue(request, "ff_wallet");
+  if (session?.walletAddress) {
+    return session.walletAddress;
+  }
+
+  // Fallback to header/cookie only in development
+  if (process.env.NODE_ENV !== "production") {
+    const requestWallet = request.headers.get("x-wallet-address");
+    return requestWallet ?? getCookieValue(request, "ff_wallet");
+  }
+
+  return null;
 }
 
 export async function recordShareDownloadPayment(
