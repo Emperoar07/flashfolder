@@ -10,6 +10,7 @@ import { SocialShareButtons } from "@/components/social-share-buttons";
 import { useWorkspaceWallet } from "@/components/wallet-status";
 import { WorkspaceDropdown } from "@/components/workspace-dropdown";
 import { apiFetch } from "@/lib/client/api";
+import { uploadFileChunked } from "@/lib/client/upload-chunked";
 import { useWorkspaceTransaction } from "@/lib/client/use-workspace-transaction";
 import { useCurrentUser } from "@/lib/client/hooks";
 import {
@@ -259,52 +260,26 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const uploadMutation = useMutation({
     mutationFn: async () => {
       if (!selectedUpload) throw new Error("Pick a file first.");
+      if (!connected) throw new Error("Wallet not connected. Please connect your wallet.");
+      if (!walletAddress || walletAddress.trim().length === 0) {
+        throw new Error("Invalid wallet address. Please reconnect your wallet.");
+      }
 
       // Phase 1: Aptos transaction signing
       setUploadPhase("signing");
       setUploadProgress(0);
       await submitTransaction("file_upload");
 
-      // Phase 2: Upload with XHR for real progress
+      // Phase 2: Chunked upload with real progress tracking
       setUploadPhase("uploading");
       setUploadProgress(0);
 
-      const formData = new FormData();
-      formData.set("file", selectedUpload);
-      formData.set("description", description);
-      if (activeFolderId) formData.set("folderId", activeFolderId);
-
-      return new Promise<{ file: FileRecord }>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/files/upload");
-        xhr.setRequestHeader("x-wallet-address", walletAddress);
-
-        xhr.upload.addEventListener("progress", (e) => {
-          if (e.lengthComputable) {
-            setUploadProgress(Math.round((e.loaded / e.total) * 100));
-          }
-        });
-
-        xhr.addEventListener("load", () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              resolve(JSON.parse(xhr.responseText) as { file: FileRecord });
-            } catch {
-              reject(new Error("Invalid server response"));
-            }
-          } else {
-            try {
-              const body = JSON.parse(xhr.responseText) as { error?: string };
-              reject(new Error(body.error ?? "Upload failed"));
-            } catch {
-              reject(new Error("Upload failed"));
-            }
-          }
-        });
-
-        xhr.addEventListener("error", () => reject(new Error("Network error during upload")));
-        xhr.addEventListener("abort", () => reject(new Error("Upload cancelled")));
-        xhr.send(formData);
+      return uploadFileChunked({
+        file: selectedUpload,
+        folderId: activeFolderId,
+        description: description || null,
+        walletAddress: walletAddress.trim(),
+        onProgress: ({ percent }) => setUploadProgress(percent),
       });
     },
     onSuccess: () => {
@@ -863,7 +838,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                   <button
                     className="btn-primary"
                     style={{ padding: "10px 24px", fontSize: 10 }}
-                    disabled={uploadMutation.isPending}
+                    disabled={uploadMutation.isPending || !connected || !walletAddress?.trim()}
                     onClick={() => uploadMutation.mutate()}
                     type="button"
                   >
