@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { FilePreview } from "@/components/file-preview";
-import { SocialShareButtons } from "@/components/social-share-buttons";
 import { useSharePurchase } from "@/lib/client/use-share-purchase";
 import { apiFetch } from "@/lib/client/api";
 import { VAULT_FILE_ROLES } from "@/lib/file-kinds";
@@ -238,6 +237,9 @@ export function ShareClient({ token }: ShareClientProps) {
                       priceApt: data.share.downloadPriceApt || 0,
                     });
 
+                    // Mark as purchased and disable further downloads
+                    setPurchasedDownloadId(result.downloadId);
+
                     // Trigger download with the download ID
                     const downloadUrl = `/api/files/${data.file.id}/download?token=${token}&downloadId=${result.downloadId}${password ? `&password=${encodeURIComponent(password)}` : ""}`;
                     window.location.href = downloadUrl;
@@ -245,22 +247,22 @@ export function ShareClient({ token }: ShareClientProps) {
                     setPurchaseError_state(err instanceof Error ? err.message : "Payment failed");
                   }
                 }}
-                disabled={isPurchasing || !connected}
+                disabled={isPurchasing || !connected || purchasedDownloadId !== null}
                 style={{
                   padding: "12px 20px",
                   borderRadius: 10,
                   border: "none",
-                  background: connected ? "var(--accent-red)" : "rgba(255,255,255,0.1)",
+                  background: purchasedDownloadId ? "rgba(255,255,255,0.1)" : connected ? "var(--accent-red)" : "rgba(255,255,255,0.1)",
                   color: "var(--foreground)",
-                  cursor: connected && !isPurchasing ? "pointer" : "not-allowed",
+                  cursor: purchasedDownloadId || !connected || isPurchasing ? "not-allowed" : "pointer",
                   fontSize: 13,
                   fontWeight: "bold",
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
-                  opacity: !connected || isPurchasing ? 0.6 : 1,
+                  opacity: purchasedDownloadId || !connected || isPurchasing ? 0.6 : 1,
                 }}
               >
-                {isPurchasing ? "Processing Payment..." : connected ? "Pay & Download" : "Connect Wallet"}
+                {purchasedDownloadId ? "Already Downloaded" : isPurchasing ? "Processing Payment..." : connected ? "Pay & Download" : "Connect Wallet"}
               </button>
             ) : (
               <Link
@@ -301,12 +303,6 @@ export function ShareClient({ token }: ShareClientProps) {
                 {purchaseError_state || purchaseError}
               </div>
             )}
-          </div>
-          <div style={{ marginTop: 16 }}>
-            <SocialShareButtons
-              url={typeof window !== "undefined" ? window.location.href : `/share/${token}`}
-              title={`Check out "${fileName}" on FlashFolder`}
-            />
           </div>
         </div>
       </div>
