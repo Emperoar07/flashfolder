@@ -814,6 +814,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                   fileId={selectedFile.id}
                   originalName={selectedFile.originalName}
                   previewType={selectedFile.previewType}
+                  walletAddress={walletAddress ?? undefined}
                 />
               ) : selectedFile.previewType === PREVIEW_TYPES.AUDIO ? (
                 <div style={{ fontSize: 32, opacity: 0.3 }}>&#x1F3B5;</div>

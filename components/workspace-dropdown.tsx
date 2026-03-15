@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import React, { useState } from "react";
 
 type WorkspaceDropdownProps = {
   activePage: "files" | "shared" | "vault" | "settings";
@@ -49,6 +50,24 @@ function SettingsIcon() {
   );
 }
 
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
 const PAGES = [
   { id: "files" as const, href: "/dashboard", Icon: FilesIcon, label: "My Files" },
   { id: "shared" as const, href: "/share", Icon: SharedIcon, label: "Shared" },
@@ -56,94 +75,142 @@ const PAGES = [
   { id: "settings" as const, href: "/settings", Icon: SettingsIcon, label: "Settings" },
 ];
 
+const PAGE_ICONS: Record<string, () => React.ReactElement> = {
+  files: FilesIcon,
+  shared: SharedIcon,
+  vault: VaultIcon,
+  settings: SettingsIcon,
+};
+
+const PAGE_LABELS: Record<string, string> = {
+  files: "My Files",
+  shared: "Shared",
+  vault: "Vault",
+  settings: "Settings",
+};
+
 export function WorkspaceDropdown({ activePage }: WorkspaceDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const ActiveIcon = PAGE_ICONS[activePage] ?? FilesIcon;
+  const activeLabel = PAGE_LABELS[activePage] ?? "Workspace";
+
   return (
-    <div>
-      <p
+    <div style={{ position: "relative" }}>
+      {/* Trigger button — shows active page */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
         style={{
-          fontSize: 10,
-          fontWeight: 600,
-          letterSpacing: "0.1em",
-          color: "#555",
-          textTransform: "uppercase",
-          padding: "4px 10px 12px",
-          margin: 0,
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          width: "100%",
+          padding: "8px 10px 8px 7px",
+          borderRadius: 8,
+          background: "#2a1f10",
+          borderLeft: "3px solid #e8aa30",
+          border: "none",
+          borderLeftWidth: 3,
+          borderLeftStyle: "solid",
+          borderLeftColor: "#e8aa30",
+          cursor: "pointer",
+          textAlign: "left",
         }}
       >
-        Workspace
-      </p>
+        <span style={{ display: "flex", flexShrink: 0, color: "#e8aa30" }}>
+          <ActiveIcon />
+        </span>
+        <span style={{ flex: 1, fontSize: 13.5, fontWeight: 500, color: "#e8c97a" }}>
+          {activeLabel}
+        </span>
+        <span style={{ color: "#e8aa30", opacity: 0.7 }}>
+          <ChevronIcon open={open} />
+        </span>
+      </button>
 
-      <nav style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {PAGES.map(({ id, href, Icon, label }) => {
-          const isActive = id === activePage;
+      {/* Dropdown menu */}
+      {open && (
+        <div
+          style={{
+            marginTop: 4,
+            borderRadius: 10,
+            background: "#161209",
+            border: "1px solid #2a2318",
+            overflow: "hidden",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+          }}
+        >
+          <p
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              color: "#555",
+              textTransform: "uppercase",
+              padding: "10px 12px 8px",
+              margin: 0,
+            }}
+          >
+            Workspace
+          </p>
+          <nav style={{ display: "flex", flexDirection: "column", gap: 2, padding: "0 6px 6px" }}>
+            {PAGES.map(({ id, href, Icon, label }) => {
+              const isActive = id === activePage;
 
-          const inner = (
-            <>
-              <Icon />
-              <span
-                style={{
-                  fontSize: 13.5,
-                  fontWeight: 500,
-                  color: isActive ? "#e8c97a" : "#8a8680",
-                  transition: "color 0.15s",
-                }}
-              >
-                {label}
-              </span>
-            </>
-          );
+              const sharedStyle: React.CSSProperties = {
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: isActive ? "8px 10px 8px 7px" : "8px 10px",
+                borderRadius: 8,
+                background: isActive ? "#2a1f10" : "transparent",
+                borderLeft: isActive ? "3px solid #e8aa30" : "3px solid transparent",
+                textDecoration: "none",
+                transition: "background 0.15s",
+                cursor: "pointer",
+                width: "100%",
+              };
 
-          const sharedStyle: React.CSSProperties = {
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: isActive ? "8px 10px 8px 7px" : "8px 10px",
-            borderRadius: 8,
-            background: isActive ? "#2a1f10" : "transparent",
-            borderLeft: isActive ? "3px solid #e8aa30" : "3px solid transparent",
-            textDecoration: "none",
-            transition: "background 0.15s",
-            cursor: "pointer",
-            width: "100%",
-          };
+              const svgWrapStyle: React.CSSProperties = {
+                display: "flex",
+                flexShrink: 0,
+                color: isActive ? "#e8aa30" : "#5a5650",
+              };
 
-          const svgWrapStyle: React.CSSProperties = {
-            display: "flex",
-            flexShrink: 0,
-            color: isActive ? "#e8aa30" : "#5a5650",
-          };
+              if (isActive) {
+                return (
+                  <div key={id} style={sharedStyle} onClick={() => setOpen(false)}>
+                    <span style={svgWrapStyle}><Icon /></span>
+                    <span style={{ fontSize: 13.5, fontWeight: 500, color: "#e8c97a" }}>
+                      {label}
+                    </span>
+                  </div>
+                );
+              }
 
-          if (isActive) {
-            return (
-              <div key={id} style={sharedStyle}>
-                <span style={svgWrapStyle}><Icon /></span>
-                <span style={{ fontSize: 13.5, fontWeight: 500, color: "#e8c97a" }}>
-                  {label}
-                </span>
-              </div>
-            );
-          }
-
-          return (
-            <Link
-              key={id}
-              href={href}
-              style={sharedStyle}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#1e1b15";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-              }}
-            >
-              <span style={svgWrapStyle}><Icon /></span>
-              <span style={{ fontSize: 13.5, fontWeight: 500, color: "#8a8680" }}>
-                {label}
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
+              return (
+                <Link
+                  key={id}
+                  href={href}
+                  style={sharedStyle}
+                  onClick={() => setOpen(false)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#1e1b15";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  <span style={svgWrapStyle}><Icon /></span>
+                  <span style={{ fontSize: 13.5, fontWeight: 500, color: "#8a8680" }}>
+                    {label}
+                  </span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
     </div>
   );
 }
