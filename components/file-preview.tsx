@@ -16,121 +16,81 @@ type FilePreviewProps = {
   walletAddress?: string;
 };
 
-function buildSrc(fileId: string, token?: string, password?: string) {
-  const query = new URLSearchParams({
-    inline: "1",
-    ...(token ? { token } : {}),
-    ...(password ? { password } : {}),
-  });
+function buildSrc(fileId: string, token?: string, password?: string, walletAddress?: string) {
+  const query = new URLSearchParams({ inline: "1" });
+  if (token) query.set("token", token);
+  if (password) query.set("password", password);
+  if (walletAddress) query.set("wallet", walletAddress);
   return `/api/files/${fileId}/download?${query.toString()}`;
 }
 
-function AuthenticatedImage({
-  src,
-  walletAddress,
-  alt,
-}: {
-  src: string;
-  walletAddress: string;
-  alt: string;
-}) {
+function useObjectUrl(src: string, walletAddress?: string) {
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    let revoked = false;
-    let nextObjectUrl: string | null = null;
+    let cancelled = false;
+    let url: string | null = null;
 
-    fetch(src, { headers: { "x-wallet-address": walletAddress } })
+    setLoading(true);
+    setError(false);
+
+    const headers: Record<string, string> = {};
+    if (walletAddress) headers["x-wallet-address"] = walletAddress;
+
+    fetch(src, { headers })
       .then((res) => {
         if (!res.ok) throw new Error("failed");
         return res.blob();
       })
       .then((blob) => {
-        if (revoked) return;
-        nextObjectUrl = URL.createObjectURL(blob);
-        setObjectUrl((currentObjectUrl) => {
-          if (currentObjectUrl) {
-            URL.revokeObjectURL(currentObjectUrl);
-          }
-
-          return nextObjectUrl;
+        if (cancelled) return;
+        url = URL.createObjectURL(blob);
+        setObjectUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return url;
         });
-        setError(false);
+        setLoading(false);
       })
       .catch(() => {
-        if (!revoked) setError(true);
+        if (!cancelled) {
+          setError(true);
+          setLoading(false);
+        }
       });
 
     return () => {
-      revoked = true;
-      if (nextObjectUrl) {
-        URL.revokeObjectURL(nextObjectUrl);
-      }
+      cancelled = true;
+      if (url) URL.revokeObjectURL(url);
     };
   }, [src, walletAddress]);
 
-  // cleanup object URL on unmount or change
-  useEffect(() => {
-    return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, [objectUrl]);
-
-  if (error) {
-    return (
-      <div
-        style={{
-          height: 180,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 11,
-          color: "var(--text-muted)",
-          borderRadius: 12,
-          border: "1px solid var(--border)",
-        }}
-      >
-        Preview unavailable
-      </div>
-    );
-  }
-
-  if (!objectUrl) {
-    return (
-      <div
-        style={{
-          height: 180,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 11,
-          color: "var(--text-muted)",
-          borderRadius: 12,
-          border: "1px solid var(--border)",
-        }}
-      >
-        Loading…
-      </div>
-    );
-  }
-
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={objectUrl}
-      alt={alt}
-      style={{
-        width: "100%",
-        height: "auto",
-        maxHeight: 288,
-        borderRadius: 12,
-        objectFit: "cover",
-        display: "block",
-      }}
-    />
-  );
+  return { objectUrl, loading, error };
 }
+
+const MAXIMIZE_BTN = (onClick: () => void) => (
+  <button
+    style={{
+      position: "absolute",
+      bottom: 10,
+      right: 10,
+      background: "rgba(0,0,0,0.6)",
+      border: "none",
+      borderRadius: 8,
+      padding: "6px 8px",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+    onClick={onClick}
+    type="button"
+    aria-label="Full screen"
+  >
+    <Maximize2 style={{ width: 16, height: 16, color: "#fff" }} />
+  </button>
+);
 
 export function FilePreview({
   fileId,
@@ -144,119 +104,40 @@ export function FilePreview({
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const previewSrc =
-    src ??
-    (() => {
-      if (!fileId) return "";
-      return buildSrc(fileId, token, password);
-    })();
+    src ?? (fileId ? buildSrc(fileId, token, password, walletAddress) : "");
 
   if (previewType === PREVIEW_TYPES.IMAGE) {
-    // Use authenticated fetch when walletAddress provided (dashboard context)
-    if (walletAddress && fileId && !token) {
-      return (
-        <>
-          <MediaViewer
-            isOpen={isFullscreen}
-            onClose={() => setIsFullscreen(false)}
-            src={previewSrc}
-            type="image"
-            title={originalName}
-          />
-          <div style={{ position: "relative", display: "inline-block", width: "100%" }}>
-            <AuthenticatedImage
-              src={previewSrc}
-              walletAddress={walletAddress}
-              alt={originalName}
-            />
-            <button
-              className="absolute bottom-3 right-3 rounded-lg bg-black/50 p-2 hover:bg-black/70 transition"
-              onClick={() => setIsFullscreen(true)}
-              type="button"
-            >
-              <Maximize2 className="h-4 w-4 text-white" />
-            </button>
-          </div>
-        </>
-      );
-    }
     return (
-      <>
-        <MediaViewer
-          isOpen={isFullscreen}
-          onClose={() => setIsFullscreen(false)}
-          src={previewSrc}
-          type="image"
-          title={originalName}
-        />
-        <div style={{ position: "relative", display: "inline-block", width: "100%" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={previewSrc}
-            alt={originalName}
-            style={{
-              width: "100%",
-              height: "auto",
-              maxHeight: 288,
-              borderRadius: 12,
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
-          <button
-            className="absolute bottom-3 right-3 rounded-lg bg-black/50 p-2 hover:bg-black/70 transition"
-            onClick={() => setIsFullscreen(true)}
-            type="button"
-          >
-            <Maximize2 className="h-4 w-4 text-white" />
-          </button>
-        </div>
-      </>
+      <ImagePreview
+        src={previewSrc}
+        alt={originalName}
+        walletAddress={walletAddress}
+        isFullscreen={isFullscreen}
+        onFullscreen={() => setIsFullscreen(true)}
+        onCloseFullscreen={() => setIsFullscreen(false)}
+      />
     );
   }
 
   if (previewType === PREVIEW_TYPES.VIDEO) {
     return (
-      <>
-        <MediaViewer
-          isOpen={isFullscreen}
-          onClose={() => setIsFullscreen(false)}
-          src={previewSrc}
-          type="video"
-          title={originalName}
-        />
-        <div style={{ position: "relative", display: "inline-block", width: "100%" }}>
-          <video
-            style={{ height: 288, width: "100%", borderRadius: 12, background: "#0a0a0a", objectFit: "cover" }}
-            controls
-          >
-            <source src={previewSrc} />
-          </video>
-          <button
-            className="absolute bottom-3 right-3 rounded-lg bg-black/50 p-2 hover:bg-black/70 transition"
-            onClick={() => setIsFullscreen(true)}
-            type="button"
-          >
-            <Maximize2 className="h-4 w-4 text-white" />
-          </button>
-        </div>
-      </>
+      <VideoPreview
+        src={previewSrc}
+        title={originalName}
+        walletAddress={walletAddress}
+        isFullscreen={isFullscreen}
+        onFullscreen={() => setIsFullscreen(true)}
+        onCloseFullscreen={() => setIsFullscreen(false)}
+      />
     );
   }
 
   if (previewType === PREVIEW_TYPES.AUDIO) {
     return (
-      <div
-        style={{
-          borderRadius: 12,
-          border: "1px solid rgba(255,255,255,0.07)",
-          background: "#111",
-          padding: 24,
-        }}
-      >
-        <audio style={{ width: "100%" }} controls>
-          <source src={previewSrc} />
-        </audio>
-      </div>
+      <AudioPreview
+        src={previewSrc}
+        walletAddress={walletAddress}
+      />
     );
   }
 
@@ -290,3 +171,158 @@ export function FilePreview({
     />
   );
 }
+
+/* ── Image ── */
+function ImagePreview({
+  src,
+  alt,
+  walletAddress,
+  isFullscreen,
+  onFullscreen,
+  onCloseFullscreen,
+}: {
+  src: string;
+  alt: string;
+  walletAddress?: string;
+  isFullscreen: boolean;
+  onFullscreen: () => void;
+  onCloseFullscreen: () => void;
+}) {
+  const { objectUrl, loading, error } = useObjectUrl(src, walletAddress);
+  const displaySrc = objectUrl ?? src;
+
+  return (
+    <>
+      <MediaViewer
+        isOpen={isFullscreen}
+        onClose={onCloseFullscreen}
+        src={displaySrc}
+        type="image"
+        title={alt}
+      />
+      <div style={{ position: "relative", width: "100%" }}>
+        {loading && !objectUrl ? (
+          <div style={placeholderStyle}>Loading…</div>
+        ) : error ? (
+          <div style={placeholderStyle}>Preview unavailable</div>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={displaySrc}
+            alt={alt}
+            style={{
+              width: "100%",
+              height: "auto",
+              maxHeight: 288,
+              borderRadius: 12,
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+        )}
+        {!loading && !error && MAXIMIZE_BTN(onFullscreen)}
+      </div>
+    </>
+  );
+}
+
+/* ── Video ── */
+function VideoPreview({
+  src,
+  title,
+  walletAddress,
+  isFullscreen,
+  onFullscreen,
+  onCloseFullscreen,
+}: {
+  src: string;
+  title: string;
+  walletAddress?: string;
+  isFullscreen: boolean;
+  onFullscreen: () => void;
+  onCloseFullscreen: () => void;
+}) {
+  // For video we need an object URL because the browser can't send custom headers
+  const { objectUrl, loading, error } = useObjectUrl(src, walletAddress);
+  const videoSrc = objectUrl ?? src;
+
+  return (
+    <>
+      <MediaViewer
+        isOpen={isFullscreen}
+        onClose={onCloseFullscreen}
+        src={videoSrc}
+        type="video"
+        title={title}
+      />
+      <div style={{ position: "relative", width: "100%" }}>
+        {loading && !objectUrl ? (
+          <div style={{ ...placeholderStyle, height: 288 }}>Loading…</div>
+        ) : error ? (
+          <div style={{ ...placeholderStyle, height: 288 }}>Preview unavailable</div>
+        ) : (
+          <video
+            src={videoSrc}
+            style={{
+              height: 288,
+              width: "100%",
+              borderRadius: 12,
+              background: "#0a0a0a",
+              display: "block",
+            }}
+            controls
+            playsInline
+          />
+        )}
+        {!loading && !error && MAXIMIZE_BTN(onFullscreen)}
+      </div>
+    </>
+  );
+}
+
+/* ── Audio ── */
+function AudioPreview({
+  src,
+  walletAddress,
+}: {
+  src: string;
+  walletAddress?: string;
+}) {
+  const { objectUrl, loading, error } = useObjectUrl(src, walletAddress);
+  const audioSrc = objectUrl ?? src;
+
+  return (
+    <div
+      style={{
+        borderRadius: 12,
+        border: "1px solid rgba(255,255,255,0.07)",
+        background: "#111",
+        padding: 24,
+      }}
+    >
+      {loading && !objectUrl ? (
+        <div style={{ textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+          Loading…
+        </div>
+      ) : error ? (
+        <div style={{ textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+          Audio unavailable
+        </div>
+      ) : (
+        // eslint-disable-next-line jsx-a11y/media-has-caption
+        <audio src={audioSrc} style={{ width: "100%" }} controls />
+      )}
+    </div>
+  );
+}
+
+const placeholderStyle: React.CSSProperties = {
+  height: 180,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: 11,
+  color: "rgba(255,255,255,0.3)",
+  borderRadius: 12,
+  border: "1px solid rgba(255,255,255,0.07)",
+};

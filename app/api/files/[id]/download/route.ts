@@ -24,10 +24,13 @@ export async function GET(request: Request, context: Context) {
     const token = searchParams.get("token");
     const password = searchParams.get("password") ?? undefined;
     const inline = searchParams.get("inline") === "1";
+    // wallet query param for browser-native media players that can't send headers
+    const walletParam = searchParams.get("wallet");
 
+    const walletAddress = walletParam ?? getRequestWalletAddress(request);
     const file = token
       ? (await getFileShare(token, password))?.file
-      : await getFile(getRequestWalletAddress(request), id);
+      : await getFile(walletAddress, id);
 
     if (!file || file.id !== id) {
       return NextResponse.json(
