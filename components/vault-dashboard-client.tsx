@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { useWorkspaceWallet } from "@/components/wallet-status";
+import { WorkspaceDropdown } from "@/components/workspace-dropdown";
 import {
   useCreateVaultAsset,
   useCurrentUser,
@@ -34,23 +35,7 @@ export function VaultDashboardClient() {
     <div className="vault-page">
       {/* LEFT SIDEBAR */}
       <aside className="sidebar">
-        <div>
-          <div className="sidebar-section-label">Workspace</div>
-          <nav className="sidebar-nav">
-            <Link href="/dashboard">
-              <span className="icon">&#x1F4C1;</span> My Files
-            </Link>
-            <Link href="/share">
-              <span className="icon">&#x1F517;</span> Shared
-            </Link>
-            <a href="#" className="active">
-              <span className="icon">&#x1F512;</span> Vault
-            </a>
-            <Link href="/settings">
-              <span className="icon">&#x2699;</span> Settings
-            </Link>
-          </nav>
-        </div>
+        <WorkspaceDropdown activePage="vault" />
 
         <div>
           <div className="sidebar-section-label">How FlashVault Works</div>

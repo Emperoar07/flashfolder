@@ -8,6 +8,7 @@ import { useDropzone } from "react-dropzone";
 import { FilePreview } from "@/components/file-preview";
 import { SocialShareButtons } from "@/components/social-share-buttons";
 import { useWorkspaceWallet } from "@/components/wallet-status";
+import { WorkspaceDropdown } from "@/components/workspace-dropdown";
 import { apiFetch } from "@/lib/client/api";
 import { useAptosTransaction } from "@/lib/client/use-aptos-transaction";
 import { useCurrentUser } from "@/lib/client/hooks";
@@ -402,30 +403,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
     <div className="dashboard">
       {/* LEFT SIDEBAR */}
       <aside className="sidebar">
-        <div>
-          <div className="sidebar-section-label">Workspace</div>
-          <nav className="sidebar-nav">
-            <a
-              href="#"
-              className="active"
-              onClick={(e) => {
-                e.preventDefault();
-                startTransition(() => setActiveFolderId(null));
-              }}
-            >
-              <span className="icon">&#x1F4C1;</span> My Files
-            </a>
-            <Link href="/share">
-              <span className="icon">&#x1F517;</span> Shared
-            </Link>
-            <Link href="/vault">
-              <span className="icon">&#x1F512;</span> Vault
-            </Link>
-            <Link href="/settings">
-              <span className="icon">&#x2699;</span> Settings
-            </Link>
-          </nav>
-        </div>
+        <WorkspaceDropdown activePage="files" />
         <div>
           <div className="sidebar-section-label">Folders</div>
           <div className="folder-tree">
@@ -656,24 +634,43 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
         </div>
 
         {selectedUpload && (
-          <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-            <input
-              className="search-input"
-              style={{ flex: 1, width: "auto" }}
-              placeholder="Description (optional)"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-            <button
-              className="btn-primary"
-              style={{ padding: "10px 24px", fontSize: 10 }}
-              disabled={uploadMutation.isPending}
-              onClick={() => uploadMutation.mutate()}
-              type="button"
-            >
-              {uploadMutation.isPending ? "Uploading..." : "Upload"}
-            </button>
-          </div>
+          <>
+            <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+              <input
+                className="search-input"
+                style={{ flex: 1, width: "auto" }}
+                placeholder="Description (optional)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              <button
+                className="btn-primary"
+                style={{ padding: "10px 24px", fontSize: 10 }}
+                disabled={uploadMutation.isPending || txPending}
+                onClick={() => uploadMutation.mutate()}
+                type="button"
+              >
+                {txPending ? "Signing..." : uploadMutation.isPending ? "Uploading..." : "Upload"}
+              </button>
+            </div>
+            {uploadMutation.error && (
+              <div
+                style={{
+                  marginTop: 8,
+                  padding: "8px 12px",
+                  background: "rgba(200,57,43,0.1)",
+                  border: "1px solid rgba(200,57,43,0.25)",
+                  borderRadius: 8,
+                  fontSize: 11,
+                  color: "var(--accent-red)",
+                }}
+              >
+                {uploadMutation.error instanceof Error
+                  ? uploadMutation.error.message
+                  : "Upload failed."}
+              </div>
+            )}
+          </>
         )}
 
         <div style={{ marginTop: 32 }}>

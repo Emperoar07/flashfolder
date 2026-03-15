@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
 import { useWorkspaceWallet } from "@/components/wallet-status";
+import { WorkspaceDropdown } from "@/components/workspace-dropdown";
 import { SocialShareButtons } from "@/components/social-share-buttons";
 import { apiFetch } from "@/lib/client/api";
 import { formatBytes, formatDate, shortenWallet } from "@/lib/utils";
@@ -42,23 +43,7 @@ export function ShareHubClient() {
     <div className="dashboard">
       {/* LEFT SIDEBAR */}
       <aside className="sidebar">
-        <div>
-          <div className="sidebar-section-label">Workspace</div>
-          <nav className="sidebar-nav">
-            <Link href="/dashboard">
-              <span className="icon">&#x1F4C1;</span> My Files
-            </Link>
-            <a href="#" className="active">
-              <span className="icon">&#x1F517;</span> Shared
-            </a>
-            <Link href="/vault">
-              <span className="icon">&#x1F512;</span> Vault
-            </Link>
-            <Link href="/settings">
-              <span className="icon">&#x2699;</span> Settings
-            </Link>
-          </nav>
-        </div>
+        <WorkspaceDropdown activePage="shared" />
 
         <div>
           <div className="sidebar-section-label">Share Stats</div>

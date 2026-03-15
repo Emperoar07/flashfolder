@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useWorkspaceWallet } from "@/components/wallet-status";
+import { WorkspaceDropdown } from "@/components/workspace-dropdown";
 import { useCurrentUser } from "@/lib/client/hooks";
 import { apiFetch } from "@/lib/client/api";
 import { shortenWallet, formatDate } from "@/lib/utils";
@@ -149,23 +150,7 @@ export function SettingsClient() {
     return (
       <div className="dashboard">
         <aside className="sidebar">
-          <div>
-            <div className="sidebar-section-label">Workspace</div>
-            <nav className="sidebar-nav">
-              <Link href="/dashboard">
-                <span className="icon">&#x1F4C1;</span> My Files
-              </Link>
-              <Link href="/share">
-                <span className="icon">&#x1F517;</span> Shared
-              </Link>
-              <Link href="/vault">
-                <span className="icon">&#x1F512;</span> Vault
-              </Link>
-              <a href="#" className="active">
-                <span className="icon">&#x2699;</span> Settings
-              </a>
-            </nav>
-          </div>
+          <WorkspaceDropdown activePage="settings" />
         </aside>
         <main className="main-content">
           <div
@@ -203,23 +188,7 @@ export function SettingsClient() {
     <div className="dashboard">
       {/* LEFT SIDEBAR */}
       <aside className="sidebar">
-        <div>
-          <div className="sidebar-section-label">Workspace</div>
-          <nav className="sidebar-nav">
-            <Link href="/dashboard">
-              <span className="icon">&#x1F4C1;</span> My Files
-            </Link>
-            <Link href="/share">
-              <span className="icon">&#x1F517;</span> Shared
-            </Link>
-            <Link href="/vault">
-              <span className="icon">&#x1F512;</span> Vault
-            </Link>
-            <a href="#" className="active">
-              <span className="icon">&#x2699;</span> Settings
-            </a>
-          </nav>
-        </div>
+        <WorkspaceDropdown activePage="settings" />
 
         {/* Account summary */}
         <div>
