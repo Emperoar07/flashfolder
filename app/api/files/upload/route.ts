@@ -4,6 +4,8 @@ import { getRequestWalletAddress, uploadFile } from "@/lib/server/workspace";
 import { isStorageError, toStorageResponse } from "@/lib/storage/errors";
 
 export const runtime = "nodejs";
+export const maxDuration = 60; // 60 seconds for large file uploads
+export const bodyParser = { sizeLimit: "16mb" }; // Allow up to 16MB
 
 export async function POST(request: Request) {
   try {

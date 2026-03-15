@@ -141,33 +141,26 @@ export function FilePreview({
     );
   }
 
-  if (previewType === PREVIEW_TYPES.PDF) {
+  if (previewType === PREVIEW_TYPES.PDF || previewType === PREVIEW_TYPES.TEXT) {
     return (
-      <iframe
-        style={{
-          height: 384,
-          width: "100%",
-          borderRadius: 12,
-          border: "1px solid rgba(255,255,255,0.07)",
-          background: "#111",
-        }}
+      <DocumentPreview
         src={previewSrc}
         title={originalName}
+        isFullscreen={isFullscreen}
+        onFullscreen={() => setIsFullscreen(true)}
+        onCloseFullscreen={() => setIsFullscreen(false)}
       />
     );
   }
 
+  // Fallback for unknown types
   return (
-    <iframe
-      style={{
-        height: 384,
-        width: "100%",
-        borderRadius: 12,
-        border: "1px solid rgba(255,255,255,0.07)",
-        background: "#111",
-      }}
+    <DocumentPreview
       src={previewSrc}
       title={originalName}
+      isFullscreen={isFullscreen}
+      onFullscreen={() => setIsFullscreen(true)}
+      onCloseFullscreen={() => setIsFullscreen(false)}
     />
   );
 }
@@ -312,6 +305,117 @@ function AudioPreview({
         // eslint-disable-next-line jsx-a11y/media-has-caption
         <audio src={audioSrc} style={{ width: "100%" }} controls />
       )}
+    </div>
+  );
+}
+
+/* ── Document / PDF ── */
+function DocumentPreview({
+  src,
+  title,
+  isFullscreen,
+  onFullscreen,
+  onCloseFullscreen,
+}: {
+  src: string;
+  title: string;
+  isFullscreen: boolean;
+  onFullscreen: () => void;
+  onCloseFullscreen: () => void;
+}) {
+  return (
+    <>
+      <DocumentViewer
+        isOpen={isFullscreen}
+        onClose={onCloseFullscreen}
+        src={src}
+        title={title}
+      />
+      <div style={{ position: "relative" }}>
+        <iframe
+          style={{
+            height: 384,
+            width: "100%",
+            borderRadius: 12,
+            border: "1px solid rgba(255,255,255,0.07)",
+            background: "#111",
+          }}
+          src={src}
+          title={title}
+        />
+        {MAXIMIZE_BTN(onFullscreen)}
+      </div>
+    </>
+  );
+}
+
+/* ── Document Viewer Modal ── */
+function DocumentViewer({
+  isOpen,
+  onClose,
+  src,
+  title,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  src: string;
+  title: string;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        background: "rgba(0,0,0,0.95)",
+        backdropFilter: "blur(4px)",
+        display: "flex",
+        flexDirection: "column",
+      }}
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onClose();
+      }}
+    >
+      <button
+        style={{
+          position: "absolute",
+          top: 16,
+          right: 16,
+          zIndex: 10,
+          background: "rgba(255,255,255,0.1)",
+          border: "none",
+          borderRadius: 8,
+          padding: 8,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        onClick={onClose}
+        type="button"
+      >
+        <span style={{ color: "#fff", fontSize: 24 }}>×</span>
+      </button>
+
+      <iframe
+        style={{
+          flex: 1,
+          width: "100%",
+          height: "100%",
+          border: "none",
+          borderRadius: 0,
+        }}
+        src={src}
+        title={title}
+        onClick={(e) => e.stopPropagation()}
+      />
+
+      <div style={{ padding: 16, textAlign: "center", color: "#fff", fontSize: 12 }}>
+        {title}
+      </div>
     </div>
   );
 }
