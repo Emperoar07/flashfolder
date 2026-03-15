@@ -38,14 +38,12 @@ export const appConfig = {
     indexerUrl: process.env.APTOS_INDEXER_URL ?? "",
     authMode: (rawAptosAuthMode === "challenge" ? "challenge" : "mock") as WalletAuthMode,
     mockEnabled:
-      process.env.APTOS_MOCK_ENABLED === "false"
-        ? false
-        : process.env.FLASHVAULT_USE_MOCK_NFTS !== "false",
+      process.env.APTOS_MOCK_ENABLED === "true" ||
+      process.env.FLASHVAULT_USE_MOCK_NFTS === "true",
   },
   useMockNfts:
-    process.env.APTOS_MOCK_ENABLED === "false"
-      ? false
-      : process.env.FLASHVAULT_USE_MOCK_NFTS !== "false",
+    process.env.APTOS_MOCK_ENABLED === "true" ||
+    process.env.FLASHVAULT_USE_MOCK_NFTS === "true",
   vaultEncryptionSecret:
     process.env.FLASHVAULT_ENCRYPTION_SECRET ?? "flashvault-demo-secret",
   shelby: {

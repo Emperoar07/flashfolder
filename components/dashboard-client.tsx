@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDropzone } from "react-dropzone";
 
 import { FilePreview } from "@/components/file-preview";
+import { SocialShareButtons } from "@/components/social-share-buttons";
 import { useWorkspaceWallet } from "@/components/wallet-status";
 import { apiFetch } from "@/lib/client/api";
 import { useAptosTransaction } from "@/lib/client/use-aptos-transaction";
@@ -843,27 +844,35 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                 <div className="sidebar-section-label">Share Links</div>
                 <div className="activity-list">
                   {selectedFile.shares.map((share) => (
-                    <div key={share.id} className="activity-item">
-                      <div className={`activity-dot${share.shareType === SHARE_TYPES.PASSWORD ? " gold" : ""}`} />
-                      <div>
-                        <Link
-                          href={`/share/${share.token}`}
-                          className="activity-text"
-                          style={{ textDecoration: "none" }}
-                        >
-                          {share.shareType.toLowerCase()} link
-                        </Link>
-                        <div
-                          className="activity-time"
-                          style={{ cursor: "pointer" }}
-                          onClick={() =>
-                            void navigator.clipboard.writeText(
-                              `${window.location.origin}/share/${share.token}`,
-                            )
-                          }
-                        >
-                          Click to copy
+                    <div key={share.id} style={{ marginBottom: 8 }}>
+                      <div className="activity-item">
+                        <div className={`activity-dot${share.shareType === SHARE_TYPES.PASSWORD ? " gold" : ""}`} />
+                        <div>
+                          <Link
+                            href={`/share/${share.token}`}
+                            className="activity-text"
+                            style={{ textDecoration: "none" }}
+                          >
+                            {share.shareType.toLowerCase()} link
+                          </Link>
+                          <div
+                            className="activity-time"
+                            style={{ cursor: "pointer" }}
+                            onClick={() =>
+                              void navigator.clipboard.writeText(
+                                `${window.location.origin}/share/${share.token}`,
+                              )
+                            }
+                          >
+                            Click to copy
+                          </div>
                         </div>
+                      </div>
+                      <div style={{ marginLeft: 20, marginTop: 4 }}>
+                        <SocialShareButtons
+                          url={`${window.location.origin}/share/${share.token}`}
+                          title={`Check out "${selectedFile.filename}" on FlashFolder`}
+                        />
                       </div>
                     </div>
                   ))}

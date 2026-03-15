@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { FilePreview } from "@/components/file-preview";
+import { SocialShareButtons } from "@/components/social-share-buttons";
 import { apiFetch } from "@/lib/client/api";
 import { VAULT_FILE_ROLES } from "@/lib/file-kinds";
 import type { SharedResourcePayload } from "@/lib/types";
@@ -203,6 +204,12 @@ export function ShareClient({ token }: ShareClientProps) {
             >
               FlashFolder
             </Link>
+          </div>
+          <div style={{ marginTop: 16 }}>
+            <SocialShareButtons
+              url={typeof window !== "undefined" ? window.location.href : `/share/${token}`}
+              title={`Check out "${fileName}" on FlashFolder`}
+            />
           </div>
         </div>
       </div>

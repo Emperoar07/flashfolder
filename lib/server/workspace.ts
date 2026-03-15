@@ -391,6 +391,24 @@ export async function verifySharePassword(token: string, password: string) {
   return Boolean(result && !result.locked && !result.expired);
 }
 
+export async function getUserShares(walletAddress?: string | null) {
+  const user = await ensureUser(walletAddress);
+
+  return prisma.share.findMany({
+    where: {
+      file: { userId: user.id },
+    },
+    include: {
+      file: {
+        include: {
+          folder: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function recordFileEvent(
   fileId: string,
   request: Request,
