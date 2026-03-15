@@ -116,8 +116,14 @@ export function Navbar() {
         <div className="flex items-center gap-4 sm:gap-5">
           <Link
             href="/"
-            className="font-[family-name:var(--font-bebas-neue)] text-[22px] tracking-[0.15em] text-[var(--foreground)]"
+            className="flex items-center gap-1 font-[family-name:var(--font-bebas-neue)] text-[22px] tracking-[0.15em] text-[var(--foreground)]"
           >
+            <svg width="28" height="28" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+              <rect x="2" y="14" width="44" height="30" rx="6" fill="var(--accent-red)" opacity="0.15"/>
+              <rect x="2" y="14" width="44" height="30" rx="6" stroke="var(--accent-red)" strokeWidth="2" fill="none"/>
+              <path d="M2 20V12a6 6 0 016-6h10l4 4h18a6 6 0 016 6v4" stroke="var(--accent-red)" strokeWidth="2" fill="none" strokeLinecap="round"/>
+              <path d="M28.5 16 L22 26 L26.5 26 L24 29 L27 29 L21 38 L23 31 L19.5 31 L22 26 L18.5 26 L25 16 Z" fill="var(--foreground)" stroke="var(--foreground)" strokeWidth="0.5" strokeLinejoin="round"/>
+            </svg>
             <span className="text-[var(--accent-red)]">FLASH</span>FOLDER
           </Link>
           <span className="hidden items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)] sm:inline-flex">
