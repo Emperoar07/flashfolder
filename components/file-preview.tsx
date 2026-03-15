@@ -291,10 +291,6 @@ function AudioPreview({
   src: string;
   walletAddress?: string;
 }) {
-  // src already has wallet in query param (from buildSrc), don't pass walletAddress again
-  const { objectUrl, loading, error } = useObjectUrl(src);
-  const audioSrc = objectUrl ?? src;
-
   return (
     <div
       style={{
@@ -304,18 +300,29 @@ function AudioPreview({
         padding: 24,
       }}
     >
-      {loading && !objectUrl ? (
-        <div style={{ textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
-          Loading…
-        </div>
-      ) : error ? (
-        <div style={{ textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
-          Audio unavailable
-        </div>
-      ) : (
-        // eslint-disable-next-line jsx-a11y/media-has-caption
-        <audio src={audioSrc} style={{ width: "100%" }} controls />
-      )}
+      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+      <audio
+        src={src}
+        style={{ width: "100%" }}
+        controls
+        controlsList="nodownload"
+        onError={(e) => {
+          const audio = e.currentTarget;
+          console.error(
+            "[AudioPreview] Error loading audio:",
+            audio.error?.code,
+            audio.error?.message,
+            "URL:",
+            src,
+          );
+        }}
+        onCanPlay={() => {
+          console.log("[AudioPreview] Audio can play from:", src);
+        }}
+      />
+      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 8, textAlign: "center" }}>
+        Playing from: {src.split("?")[0].split("/").pop()}
+      </div>
     </div>
   );
 }
