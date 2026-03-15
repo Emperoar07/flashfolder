@@ -66,20 +66,18 @@ export function Navbar() {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
       
-      // Check desktop dropdown
-      if (desktopDropdownRef.current && !desktopDropdownRef.current.contains(target)) {
-        // Also check if click is on the desktop button area
-        const isDesktopButton = event.target instanceof Element && 
-          event.target.closest('[class*="sm:flex"]')?.contains(event.target as Element);
-        if (!isDesktopButton) {
-          setConnectDropdownOpen(false);
-        }
+      // Don't close if clicking inside desktop dropdown container (includes button)
+      if (desktopDropdownRef.current?.contains(target)) {
+        return;
       }
       
-      // Check mobile dropdown
-      if (mobileDropdownRef.current && !mobileDropdownRef.current.contains(target)) {
-        setConnectDropdownOpen(false);
+      // Don't close if clicking inside mobile dropdown container
+      if (mobileDropdownRef.current?.contains(target)) {
+        return;
       }
+      
+      // Otherwise, close the dropdown
+      setConnectDropdownOpen(false);
     }
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -147,7 +145,10 @@ export function Navbar() {
 
           <div className="relative" ref={desktopDropdownRef}>
             <button
-              onClick={() => setConnectDropdownOpen((open) => !open)}
+              onClick={() => {
+                console.log("[Navbar] Connect button clicked");
+                setConnectDropdownOpen((open) => !open);
+              }}
               className={`inline-flex items-center gap-2 ${btnClass}`}
               type="button"
             >
@@ -156,7 +157,7 @@ export function Navbar() {
             </button>
 
             {connectDropdownOpen ? (
-              <div className="absolute right-0 top-full z-[60] mt-2 min-w-[260px] rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#111] p-2 shadow-2xl backdrop-blur-xl">
+              <div className="absolute right-0 top-full z-[9999] mt-2 min-w-[260px] rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#111] p-2 shadow-2xl backdrop-blur-xl overflow-y-auto max-h-[50vh]">
                 {connected ? (
                   <>
                     <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[rgba(240,237,230,0.35)]">
@@ -178,14 +179,17 @@ export function Navbar() {
                 ) : (
                   <>
                     <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[rgba(240,237,230,0.35)]">
-                      Connect an Aptos wallet
+                      Connect an Aptos wallet ({wallets.length} found)
                     </div>
                     <div className="my-1 h-px bg-[rgba(255,255,255,0.07)]" />
                     {wallets.length > 0 ? (
                       wallets.slice(0, 5).map((wallet) => (
                         <button
                           key={wallet.name}
-                          onClick={() => void handleWalletConnect(wallet.name)}
+                          onClick={() => {
+                            console.log("[Navbar] Wallet button clicked:", wallet.name);
+                            void handleWalletConnect(wallet.name);
+                          }}
                           disabled={isAuthenticating}
                           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[11px] text-[#f0ede6] transition hover:bg-[rgba(255,255,255,0.05)] disabled:opacity-60"
                           type="button"

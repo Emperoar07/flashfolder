@@ -33,7 +33,7 @@ export function Providers({ children }: ProvidersProps) {
       disableTelemetry
       dappConfig={{ network: resolveNetwork() }}
       onError={(error) => {
-        console.error("FlashFolder wallet provider error", error);
+        console.debug("FlashFolder wallet provider error", error);
         reportWalletError(error);
       }}
     >
