@@ -74,18 +74,17 @@ export async function uploadFileChunked({
 
   // For multi-chunk files, upload sequentially
   let totalLoaded = 0;
+  let finalResponse: any = null;
 
   for (let i = 0; i < chunkCount; i++) {
     const start = i * CHUNK_SIZE;
     const end = Math.min(start + CHUNK_SIZE, fileSize);
     const chunk = file.slice(start, end);
+    const isLastChunk = i === chunkCount - 1;
 
     await new Promise<void>((resolve, reject) => {
       const formData = new FormData();
       formData.set("file", chunk);
-      formData.set("uploadId", uploadId);
-      formData.set("chunkIndex", i.toString());
-      formData.set("chunkCount", chunkCount.toString());
       if (description && i === 0) formData.set("description", description);
       if (folderId && i === 0) formData.set("folderId", folderId);
 
@@ -109,6 +108,13 @@ export async function uploadFileChunked({
       xhr.addEventListener("load", () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           totalLoaded = end;
+          if (isLastChunk) {
+            try {
+              finalResponse = JSON.parse(xhr.responseText);
+            } catch {
+              // Ignore parse errors, we'll use the response status
+            }
+          }
           onProgress({
             phase: "uploading",
             loaded: totalLoaded,
@@ -135,32 +141,5 @@ export async function uploadFileChunked({
     });
   }
 
-  // All chunks uploaded, finalize
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          resolve(JSON.parse(xhr.responseText));
-        } catch {
-          reject(new Error("Invalid server response"));
-        }
-      } else {
-        try {
-          const body = JSON.parse(xhr.responseText);
-          reject(new Error(body.error ?? "Finalization failed"));
-        } catch {
-          reject(new Error("Finalization failed"));
-        }
-      }
-    });
-
-    xhr.addEventListener("error", () => reject(new Error("Network error during finalization")));
-    xhr.addEventListener("abort", () => reject(new Error("Finalization cancelled")));
-
-    xhr.open("POST", "/api/files/upload/finalize");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("x-wallet-address", walletAddress);
-    xhr.send(JSON.stringify({ uploadId, fileSize }));
-  });
+  return finalResponse || { file: {} };
 }
