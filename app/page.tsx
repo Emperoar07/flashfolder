@@ -25,8 +25,8 @@ export default function Home() {
             <Link href="/dashboard" className="btn-primary">
               Launch App
             </Link>
-            <Link href="/settings" className="btn-secondary">
-              View Docs
+            <Link href="https://github.com/Emperoar07/flashfolder" target="_blank" rel="noopener noreferrer" className="btn-secondary">
+              View on GitHub
             </Link>
           </div>
         </div>
@@ -121,6 +121,15 @@ export default function Home() {
               Fully open-source and auditable. No black boxes, no vendor
               lock-in. Fork it, extend it, own it.
             </p>
+            <a
+              href="https://github.com/Emperoar07/flashfolder"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary"
+              style={{ display: "inline-block", marginTop: 12, fontSize: 11, padding: "6px 14px" }}
+            >
+              View on GitHub →
+            </a>
           </div>
         </div>
       </section>
