@@ -14,11 +14,11 @@ import type {
   VaultAssetRecord,
 } from "@/lib/types";
 
-export function useCurrentUser(walletAddress: string) {
+export function useCurrentUser(walletAddress: string, opts?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["me", walletAddress],
     queryFn: () => apiFetch<CurrentUserProfile>("/api/me", {}, walletAddress),
-    enabled: Boolean(walletAddress),
+    enabled: (opts?.enabled ?? true) && Boolean(walletAddress),
   });
 }
 

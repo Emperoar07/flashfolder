@@ -99,9 +99,9 @@ type DashboardClientProps = {
 };
 
 export function DashboardClient({ initialFolderId }: DashboardClientProps) {
-  const { walletAddress, connected } = useWorkspaceWallet();
+  const { walletAddress, connected, isAuthenticated, isAuthenticating, authError } = useWorkspaceWallet();
   const { submitTransaction } = useWorkspaceTransaction();
-  const profileQuery = useCurrentUser(walletAddress);
+  const profileQuery = useCurrentUser(walletAddress, { enabled: isAuthenticated });
   const queryClient = useQueryClient();
   const [, startTransition] = useTransition();
   const [folderName, setFolderName] = useState("");
@@ -152,7 +152,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
     queryKey: ["folders", walletAddress],
     queryFn: () =>
       apiFetch<{ folders: FolderRecord[] }>("/api/folders", {}, walletAddress),
-    enabled: connected && Boolean(walletAddress),
+    enabled: isAuthenticated && Boolean(walletAddress),
   });
 
   const filesQuery = useQuery({
@@ -185,7 +185,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
         const query = params.toString();
         return `/api/files${query ? `?${query}` : ""}`;
       })(), {}, walletAddress),
-    enabled: connected && Boolean(walletAddress),
+    enabled: isAuthenticated && Boolean(walletAddress),
   });
 
   const settingsQuery = useQuery({
@@ -735,6 +735,52 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           </div>
         </div>
 
+        {/* Authentication / query errors */}
+        {isAuthenticating && connected && (
+          <div
+            style={{
+              padding: "10px 16px",
+              marginBottom: 16,
+              background: "var(--accent-gold-subtle)",
+              border: "1px solid var(--border-gold)",
+              borderRadius: "var(--radius-sm)",
+              color: "var(--accent-gold)",
+              fontSize: 12,
+            }}
+          >
+            Authenticating wallet…
+          </div>
+        )}
+        {authError && (
+          <div
+            style={{
+              padding: "10px 16px",
+              marginBottom: 16,
+              background: "var(--accent-red-subtle)",
+              border: "1px solid var(--accent-red)",
+              borderRadius: "var(--radius-sm)",
+              color: "var(--accent-red)",
+              fontSize: 12,
+            }}
+          >
+            Auth error: {authError}
+          </div>
+        )}
+        {(foldersQuery.error || filesQuery.error) && (
+          <div
+            style={{
+              padding: "10px 16px",
+              marginBottom: 16,
+              background: "var(--accent-red-subtle)",
+              border: "1px solid var(--accent-red)",
+              borderRadius: "var(--radius-sm)",
+              color: "var(--accent-red)",
+              fontSize: 12,
+            }}
+          >
+            {(foldersQuery.error ?? filesQuery.error)?.message}
+          </div>
+        )}
         {(createFolderMutation.error || renameFolderMutation.error || deleteFolderMutation.error) && (
           <div
             style={{

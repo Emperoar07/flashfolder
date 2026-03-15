@@ -18,8 +18,8 @@ const GRAD_EMOJIS = ["\u{1F3A8}", "\u{1F30A}", "\u{1F331}"];
 
 export function VaultDashboardClient() {
   const router = useRouter();
-  const { walletAddress } = useWorkspaceWallet();
-  const profileQuery = useCurrentUser(walletAddress);
+  const { walletAddress, isAuthenticated } = useWorkspaceWallet();
+  const profileQuery = useCurrentUser(walletAddress, { enabled: isAuthenticated });
   const vaultAssetsQuery = useVaultAssets(walletAddress);
   const walletNftsQuery = useWalletNfts(walletAddress);
   const createVaultAsset = useCreateVaultAsset(walletAddress);

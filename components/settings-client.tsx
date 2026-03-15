@@ -114,9 +114,9 @@ function ReadOnlyValue({ value }: { value: string }) {
 }
 
 export function SettingsClient() {
-  const { walletAddress, connected } = useWorkspaceWallet();
+  const { walletAddress, connected, isAuthenticated } = useWorkspaceWallet();
   const queryClient = useQueryClient();
-  const profileQuery = useCurrentUser(walletAddress);
+  const profileQuery = useCurrentUser(walletAddress, { enabled: isAuthenticated });
   const [displayName, setDisplayName] = useState("");
   const [nameEditing, setNameEditing] = useState(false);
   const [nameSaved, setNameSaved] = useState(false);
