@@ -114,14 +114,21 @@ export function Navbar() {
   return (
     <>
       <nav className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-[var(--border)] bg-[var(--navbar-bg)] px-6 py-4 backdrop-blur-xl sm:px-10">
-        <Link
-          href="/"
-          className="font-[family-name:var(--font-bebas-neue)] text-[22px] tracking-[0.15em] text-[var(--foreground)]"
-        >
-          <span className="text-[var(--accent-red)]">FLASH</span>FOLDER
-        </Link>
+        <div className="flex items-center gap-4 sm:gap-5">
+          <Link
+            href="/"
+            className="font-[family-name:var(--font-bebas-neue)] text-[22px] tracking-[0.15em] text-[var(--foreground)]"
+          >
+            <span className="text-[var(--accent-red)]">FLASH</span>FOLDER
+          </Link>
+          <span className="hidden items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)] sm:inline-flex">
+            <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-red)]" />
+            Testnet
+          </span>
+        </div>
 
         <div className="hidden items-center gap-6 sm:flex">
+          <ThemeToggle />
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -138,11 +145,6 @@ export function Navbar() {
               ) : null}
             </Link>
           ))}
-
-            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)]">
-              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-red)]" />
-            Testnet
-          </span>
 
           <div className="relative" ref={desktopDropdownRef}>
             <button
@@ -214,7 +216,6 @@ export function Navbar() {
               </div>
             ) : null}
           </div>
-          <ThemeToggle />
         </div>
 
         <div className="flex items-center gap-3 sm:hidden">
