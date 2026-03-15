@@ -1501,3 +1501,9 @@ select {
     display: none; /* hide hero preview on very small screens */
   }
 }
+
+/* ── Upload progress animation ── */
+@keyframes pulse-bar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

@@ -114,6 +114,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const [selectedUpload, setSelectedUpload] = useState<File | null>(null);
   const [movingFileId, setMovingFileId] = useState<string | null>(null);
   const [moveTargetFolderId, setMoveTargetFolderId] = useState<string>("");
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadPhase, setUploadPhase] = useState<"idle" | "signing" | "uploading" | "done">("idle");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const deferredSearch = useDeferredValue(search);
   const trimmedSearch = deferredSearch.trim();
@@ -256,33 +258,69 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
 
   const uploadMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedUpload) {
-        throw new Error("Pick a file first.");
-      }
+      if (!selectedUpload) throw new Error("Pick a file first.");
 
-      // Submit Aptos transaction first
+      // Phase 1: Aptos transaction signing
+      setUploadPhase("signing");
+      setUploadProgress(0);
       await submitTransaction("file_upload");
+
+      // Phase 2: Upload with XHR for real progress
+      setUploadPhase("uploading");
+      setUploadProgress(0);
 
       const formData = new FormData();
       formData.set("file", selectedUpload);
       formData.set("description", description);
-      if (activeFolderId) {
-        formData.set("folderId", activeFolderId);
-      }
+      if (activeFolderId) formData.set("folderId", activeFolderId);
 
-      return apiFetch<{ file: FileRecord }>(
-        "/api/files/upload",
-        {
-          method: "POST",
-          body: formData,
-        },
-        walletAddress,
-      );
+      return new Promise<{ file: FileRecord }>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/files/upload");
+        xhr.setRequestHeader("x-wallet-address", walletAddress);
+
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        });
+
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              resolve(JSON.parse(xhr.responseText) as { file: FileRecord });
+            } catch {
+              reject(new Error("Invalid server response"));
+            }
+          } else {
+            try {
+              const body = JSON.parse(xhr.responseText) as { error?: string };
+              reject(new Error(body.error ?? "Upload failed"));
+            } catch {
+              reject(new Error("Upload failed"));
+            }
+          }
+        });
+
+        xhr.addEventListener("error", () => reject(new Error("Network error during upload")));
+        xhr.addEventListener("abort", () => reject(new Error("Upload cancelled")));
+        xhr.send(formData);
+      });
     },
     onSuccess: () => {
-      setSelectedUpload(null);
-      setDescription("");
+      setUploadPhase("done");
+      setUploadProgress(100);
+      setTimeout(() => {
+        setUploadPhase("idle");
+        setUploadProgress(0);
+        setSelectedUpload(null);
+        setDescription("");
+      }, 1200);
       void queryClient.invalidateQueries({ queryKey: ["files", walletAddress] });
+    },
+    onError: () => {
+      setUploadPhase("idle");
+      setUploadProgress(0);
     },
   });
 
@@ -763,6 +801,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                     placeholder="Description (optional)"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    disabled={uploadMutation.isPending}
                   />
                   <button
                     className="btn-primary"
@@ -771,9 +810,77 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                     onClick={() => uploadMutation.mutate()}
                     type="button"
                   >
-                    {uploadMutation.isPending ? "Uploading..." : "Upload"}
+                    {uploadPhase === "signing"
+                      ? "Signing…"
+                      : uploadPhase === "uploading"
+                        ? `${uploadProgress}%`
+                        : uploadPhase === "done"
+                          ? "Done ✓"
+                          : "Upload"}
                   </button>
                 </div>
+
+                {/* Progress bar */}
+                {uploadMutation.isPending && (
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: 10,
+                      color: "rgba(240,237,230,0.5)",
+                      marginBottom: 5,
+                    }}>
+                      <span>
+                        {uploadPhase === "signing"
+                          ? "Waiting for wallet signature…"
+                          : `Uploading ${selectedUpload.name}`}
+                      </span>
+                      <span>{uploadPhase === "uploading" ? `${uploadProgress}%` : ""}</span>
+                    </div>
+                    <div style={{
+                      height: 4,
+                      borderRadius: 999,
+                      background: "rgba(255,255,255,0.07)",
+                      overflow: "hidden",
+                    }}>
+                      <div style={{
+                        height: "100%",
+                        borderRadius: 999,
+                        background: uploadPhase === "signing"
+                          ? "linear-gradient(90deg, #b8a06a, #e8aa30)"
+                          : "linear-gradient(90deg, #c8392b, #e8aa30)",
+                        width: uploadPhase === "signing" ? "30%" : `${uploadProgress}%`,
+                        transition: uploadPhase === "signing"
+                          ? "none"
+                          : "width 0.2s ease",
+                        animation: uploadPhase === "signing" ? "pulse-bar 1.2s ease-in-out infinite" : "none",
+                      }} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Done state */}
+                {uploadPhase === "done" && !uploadMutation.isPending && (
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{
+                      height: 4,
+                      borderRadius: 999,
+                      background: "rgba(255,255,255,0.07)",
+                      overflow: "hidden",
+                    }}>
+                      <div style={{
+                        height: "100%",
+                        width: "100%",
+                        borderRadius: 999,
+                        background: "linear-gradient(90deg, #22c55e, #16a34a)",
+                      }} />
+                    </div>
+                    <div style={{ fontSize: 10, color: "#22c55e", marginTop: 4 }}>
+                      File uploaded successfully
+                    </div>
+                  </div>
+                )}
+
                 {uploadMutation.error && (
                   <div
                     style={{
