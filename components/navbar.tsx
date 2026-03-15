@@ -116,7 +116,7 @@ export function Navbar() {
         <div className="flex items-center gap-4 sm:gap-5">
           <Link
             href="/"
-            className="flex items-center gap-1 font-[family-name:var(--font-bebas-neue)] text-[22px] tracking-[0.15em] text-[var(--foreground)]"
+            className="flex items-end gap-1 font-[family-name:var(--font-bebas-neue)] text-[22px] leading-none tracking-[0.15em] text-[var(--foreground)]"
           >
             <svg width="28" height="28" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
               <rect x="2" y="14" width="44" height="30" rx="6" fill="var(--accent-red)" opacity="0.15"/>
