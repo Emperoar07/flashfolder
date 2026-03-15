@@ -82,7 +82,6 @@ async function fetchBlob(args: {
   const blob = await head(args.blobKey, { token });
   const response = await fetch(blob.url, {
     headers: {
-      Authorization: `Bearer ${token}`,
       ...(args.rangeHeader ? { Range: args.rangeHeader } : {}),
     },
     cache: "no-store",
@@ -160,7 +159,7 @@ export const blobStorageAdapter: StorageAdapter = {
     try {
       const token = ensureBlobConfigured();
       const uploaded = await put(blobKey, buffer, {
-        access: "private",
+        access: "public",
         addRandomSuffix: false,
         contentType: mimeType,
         allowOverwrite: true,
