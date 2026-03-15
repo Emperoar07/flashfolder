@@ -170,9 +170,9 @@ export const blobStorageAdapter: StorageAdapter = {
 
       return {
         provider: "blob",
-        blobKey: uploaded.pathname,
+        blobKey: uploaded.url,
         metadata: {
-          blobKey: uploaded.pathname,
+          blobKey: uploaded.url,
           provider: "blob",
           url: uploaded.url,
           downloadUrl: uploaded.downloadUrl,
