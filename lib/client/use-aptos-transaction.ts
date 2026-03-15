@@ -9,7 +9,8 @@ export type WorkspaceOperation =
   | "folder_delete"
   | "file_upload"
   | "file_delete"
-  | "file_share";
+  | "file_share"
+  | "file_move";
 
 export function useAptosTransaction() {
   const { account, signAndSubmitTransaction, connected } = useWallet();

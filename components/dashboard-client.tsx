@@ -129,6 +129,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   >("PUBLIC");
   const [sharePassword, setSharePassword] = useState("");
   const [selectedUpload, setSelectedUpload] = useState<File | null>(null);
+  const [movingFileId, setMovingFileId] = useState<string | null>(null);
+  const [moveTargetFolderId, setMoveTargetFolderId] = useState<string>("");
   const deferredSearch = useDeferredValue(search);
 
   // File category & sorting state
@@ -337,6 +339,30 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
     },
     onSuccess: () => {
       setSharePassword("");
+      void queryClient.invalidateQueries({ queryKey: ["files", walletAddress] });
+    },
+  });
+
+  const moveFileMutation = useMutation({
+    mutationFn: async ({ fileId, folderId }: { fileId: string; folderId: string | null }) => {
+      if (connected) {
+        const hash = await submitFolderTransaction("file_move", "move file");
+        if (!hash) throw new Error("Transaction was rejected. File not moved.");
+      }
+
+      return apiFetch<{ file: FileRecord }>(
+        `/api/files/${fileId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ folderId }),
+        },
+        walletAddress,
+      );
+    },
+    onSuccess: () => {
+      setMovingFileId(null);
+      setMoveTargetFolderId("");
       void queryClient.invalidateQueries({ queryKey: ["files", walletAddress] });
     },
   });
@@ -616,59 +642,120 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           </div>
         )}
 
-        <div
-          {...getRootProps()}
-          className={`upload-zone${isDragActive ? " active" : ""}`}
-        >
-          <input {...getInputProps()} />
-          <div className="upload-icon">&#x2191;</div>
-          <p>
-            {selectedUpload ? (
-              <>Selected: {selectedUpload.name}</>
-            ) : (
-              <>
-                Drag files here or <span className="highlight">browse</span>
-              </>
-            )}
-          </p>
-        </div>
-
-        {selectedUpload && (
-          <>
-            <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-              <input
-                className="search-input"
-                style={{ flex: 1, width: "auto" }}
-                placeholder="Description (optional)"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-              <button
-                className="btn-primary"
-                style={{ padding: "10px 24px", fontSize: 10 }}
-                disabled={uploadMutation.isPending || txPending}
-                onClick={() => uploadMutation.mutate()}
-                type="button"
-              >
-                {txPending ? "Signing..." : uploadMutation.isPending ? "Uploading..." : "Upload"}
-              </button>
+        {/* Folder-required gate */}
+        {!activeFolderId ? (
+          <div
+            style={{
+              padding: "20px 16px",
+              borderRadius: 10,
+              border: "1px dashed var(--border-hover)",
+              background: "rgba(232,170,48,0.04)",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: 22, marginBottom: 8, opacity: 0.5 }}>&#x1F4C2;</div>
+            <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 4 }}>
+              Select or create a folder first
             </div>
-            {uploadMutation.error && (
-              <div
-                style={{
-                  marginTop: 8,
-                  padding: "8px 12px",
-                  background: "rgba(200,57,43,0.1)",
-                  border: "1px solid rgba(200,57,43,0.25)",
-                  borderRadius: 8,
-                  fontSize: 11,
-                  color: "var(--accent-red)",
-                }}
+            <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+              Files must be organised into a folder before uploading.
+            </div>
+            {folders.length === 0 && (
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ marginTop: 12, padding: "8px 20px", fontSize: 10 }}
+                onClick={() => setShowFolderInput(true)}
               >
-                {uploadMutation.error instanceof Error
-                  ? uploadMutation.error.message
-                  : "Upload failed."}
-              </div>
+                + Create Folder
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <div
+              style={{
+                marginBottom: 10,
+                padding: "6px 10px",
+                background: "rgba(232,170,48,0.08)",
+                border: "1px solid rgba(232,170,48,0.2)",
+                borderRadius: 8,
+                fontSize: 11,
+                color: "var(--accent-gold)",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span>&#x1F4C2;</span>
+              <span>
+                Uploading to:{" "}
+                <strong>{folders.find((f) => f.id === activeFolderId)?.name ?? "folder"}</strong>
+              </span>
+              <span
+                style={{ marginLeft: "auto", cursor: "pointer", opacity: 0.6 }}
+                title="Change folder"
+                onClick={() => setActiveFolderId(null)}
+              >
+                &#x2715;
+              </span>
+            </div>
+
+            <div
+              {...getRootProps()}
+              className={`upload-zone${isDragActive ? " active" : ""}`}
+            >
+              <input {...getInputProps()} />
+              <div className="upload-icon">&#x2191;</div>
+              <p>
+                {selectedUpload ? (
+                  <>Selected: {selectedUpload.name}</>
+                ) : (
+                  <>
+                    Drag files here or <span className="highlight">browse</span>
+                  </>
+                )}
+              </p>
+            </div>
+
+            {selectedUpload && (
+              <>
+                <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+                  <input
+                    className="search-input"
+                    style={{ flex: 1, width: "auto" }}
+                    placeholder="Description (optional)"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                  <button
+                    className="btn-primary"
+                    style={{ padding: "10px 24px", fontSize: 10 }}
+                    disabled={uploadMutation.isPending || txPending}
+                    onClick={() => uploadMutation.mutate()}
+                    type="button"
+                  >
+                    {txPending ? "Signing..." : uploadMutation.isPending ? "Uploading..." : "Upload"}
+                  </button>
+                </div>
+                {uploadMutation.error && (
+                  <div
+                    style={{
+                      marginTop: 8,
+                      padding: "8px 12px",
+                      background: "rgba(200,57,43,0.1)",
+                      border: "1px solid rgba(200,57,43,0.25)",
+                      borderRadius: 8,
+                      fontSize: 11,
+                      color: "var(--accent-red)",
+                    }}
+                  >
+                    {uploadMutation.error instanceof Error
+                      ? uploadMutation.error.message
+                      : "Upload failed."}
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
@@ -898,7 +985,105 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               </div>
             )}
 
-            <div style={{ marginTop: 24 }}>
+            {/* Move to folder */}
+            <div style={{ marginTop: 16 }}>
+              {movingFileId === selectedFile.id ? (
+                <div
+                  style={{
+                    padding: "12px",
+                    borderRadius: 10,
+                    border: "1px solid var(--border-hover)",
+                    background: "rgba(232,170,48,0.04)",
+                  }}
+                >
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 8 }}>
+                    Move to folder
+                  </div>
+                  <select
+                    value={moveTargetFolderId}
+                    onChange={(e) => setMoveTargetFolderId(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "7px 10px",
+                      borderRadius: 6,
+                      border: "1px solid var(--border-hover)",
+                      background: "#111",
+                      color: "var(--text-primary)",
+                      fontSize: 12,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <option value="">— select destination —</option>
+                    {folders
+                      .filter((f) => f.id !== activeFolderId)
+                      .map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.name}
+                        </option>
+                      ))}
+                  </select>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      style={{ flex: 1, padding: "8px", fontSize: 10 }}
+                      disabled={!moveTargetFolderId || moveFileMutation.isPending || txPending}
+                      onClick={() =>
+                        moveFileMutation.mutate({
+                          fileId: selectedFile.id,
+                          folderId: moveTargetFolderId || null,
+                        })
+                      }
+                    >
+                      {txPending ? "Signing…" : moveFileMutation.isPending ? "Moving…" : "Confirm Move"}
+                    </button>
+                    <button
+                      type="button"
+                      style={{
+                        padding: "8px 12px",
+                        fontSize: 10,
+                        background: "transparent",
+                        color: "var(--text-secondary)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 6,
+                        cursor: "pointer",
+                      }}
+                      onClick={() => { setMovingFileId(null); setMoveTargetFolderId(""); }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  {moveFileMutation.error && (
+                    <div style={{ marginTop: 6, fontSize: 11, color: "var(--accent-red)" }}>
+                      {moveFileMutation.error instanceof Error
+                        ? moveFileMutation.error.message
+                        : "Move failed."}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    fontSize: 10,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    background: "transparent",
+                    color: "var(--accent-gold)",
+                    border: "1px solid var(--border-hover)",
+                    borderRadius: "var(--radius-sm)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => { setMovingFileId(selectedFile.id); setMoveTargetFolderId(""); }}
+                >
+                  Move to Folder
+                </button>
+              )}
+            </div>
+
+            <div style={{ marginTop: 12 }}>
               <button
                 style={{
                   width: "100%",
