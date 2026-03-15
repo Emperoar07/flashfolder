@@ -10,6 +10,7 @@ import { SocialShareButtons } from "@/components/social-share-buttons";
 import { useWorkspaceWallet } from "@/components/wallet-status";
 import { WorkspaceDropdown } from "@/components/workspace-dropdown";
 import { apiFetch } from "@/lib/client/api";
+import { useWorkspaceTransaction } from "@/lib/client/use-workspace-transaction";
 import { useCurrentUser } from "@/lib/client/hooks";
 import {
   PREVIEW_TYPES,
@@ -92,6 +93,7 @@ type DashboardClientProps = {
 
 export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const { walletAddress, connected } = useWorkspaceWallet();
+  const { submitTransaction } = useWorkspaceTransaction();
   const profileQuery = useCurrentUser(walletAddress);
   const queryClient = useQueryClient();
   const [, startTransition] = useTransition();
@@ -193,6 +195,9 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
     mutationFn: async () => {
       const name = folderName || "New Folder";
 
+      // Submit Aptos transaction first
+      await submitTransaction("folder_create");
+
       return apiFetch<{ folder: FolderRecord }>(
         "/api/folders",
         {
@@ -211,8 +216,11 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   });
 
   const renameFolderMutation = useMutation({
-    mutationFn: ({ id, name }: { id: string; name: string }) =>
-      apiFetch<{ folder: FolderRecord }>(
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      // Submit Aptos transaction first
+      await submitTransaction("folder_rename");
+
+      return apiFetch<{ folder: FolderRecord }>(
         `/api/folders/${id}`,
         {
           method: "PATCH",
@@ -220,7 +228,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           body: JSON.stringify({ name }),
         },
         walletAddress,
-      ),
+      );
+    },
     onSuccess: () => {
       setRenamingFolderId(null);
       setRenameValue("");
@@ -229,12 +238,16 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   });
 
   const deleteFolderMutation = useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<{ success: boolean }>(
+    mutationFn: async (id: string) => {
+      // Submit Aptos transaction first
+      await submitTransaction("folder_delete");
+
+      return apiFetch<{ success: boolean }>(
         `/api/folders/${id}`,
         { method: "DELETE" },
         walletAddress,
-      ),
+      );
+    },
     onSuccess: () => {
       setActiveFolderId(null);
       void queryClient.invalidateQueries({ queryKey: ["folders", walletAddress] });
@@ -246,6 +259,9 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
       if (!selectedUpload) {
         throw new Error("Pick a file first.");
       }
+
+      // Submit Aptos transaction first
+      await submitTransaction("file_upload");
 
       const formData = new FormData();
       formData.set("file", selectedUpload);
@@ -271,12 +287,16 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   });
 
   const deleteFileMutation = useMutation({
-    mutationFn: (fileId: string) =>
-      apiFetch<{ success: boolean }>(
+    mutationFn: async (fileId: string) => {
+      // Submit Aptos transaction first
+      await submitTransaction("file_delete");
+
+      return apiFetch<{ success: boolean }>(
         `/api/files/${fileId}`,
         { method: "DELETE" },
         walletAddress,
-      ),
+      );
+    },
     onSuccess: () => {
       setSelectedFileId(null);
       void queryClient.invalidateQueries({ queryKey: ["files", walletAddress] });
@@ -284,8 +304,11 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   });
 
   const createShareMutation = useMutation({
-    mutationFn: (fileId: string) =>
-      apiFetch<{ share: ShareRecord }>(
+    mutationFn: async (fileId: string) => {
+      // Submit Aptos transaction first
+      await submitTransaction("file_share");
+
+      return apiFetch<{ share: ShareRecord }>(
         `/api/files/${fileId}/share`,
         {
           method: "POST",
@@ -296,7 +319,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           }),
         },
         walletAddress,
-      ),
+      );
+    },
     onSuccess: () => {
       setSharePassword("");
       void queryClient.invalidateQueries({ queryKey: ["files", walletAddress] });
@@ -304,8 +328,11 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   });
 
   const moveFileMutation = useMutation({
-    mutationFn: ({ fileId, folderId }: { fileId: string; folderId: string | null }) =>
-      apiFetch<{ file: FileRecord }>(
+    mutationFn: async ({ fileId, folderId }: { fileId: string; folderId: string | null }) => {
+      // Submit Aptos transaction first
+      await submitTransaction("file_move");
+
+      return apiFetch<{ file: FileRecord }>(
         `/api/files/${fileId}`,
         {
           method: "PATCH",
@@ -313,7 +340,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           body: JSON.stringify({ folderId }),
         },
         walletAddress,
-      ),
+      );
+    },
     onSuccess: () => {
       setMovingFileId(null);
       setMoveTargetFolderId("");

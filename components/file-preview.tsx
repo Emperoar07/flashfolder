@@ -1,7 +1,9 @@
 "use client";
 
+import { Maximize2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { MediaViewer } from "@/components/media-viewer";
 import { PREVIEW_TYPES, type PreviewTypeValue } from "@/lib/file-kinds";
 
 type FilePreviewProps = {
@@ -139,6 +141,8 @@ export function FilePreview({
   src,
   walletAddress,
 }: FilePreviewProps) {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   const previewSrc =
     src ??
     (() => {
@@ -150,38 +154,92 @@ export function FilePreview({
     // Use authenticated fetch when walletAddress provided (dashboard context)
     if (walletAddress && fileId && !token) {
       return (
-        <AuthenticatedImage
-          src={previewSrc}
-          walletAddress={walletAddress}
-          alt={originalName}
-        />
+        <>
+          <MediaViewer
+            isOpen={isFullscreen}
+            onClose={() => setIsFullscreen(false)}
+            src={previewSrc}
+            type="image"
+            title={originalName}
+          />
+          <div style={{ position: "relative", display: "inline-block", width: "100%" }}>
+            <AuthenticatedImage
+              src={previewSrc}
+              walletAddress={walletAddress}
+              alt={originalName}
+            />
+            <button
+              className="absolute bottom-3 right-3 rounded-lg bg-black/50 p-2 hover:bg-black/70 transition"
+              onClick={() => setIsFullscreen(true)}
+              type="button"
+            >
+              <Maximize2 className="h-4 w-4 text-white" />
+            </button>
+          </div>
+        </>
       );
     }
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={previewSrc}
-        alt={originalName}
-        style={{
-          width: "100%",
-          height: "auto",
-          maxHeight: 288,
-          borderRadius: 12,
-          objectFit: "cover",
-          display: "block",
-        }}
-      />
+      <>
+        <MediaViewer
+          isOpen={isFullscreen}
+          onClose={() => setIsFullscreen(false)}
+          src={previewSrc}
+          type="image"
+          title={originalName}
+        />
+        <div style={{ position: "relative", display: "inline-block", width: "100%" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={previewSrc}
+            alt={originalName}
+            style={{
+              width: "100%",
+              height: "auto",
+              maxHeight: 288,
+              borderRadius: 12,
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+          <button
+            className="absolute bottom-3 right-3 rounded-lg bg-black/50 p-2 hover:bg-black/70 transition"
+            onClick={() => setIsFullscreen(true)}
+            type="button"
+          >
+            <Maximize2 className="h-4 w-4 text-white" />
+          </button>
+        </div>
+      </>
     );
   }
 
   if (previewType === PREVIEW_TYPES.VIDEO) {
     return (
-      <video
-        style={{ height: 288, width: "100%", borderRadius: 12, background: "#0a0a0a", objectFit: "cover" }}
-        controls
-      >
-        <source src={previewSrc} />
-      </video>
+      <>
+        <MediaViewer
+          isOpen={isFullscreen}
+          onClose={() => setIsFullscreen(false)}
+          src={previewSrc}
+          type="video"
+          title={originalName}
+        />
+        <div style={{ position: "relative", display: "inline-block", width: "100%" }}>
+          <video
+            style={{ height: 288, width: "100%", borderRadius: 12, background: "#0a0a0a", objectFit: "cover" }}
+            controls
+          >
+            <source src={previewSrc} />
+          </video>
+          <button
+            className="absolute bottom-3 right-3 rounded-lg bg-black/50 p-2 hover:bg-black/70 transition"
+            onClick={() => setIsFullscreen(true)}
+            type="button"
+          >
+            <Maximize2 className="h-4 w-4 text-white" />
+          </button>
+        </div>
+      </>
     );
   }
 
