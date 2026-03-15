@@ -131,6 +131,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const [selectedUpload, setSelectedUpload] = useState<File | null>(null);
   const [movingFileId, setMovingFileId] = useState<string | null>(null);
   const [moveTargetFolderId, setMoveTargetFolderId] = useState<string>("");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const deferredSearch = useDeferredValue(search);
 
   // File category & sorting state
@@ -428,7 +429,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   return (
     <div className="dashboard">
       {/* LEFT SIDEBAR */}
-      <aside className="sidebar">
+      <aside className={`sidebar${mobileSidebarOpen ? " mobile-open" : ""}`}>
         <WorkspaceDropdown activePage="files" />
         <div>
           <div className="sidebar-section-label">Folders</div>
@@ -578,6 +579,31 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
 
       {/* MAIN CONTENT */}
       <main className="main-content">
+        {/* Mobile: folder sidebar toggle */}
+        <button
+          type="button"
+          onClick={() => setMobileSidebarOpen((o) => !o)}
+          style={{
+            display: "none",
+            width: "100%",
+            marginBottom: 12,
+            padding: "10px 14px",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius-sm)",
+            color: "var(--text-secondary)",
+            fontSize: 11,
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            cursor: "pointer",
+            alignItems: "center",
+            gap: 8,
+          }}
+          className="mobile-sidebar-toggle"
+        >
+          <span>&#x1F4C1;</span>
+          {mobileSidebarOpen ? "Hide Folders" : `Folders${activeFolderId ? ` · ${folders.find((f) => f.id === activeFolderId)?.name ?? ""}` : ""}`}
+        </button>
         <div className="dash-hero">
           <h2>GOOD EVENING</h2>
           <p>Welcome back to your workspace. Here&apos;s your overview.</p>

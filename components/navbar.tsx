@@ -33,6 +33,7 @@ export function Navbar() {
   const { walletAddress, connected, connect, disconnect, wallets, isDemo } =
     useWorkspaceWallet();
   const [connectDropdownOpen, setConnectDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [googleModalOpen, setGoogleModalOpen] = useState(false);
   const [googleEmail, setGoogleEmail] = useState("");
   const [googlePassword, setGooglePassword] = useState("");
@@ -158,7 +159,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-[rgba(255,255,255,0.07)] bg-[rgba(10,10,10,0.85)] px-10 py-4 backdrop-blur-xl">
+      <nav className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-[rgba(255,255,255,0.07)] bg-[rgba(10,10,10,0.85)] px-6 py-4 backdrop-blur-xl sm:px-10">
         <Link
           href="/"
           className="font-[family-name:var(--font-bebas-neue)] text-[22px] tracking-[0.15em] text-[#f0ede6]"
@@ -166,7 +167,8 @@ export function Navbar() {
           <span className="text-[#c8392b]">FLASH</span>FOLDER
         </Link>
 
-        <div className="flex items-center gap-6">
+        {/* Desktop nav links */}
+        <div className="hidden items-center gap-6 sm:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -192,7 +194,6 @@ export function Navbar() {
           {/* Single connect button / account dropdown */}
           <div className="relative" ref={dropdownRef}>
             {isLoggedIn ? (
-              /* ── Connected state: show identity, click for dropdown ── */
               <button
                 onClick={() => setConnectDropdownOpen((o) => !o)}
                 className={`inline-flex items-center gap-2 ${btnClass}`}
@@ -202,7 +203,6 @@ export function Navbar() {
                 {displayName}
               </button>
             ) : (
-              /* ── Not connected: single "Connect" button opens method picker ── */
               <button
                 onClick={() => setConnectDropdownOpen((o) => !o)}
                 className={btnClass}
@@ -212,7 +212,6 @@ export function Navbar() {
               </button>
             )}
 
-            {/* Dropdown */}
             {connectDropdownOpen && (
               <div className="absolute right-0 top-full mt-2 min-w-[240px] rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#111] p-2 shadow-2xl backdrop-blur-xl">
                 {isLoggedIn ? (
@@ -286,7 +285,148 @@ export function Navbar() {
             )}
           </div>
         </div>
+
+        {/* Mobile: connect button + hamburger */}
+        <div className="flex items-center gap-3 sm:hidden">
+          {isLoggedIn ? (
+            <button
+              onClick={() => setConnectDropdownOpen((o) => !o)}
+              className={`inline-flex items-center gap-1.5 text-[10px] rounded-full border border-[rgba(255,255,255,0.07)] px-3 py-1.5 text-[#f0ede6] transition hover:border-[#c8392b]`}
+              type="button"
+            >
+              {connectionType === "wallet" ? <WalletIcon /> : <GoogleIcon />}
+              {displayName}
+            </button>
+          ) : (
+            <button
+              onClick={() => setConnectDropdownOpen((o) => !o)}
+              className={`text-[10px] rounded-full border border-[rgba(255,255,255,0.07)] px-3 py-1.5 text-[#f0ede6] transition hover:border-[#c8392b]`}
+              type="button"
+            >
+              Connect
+            </button>
+          )}
+          <button
+            type="button"
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen((o) => !o)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            )}
+          </button>
+        </div>
       </nav>
+
+      {/* Mobile connect dropdown (shared with desktop) */}
+      {connectDropdownOpen && (
+        <div
+          className="fixed inset-0 z-[45]"
+          onClick={() => setConnectDropdownOpen(false)}
+        />
+      )}
+      {connectDropdownOpen && (
+        <div
+          ref={dropdownRef}
+          className="fixed right-4 top-[68px] z-[46] min-w-[240px] rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#111] p-2 shadow-2xl backdrop-blur-xl sm:hidden"
+        >
+          {isLoggedIn ? (
+            <>
+              <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[rgba(240,237,230,0.35)]">
+                {connectionType === "wallet" ? "Connected wallet" : "Signed in as"}
+              </div>
+              <div className="px-3 py-1 text-[11px] text-[#f0ede6] break-all">
+                {connectionType === "wallet" ? walletAddress : emailUser}
+              </div>
+              <div className="my-2 h-px bg-[rgba(255,255,255,0.07)]" />
+              <button
+                onClick={handleDisconnect}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[11px] text-[#c8392b] transition hover:bg-[rgba(200,57,43,0.08)]"
+                type="button"
+              >
+                <span>&#x23FB;</span>
+                {connectionType === "wallet" ? "Disconnect Wallet" : "Sign Out"}
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[rgba(240,237,230,0.35)]">
+                Choose connection method
+              </div>
+              <div className="my-1 h-px bg-[rgba(255,255,255,0.07)]" />
+              {wallets.length > 0 ? (
+                wallets.slice(0, 3).map((wallet) => (
+                  <button
+                    key={wallet.name}
+                    onClick={() => { setConnectDropdownOpen(false); void connect(wallet.name); }}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[11px] text-[#f0ede6] transition hover:bg-[rgba(255,255,255,0.05)]"
+                    type="button"
+                  >
+                    <WalletIcon />
+                    {wallet.name}
+                  </button>
+                ))
+              ) : (
+                <div className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[11px] text-[rgba(240,237,230,0.35)]">
+                  <WalletIcon />
+                  No wallet detected
+                </div>
+              )}
+              <div className="my-1 h-px bg-[rgba(255,255,255,0.07)]" />
+              <button
+                onClick={() => { setConnectDropdownOpen(false); setGoogleModalOpen(true); setGoogleError(null); }}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[11px] text-[#f0ede6] transition hover:bg-[rgba(255,255,255,0.05)]"
+                type="button"
+              >
+                <GoogleIcon />
+                Sign in with Email
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Mobile nav drawer */}
+      {mobileMenuOpen && (
+        <>
+          <div
+            className="mobile-nav-overlay"
+            style={{ display: "block" }}
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="mobile-nav-drawer">
+            <div style={{ marginBottom: 8, paddingBottom: 16, borderBottom: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-muted)", marginBottom: 4 }}>
+                Network
+              </div>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-secondary)" }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-red)", display: "inline-block" }} />
+                Testnet
+              </span>
+            </div>
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`mobile-nav-link${isActive(link.href) ? " active" : ""}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Google sign-in / sign-up modal */}
       {googleModalOpen && (
