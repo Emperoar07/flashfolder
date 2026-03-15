@@ -55,7 +55,7 @@ export function useSharePurchase() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           txHash: response.hash,
-          buyerWallet: account.address,
+          buyerWallet: String(account.address),
         }),
       });
 

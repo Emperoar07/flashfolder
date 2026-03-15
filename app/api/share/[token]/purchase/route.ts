@@ -30,6 +30,15 @@ export async function POST(request: Request, context: Context) {
       );
     }
 
+    // Ensure buyerWallet is a string (fix for object serialization issues)
+    const buyerWallet = String(body.buyerWallet).trim();
+    if (!buyerWallet || buyerWallet.length === 0) {
+      return NextResponse.json(
+        { error: "Invalid buyerWallet format" },
+        { status: 400 },
+      );
+    }
+
     // Verify the share exists and get details
     const shareData = await getFileShare(token, body.password);
 
@@ -75,7 +84,7 @@ export async function POST(request: Request, context: Context) {
     const download = await recordShareDownloadPayment(
       token,
       body.txHash,
-      body.buyerWallet,
+      buyerWallet,
     );
 
     // Return the txHash which will be used as downloadId in the download endpoint
