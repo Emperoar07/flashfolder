@@ -833,6 +833,10 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
 
             {selectedUpload && (
               <>
+                <div style={{ marginTop: 8, fontSize: 10, color: "var(--text-muted)" }}>
+                  File size: <strong>{(selectedUpload.size / 1024 / 1024).toFixed(2)} MB</strong> / 4.5 MB limit
+                </div>
+
                 <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
                   <input
                     className="search-input"
@@ -845,9 +849,10 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                   <button
                     className="btn-primary"
                     style={{ padding: "10px 24px", fontSize: 10 }}
-                    disabled={uploadMutation.isPending || !connected || !walletAddress?.trim()}
+                    disabled={uploadMutation.isPending || !connected || !walletAddress?.trim() || selectedUpload.size > 4.5 * 1024 * 1024}
                     onClick={() => uploadMutation.mutate()}
                     type="button"
+                    title={selectedUpload.size > 4.5 * 1024 * 1024 ? "File exceeds 4.5 MB limit" : undefined}
                   >
                     {uploadPhase === "signing"
                       ? "Signing…"
