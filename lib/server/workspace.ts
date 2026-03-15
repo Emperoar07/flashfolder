@@ -87,6 +87,7 @@ export async function createFolder(
   walletAddress: string | null | undefined,
   name: string,
   parentFolderId?: string | null,
+  transactionHash?: string,
 ) {
   const user = await ensureUser(walletAddress);
 
@@ -95,6 +96,7 @@ export async function createFolder(
       userId: user.id,
       name,
       parentFolderId: parentFolderId ?? null,
+      transactionHash: transactionHash ?? null,
     },
   });
 }

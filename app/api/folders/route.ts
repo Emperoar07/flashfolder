@@ -29,6 +29,7 @@ export async function POST(request: Request) {
     getRequestWalletAddress(request),
     parsed.data.name,
     parsed.data.parentFolderId,
+    parsed.data.transactionHash,
   );
 
   return NextResponse.json({ folder }, { status: 201 });

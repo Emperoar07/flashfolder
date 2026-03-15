@@ -15,7 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { FilePreview } from "@/components/file-preview";
 import { UploadDropzone } from "@/components/upload-dropzone";
-import { WalletStatus, useWorkspaceWallet } from "@/components/wallet-status";
+import { useWorkspaceWallet } from "@/components/wallet-status";
 import {
   useCreateVaultShare,
   useUploadVaultFile,
@@ -157,31 +157,28 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
   return (
     <div className="space-y-8">
       <div className="rounded-[2rem] bg-[linear-gradient(135deg,#0a0a0a_0%,#141414_50%,rgba(184,160,106,0.12)_100%)] border-[rgba(255,255,255,0.07)] p-8 text-[#f0ede6]">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-3xl">
-            <p className="text-sm uppercase tracking-[0.3em] text-[rgba(240,237,230,0.35)]">
-              FlashVault asset
-            </p>
-            <h1 className="mt-4 font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-4xl font-semibold sm:text-5xl">
-              {vaultAsset.nftName ?? vaultAsset.nftObjectId}
-            </h1>
-            <p className="mt-4 max-w-2xl text-base text-[rgba(240,237,230,0.55)]">
-              Private vault for Aptos NFT content with verified owner access,
-              collector sharing, and optional encrypted uploads.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-3 text-sm">
-              <span className="rounded-full border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] px-4 py-2">
-                {vaultAsset.collectionName ?? "Unassigned collection"}
-              </span>
-              <span className="rounded-full border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] px-4 py-2">
-                {vaultAsset.ownerOnly ? "Owner only access" : "Shared access enabled"}
-              </span>
-              <span className="rounded-full border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] px-4 py-2">
-                {vaultAsset.publicPreviewMode.toLowerCase()} preview mode
-              </span>
-            </div>
+        <div>
+          <p className="text-sm uppercase tracking-[0.3em] text-[rgba(240,237,230,0.35)]">
+            FlashVault asset
+          </p>
+          <h1 className="mt-4 font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-4xl font-semibold sm:text-5xl">
+            {vaultAsset.nftName ?? vaultAsset.nftObjectId}
+          </h1>
+          <p className="mt-4 max-w-2xl text-base text-[rgba(240,237,230,0.55)]">
+            Private vault for Aptos NFT content with verified owner access,
+            collector sharing, and optional encrypted uploads.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3 text-sm">
+            <span className="rounded-full border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] px-4 py-2">
+              {vaultAsset.collectionName ?? "Unassigned collection"}
+            </span>
+            <span className="rounded-full border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] px-4 py-2">
+              {vaultAsset.ownerOnly ? "Owner only access" : "Shared access enabled"}
+            </span>
+            <span className="rounded-full border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] px-4 py-2">
+              {vaultAsset.publicPreviewMode.toLowerCase()} preview mode
+            </span>
           </div>
-          <WalletStatus />
         </div>
       </div>
 

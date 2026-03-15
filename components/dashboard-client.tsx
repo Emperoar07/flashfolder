@@ -8,6 +8,7 @@ import { useDropzone } from "react-dropzone";
 import { FilePreview } from "@/components/file-preview";
 import { useWorkspaceWallet } from "@/components/wallet-status";
 import { apiFetch } from "@/lib/client/api";
+import { useAptosTransaction } from "@/lib/client/use-aptos-transaction";
 import { useCurrentUser } from "@/lib/client/hooks";
 import {
   PREVIEW_TYPES,
@@ -17,12 +18,67 @@ import {
 import type { FileRecord, FolderRecord, ShareRecord } from "@/lib/types";
 import { formatBytes, formatDate, shortenWallet } from "@/lib/utils";
 
+/* ── File type categories ── */
+
+type FileCategory = "all" | "images" | "videos" | "music" | "docs";
+
+const FILE_CATEGORIES: { key: FileCategory; label: string }[] = [
+  { key: "all", label: "All Files" },
+  { key: "images", label: "Pictures" },
+  { key: "videos", label: "Videos" },
+  { key: "music", label: "Music" },
+  { key: "docs", label: "Documents" },
+];
+
+function getFileCategory(previewType: PreviewTypeValue): FileCategory {
+  switch (previewType) {
+    case PREVIEW_TYPES.IMAGE:
+      return "images";
+    case PREVIEW_TYPES.VIDEO:
+      return "videos";
+    case PREVIEW_TYPES.AUDIO:
+      return "music";
+    case PREVIEW_TYPES.PDF:
+    case PREVIEW_TYPES.TEXT:
+      return "docs";
+    default:
+      return "all";
+  }
+}
+
+/* ── Sorting ── */
+
+type SortField = "name" | "size" | "date" | "type";
+type SortDir = "asc" | "desc";
+
+function sortFiles(files: FileRecord[], field: SortField, dir: SortDir) {
+  const mult = dir === "asc" ? 1 : -1;
+  return [...files].sort((a, b) => {
+    switch (field) {
+      case "name":
+        return mult * a.filename.localeCompare(b.filename);
+      case "size":
+        return mult * (a.size - b.size);
+      case "date":
+        return mult * (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
+      case "type":
+        return mult * a.previewType.localeCompare(b.previewType);
+      default:
+        return 0;
+    }
+  });
+}
+
+/* ── Helpers ── */
+
 function fileIconClass(type: PreviewTypeValue) {
   switch (type) {
     case PREVIEW_TYPES.IMAGE:
       return "img";
     case PREVIEW_TYPES.VIDEO:
       return "vid";
+    case PREVIEW_TYPES.AUDIO:
+      return "aud";
     case PREVIEW_TYPES.PDF:
     case PREVIEW_TYPES.TEXT:
       return "doc";
@@ -37,6 +93,8 @@ function fileIconEmoji(type: PreviewTypeValue) {
       return "\u{1F5BC}";
     case PREVIEW_TYPES.VIDEO:
       return "\u25B6";
+    case PREVIEW_TYPES.AUDIO:
+      return "\u{1F3B5}";
     case PREVIEW_TYPES.PDF:
     case PREVIEW_TYPES.TEXT:
       return "\u{1F4C4}";
@@ -50,11 +108,14 @@ type DashboardClientProps = {
 };
 
 export function DashboardClient({ initialFolderId }: DashboardClientProps) {
-  const { walletAddress } = useWorkspaceWallet();
+  const { walletAddress, connected } = useWorkspaceWallet();
   const profileQuery = useCurrentUser(walletAddress);
   const queryClient = useQueryClient();
   const [, startTransition] = useTransition();
   const [folderName, setFolderName] = useState("");
+  const [showFolderInput, setShowFolderInput] = useState(false);
+  const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(
     initialFolderId ?? null,
@@ -67,6 +128,20 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const [sharePassword, setSharePassword] = useState("");
   const [selectedUpload, setSelectedUpload] = useState<File | null>(null);
   const deferredSearch = useDeferredValue(search);
+
+  // File category & sorting state
+  const [activeCategory, setActiveCategory] = useState<FileCategory>("all");
+  const [sortField, setSortField] = useState<SortField>("date");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  // Aptos transaction hook
+  const {
+    submitFolderTransaction,
+    isPending: txPending,
+    error: txError,
+    clearError: clearTxError,
+    walletConnected,
+  } = useAptosTransaction();
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -109,19 +184,78 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
       }>("/api/settings"),
   });
 
+  /* ── Folder mutations with Aptos transactions ── */
+
   const createFolderMutation = useMutation({
-    mutationFn: () =>
-      apiFetch<{ folder: FolderRecord }>(
+    mutationFn: async () => {
+      const name = folderName || "New Folder";
+      let transactionHash: string | undefined;
+
+      if (connected) {
+        const hash = await submitFolderTransaction("create", name);
+        if (!hash) throw new Error("Transaction was rejected. Folder not created.");
+        transactionHash = hash;
+      }
+
+      return apiFetch<{ folder: FolderRecord }>(
         "/api/folders",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: folderName || "New Folder" }),
+          body: JSON.stringify({ name, transactionHash }),
         },
         walletAddress,
-      ),
+      );
+    },
     onSuccess: () => {
       setFolderName("");
+      setShowFolderInput(false);
+      void queryClient.invalidateQueries({ queryKey: ["folders", walletAddress] });
+    },
+  });
+
+  const renameFolderMutation = useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      let transactionHash: string | undefined;
+
+      if (connected) {
+        const hash = await submitFolderTransaction("rename", name);
+        if (!hash) throw new Error("Transaction was rejected. Folder not renamed.");
+        transactionHash = hash;
+      }
+
+      return apiFetch<{ folder: FolderRecord }>(
+        `/api/folders/${id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, transactionHash }),
+        },
+        walletAddress,
+      );
+    },
+    onSuccess: () => {
+      setRenamingFolderId(null);
+      setRenameValue("");
+      void queryClient.invalidateQueries({ queryKey: ["folders", walletAddress] });
+    },
+  });
+
+  const deleteFolderMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (connected) {
+        const hash = await submitFolderTransaction("delete", "folder");
+        if (!hash) throw new Error("Transaction was rejected. Folder not deleted.");
+      }
+
+      return apiFetch<{ success: boolean }>(
+        `/api/folders/${id}`,
+        { method: "DELETE" },
+        walletAddress,
+      );
+    },
+    onSuccess: () => {
+      setActiveFolderId(null);
       void queryClient.invalidateQueries({ queryKey: ["folders", walletAddress] });
     },
   });
@@ -191,15 +325,31 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const folders = foldersQuery.data?.folders ?? [];
   const files = useMemo(() => filesQuery.data?.files ?? [], [filesQuery.data?.files]);
 
+  // Category counts
+  const categoryCounts = useMemo(() => {
+    const counts: Record<FileCategory, number> = { all: files.length, images: 0, videos: 0, music: 0, docs: 0 };
+    for (const file of files) {
+      const cat = getFileCategory(file.previewType);
+      if (cat !== "all") counts[cat]++;
+    }
+    return counts;
+  }, [files]);
+
+  // Filter by search + category, then sort
   const filteredFiles = useMemo(() => {
     const lowered = deferredSearch.toLowerCase();
-    return files.filter((file) =>
-      lowered
+    let result = files.filter((file) => {
+      const matchesSearch = lowered
         ? file.filename.toLowerCase().includes(lowered) ||
           file.description?.toLowerCase().includes(lowered)
-        : true,
-    );
-  }, [deferredSearch, files]);
+        : true;
+      const matchesCategory =
+        activeCategory === "all" || getFileCategory(file.previewType) === activeCategory;
+      return matchesSearch && matchesCategory;
+    });
+    result = sortFiles(result, sortField, sortDir);
+    return result;
+  }, [deferredSearch, files, activeCategory, sortField, sortDir]);
 
   const selectedFile =
     filteredFiles.find((file) => file.id === selectedFileId) ??
@@ -217,6 +367,18 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   }, [files]);
 
   const storageMode = settingsQuery.data?.settings.activeStorageMode ?? "local";
+
+  function handleSortClick(field: SortField) {
+    if (sortField === field) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDir("asc");
+    }
+  }
+
+  const sortIndicator = (field: SortField) =>
+    sortField === field ? (sortDir === "asc" ? " \u2191" : " \u2193") : "";
 
   return (
     <div className="dashboard">
@@ -250,19 +412,124 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               <div
                 key={folder.id}
                 className="folder-item"
-                onClick={() => startTransition(() => setActiveFolderId(folder.id))}
                 style={activeFolderId === folder.id ? { color: "var(--accent-red)" } : undefined}
               >
-                &#x1F4C2; {folder.name}
+                {renamingFolderId === folder.id ? (
+                  <form
+                    style={{ display: "flex", gap: 4, width: "100%" }}
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (renameValue.trim()) {
+                        renameFolderMutation.mutate({ id: folder.id, name: renameValue.trim() });
+                      }
+                    }}
+                  >
+                    <input
+                      className="search-input"
+                      style={{ flex: 1, padding: "4px 8px", fontSize: 11 }}
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      autoFocus
+                      disabled={renameFolderMutation.isPending || txPending}
+                    />
+                    <button
+                      type="submit"
+                      className="btn-primary"
+                      style={{ padding: "4px 8px", fontSize: 9 }}
+                      disabled={renameFolderMutation.isPending || txPending}
+                    >
+                      {txPending ? "Signing..." : "OK"}
+                    </button>
+                    <button
+                      type="button"
+                      style={{
+                        padding: "4px 8px",
+                        fontSize: 9,
+                        background: "transparent",
+                        color: "var(--text-secondary)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "var(--radius-sm)",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        setRenamingFolderId(null);
+                        setRenameValue("");
+                      }}
+                    >
+                      X
+                    </button>
+                  </form>
+                ) : (
+                  <span
+                    onClick={() => startTransition(() => setActiveFolderId(folder.id))}
+                    style={{ flex: 1, cursor: "pointer" }}
+                  >
+                    &#x1F4C2; {folder.name}
+                  </span>
+                )}
+                {renamingFolderId !== folder.id && (
+                  <span style={{ display: "flex", gap: 6, marginLeft: 8 }}>
+                    <span
+                      style={{ cursor: "pointer", fontSize: 11, opacity: 0.5 }}
+                      title="Rename"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRenamingFolderId(folder.id);
+                        setRenameValue(folder.name);
+                      }}
+                    >
+                      &#x270E;
+                    </span>
+                    <span
+                      style={{ cursor: "pointer", fontSize: 11, opacity: 0.5, color: "var(--accent-red)" }}
+                      title="Delete"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteFolderMutation.mutate(folder.id);
+                      }}
+                    >
+                      &#x2715;
+                    </span>
+                  </span>
+                )}
               </div>
             ))}
-            <div
-              className="folder-item"
-              style={{ color: "var(--accent-red)" }}
-              onClick={() => createFolderMutation.mutate()}
-            >
-              + New Folder
-            </div>
+            {showFolderInput ? (
+              <form
+                className="folder-item"
+                style={{ display: "flex", gap: 4 }}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  createFolderMutation.mutate();
+                }}
+              >
+                <input
+                  className="search-input"
+                  style={{ flex: 1, padding: "4px 8px", fontSize: 11 }}
+                  placeholder="Folder name"
+                  value={folderName}
+                  onChange={(e) => setFolderName(e.target.value)}
+                  autoFocus
+                  disabled={createFolderMutation.isPending || txPending}
+                />
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{ padding: "4px 8px", fontSize: 9 }}
+                  disabled={createFolderMutation.isPending || txPending}
+                >
+                  {txPending ? "Signing..." : "Add"}
+                </button>
+              </form>
+            ) : (
+              <div
+                className="folder-item"
+                style={{ color: "var(--accent-red)", cursor: "pointer" }}
+                onClick={() => setShowFolderInput(true)}
+              >
+                + New Folder
+              </div>
+            )}
           </div>
         </div>
         <div>
@@ -311,6 +578,45 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           </div>
         </div>
 
+        {/* Transaction status */}
+        {txError && (
+          <div
+            style={{
+              padding: "10px 16px",
+              marginBottom: 16,
+              background: "rgba(200, 57, 43, 0.15)",
+              border: "1px solid var(--accent-red)",
+              borderRadius: "var(--radius-sm)",
+              color: "var(--accent-red)",
+              fontSize: 12,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>{txError}</span>
+            <span style={{ cursor: "pointer", opacity: 0.7 }} onClick={clearTxError}>
+              &#x2715;
+            </span>
+          </div>
+        )}
+
+        {(createFolderMutation.error || renameFolderMutation.error || deleteFolderMutation.error) && (
+          <div
+            style={{
+              padding: "10px 16px",
+              marginBottom: 16,
+              background: "rgba(200, 57, 43, 0.15)",
+              border: "1px solid var(--accent-red)",
+              borderRadius: "var(--radius-sm)",
+              color: "var(--accent-red)",
+              fontSize: 12,
+            }}
+          >
+            {(createFolderMutation.error ?? renameFolderMutation.error ?? deleteFolderMutation.error)?.message}
+          </div>
+        )}
+
         <div
           {...getRootProps()}
           className={`upload-zone${isDragActive ? " active" : ""}`}
@@ -350,8 +656,60 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
         )}
 
         <div style={{ marginTop: 32 }}>
+          {/* Category tabs */}
+          <div
+            style={{
+              display: "flex",
+              gap: 0,
+              marginBottom: 16,
+              borderBottom: "1px solid var(--border)",
+            }}
+          >
+            {FILE_CATEGORIES.map((cat) => (
+              <button
+                key={cat.key}
+                type="button"
+                onClick={() => setActiveCategory(cat.key)}
+                style={{
+                  padding: "10px 20px",
+                  fontSize: 10,
+                  fontFamily: "var(--font-dm-mono)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  background: "transparent",
+                  color:
+                    activeCategory === cat.key
+                      ? "var(--accent-red)"
+                      : "var(--text-secondary)",
+                  border: "none",
+                  borderBottom:
+                    activeCategory === cat.key
+                      ? "2px solid var(--accent-red)"
+                      : "2px solid transparent",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                {cat.label}
+                <span
+                  style={{
+                    marginLeft: 6,
+                    opacity: 0.5,
+                    fontSize: 9,
+                  }}
+                >
+                  {categoryCounts[cat.key]}
+                </span>
+              </button>
+            ))}
+          </div>
+
           <div className="file-table-header">
-            <h3>ALL FILES</h3>
+            <h3>
+              {activeCategory === "all"
+                ? "ALL FILES"
+                : FILE_CATEGORIES.find((c) => c.key === activeCategory)?.label.toUpperCase()}
+            </h3>
             <input
               type="text"
               className="search-input"
@@ -362,10 +720,30 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           </div>
           <div className="file-table">
             <div className="file-table-row header">
-              <span>Name</span>
-              <span>Size</span>
-              <span>Modified</span>
-              <span>Status</span>
+              <span
+                style={{ cursor: "pointer" }}
+                onClick={() => handleSortClick("name")}
+              >
+                Name{sortIndicator("name")}
+              </span>
+              <span
+                style={{ cursor: "pointer" }}
+                onClick={() => handleSortClick("size")}
+              >
+                Size{sortIndicator("size")}
+              </span>
+              <span
+                style={{ cursor: "pointer" }}
+                onClick={() => handleSortClick("date")}
+              >
+                Modified{sortIndicator("date")}
+              </span>
+              <span
+                style={{ cursor: "pointer" }}
+                onClick={() => handleSortClick("type")}
+              >
+                Type{sortIndicator("type")}
+              </span>
             </div>
             {filteredFiles.map((file) => (
               <div
@@ -389,14 +767,16 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                       : undefined
                   }
                 >
-                  {file.shares.length > 0 ? "Shared" : "Stored"}
+                  {file.shares.length > 0 ? "Shared" : file.previewType.toLowerCase()}
                 </span>
               </div>
             ))}
             {filteredFiles.length === 0 && (
               <div className="file-table-row" style={{ cursor: "default" }}>
                 <span style={{ color: "var(--text-muted)", gridColumn: "1 / -1", textAlign: "center" }}>
-                  No files yet. Upload something to get started.
+                  {activeCategory === "all"
+                    ? "No files yet. Upload something to get started."
+                    : `No ${FILE_CATEGORIES.find((c) => c.key === activeCategory)?.label.toLowerCase()} found.`}
                 </span>
               </div>
             )}
@@ -417,6 +797,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                   originalName={selectedFile.originalName}
                   previewType={selectedFile.previewType}
                 />
+              ) : selectedFile.previewType === PREVIEW_TYPES.AUDIO ? (
+                <div style={{ fontSize: 32, opacity: 0.3 }}>&#x1F3B5;</div>
               ) : (
                 <div style={{ fontSize: 32, opacity: 0.15 }}>&#x1F4C4;</div>
               )}

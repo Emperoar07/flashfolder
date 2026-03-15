@@ -3,11 +3,17 @@ import { z } from "zod";
 export const createFolderSchema = z.object({
   name: z.string().min(1).max(60),
   parentFolderId: z.string().min(1).nullable().optional(),
+  transactionHash: z.string().min(10).optional(),
 });
 
 export const updateFolderSchema = z.object({
   name: z.string().min(1).max(60).optional(),
   parentFolderId: z.string().min(1).nullable().optional(),
+  transactionHash: z.string().min(10).optional(),
+});
+
+export const deleteFolderSchema = z.object({
+  transactionHash: z.string().min(10).optional(),
 });
 
 export const shareSchema = z.object({
