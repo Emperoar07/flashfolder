@@ -16,8 +16,8 @@ type ShareDownload = {
   buyerWallet: string;
   txHash: string;
   paidAt: string;
-  downloaded: boolean;
-  downloadAt: string | null;
+  downloadCount: number;
+  lastDownloadAt: string | null;
 };
 
 type ShareWithFile = ShareRecord & {
@@ -553,29 +553,26 @@ export function ShareHubClient() {
                         ✓ {share.downloads.length} Payment{share.downloads.length !== 1 ? "s" : ""} Received
                       </div>
                       <div style={{ fontSize: 9, color: "var(--text-muted)", maxHeight: 100, overflowY: "auto" }}>
-                        {share.downloads.map((download, idx) => (
-                          <div
-                            key={download.id}
-                            style={{
-                              padding: "4px 0",
-                              borderBottom: idx < share.downloads!.length - 1 ? "1px solid rgba(232,170,48,0.1)" : "none",
-                            }}
-                          >
-                            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                              <span style={{ color: "var(--accent-gold)" }}>
-                                {download.buyerWallet.slice(0, 6)}...{download.buyerWallet.slice(-4)}
-                              </span>
-                              <span style={{ color: "var(--text-muted)" }}>
-                                {formatDate(new Date(download.paidAt).toISOString())}
-                              </span>
-                            </div>
-                            {download.downloaded && (
-                              <div style={{ color: "rgba(100,200,100,0.8)", fontSize: 8, marginTop: 2 }}>
-                                ✓ Downloaded {download.downloadAt ? formatDate(new Date(download.downloadAt).toISOString()) : ""}
+                            <div
+                              key={download.id}
+                              style={{
+                                padding: "4px 0",
+                                borderBottom: idx < share.downloads!.length - 1 ? "1px solid rgba(232,170,48,0.1)" : "none",
+                              }}
+                            >
+                              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                                <span style={{ color: "var(--accent-gold)" }}>
+                                  {download.buyerWallet.slice(0, 6)}...{download.buyerWallet.slice(-4)}
+                                </span>
+                                <span style={{ color: "var(--text-muted)" }}>
+                                  {formatDate(new Date(download.paidAt).toISOString())}
+                                </span>
                               </div>
-                            )}
-                          </div>
-                        ))}
+                              <div style={{ color: "rgba(100,200,100,0.8)", fontSize: 8, marginTop: 2 }}>
+                                ✓ Downloaded {download.downloadCount} of {share.maxDownloadsPerPayment ?? 1} time{download.downloadCount !== 1 ? "s" : ""}
+                                {download.lastDownloadAt && ` (Last: ${formatDate(new Date(download.lastDownloadAt).toISOString())})`}
+                              </div>
+                            </div>
                       </div>
                     </div>
                   )}

@@ -64,14 +64,16 @@ export async function GET(request: Request, context: Context) {
           );
         }
 
-        if (download.downloaded) {
+        // Check if max downloads exceeded
+        const maxDownloads = fileShare.share.maxDownloadsPerPayment ?? 1;
+        if (download.downloadCount >= maxDownloads) {
           return NextResponse.json(
-            { error: "Download already used" },
+            { error: "Download limit reached" },
             { status: 410 },
           );
         }
 
-        // Mark as used
+        // Increment download count
         await markShareDownloadAsUsed(downloadId);
       } catch (err) {
         return NextResponse.json(

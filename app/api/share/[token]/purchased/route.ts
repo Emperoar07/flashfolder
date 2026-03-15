@@ -30,10 +30,10 @@ export async function POST(request: Request, context: Context) {
       );
     }
 
-    // Get the share
+    // Get the share with download info
     const share = await prisma.share.findUnique({
       where: { token },
-      select: { id: true },
+      select: { id: true, maxDownloadsPerPayment: true },
     });
 
     if (!share) {
@@ -48,9 +48,16 @@ export async function POST(request: Request, context: Context) {
       },
     });
 
+    const downloadCount = existingPurchase?.downloadCount ?? 0;
+    const maxDownloads = share.maxDownloadsPerPayment ?? 1;
+    const remainingDownloads = Math.max(0, maxDownloads - downloadCount);
+
     return NextResponse.json({
       hasAlreadyPaid: !!existingPurchase,
       downloadId: existingPurchase?.txHash ?? null,
+      downloadCount,
+      remainingDownloads,
+      maxDownloads,
     });
   } catch (error) {
     console.error("[purchased]", error);

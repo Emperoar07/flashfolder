@@ -386,6 +386,7 @@ export async function createShare(
     expiresAt?: string;
     downloadPriceApt?: number | null;
     sharerWallet?: string | null;
+    maxDownloadsPerPayment?: number | null;
   },
 ) {
   const user = await ensureUser(walletAddress);
@@ -411,6 +412,7 @@ export async function createShare(
       expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
       downloadPriceApt: input.downloadPriceApt ?? null,
       sharerWallet: input.sharerWallet ?? null,
+      maxDownloadsPerPayment: input.maxDownloadsPerPayment ?? 1,
     },
   });
 }
@@ -603,7 +605,10 @@ export async function getShareDownload(txHash: string) {
 export async function markShareDownloadAsUsed(txHash: string) {
   return prisma.shareDownload.update({
     where: { txHash },
-    data: { downloaded: true, downloadAt: new Date() },
+    data: { 
+      downloadCount: { increment: 1 },
+      lastDownloadAt: new Date(),
+    },
   });
 }
 

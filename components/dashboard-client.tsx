@@ -119,6 +119,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   >("PUBLIC");
   const [sharePassword, setSharePassword] = useState("");
   const [downloadPrice, setDownloadPrice] = useState<number | "">(0);
+  const [maxDownloadsPerPayment, setMaxDownloadsPerPayment] = useState<number | "">(1);
   const [showShareModal, setShowShareModal] = useState(false);
   const [selectedUpload, setSelectedUpload] = useState<File | null>(null);
   const [movingFileId, setMovingFileId] = useState<string | null>(null);
@@ -330,6 +331,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
       await submitTransaction("file_share");
 
       const priceValue = downloadPrice === "" || downloadPrice === 0 ? null : downloadPrice;
+      const maxDownloads = maxDownloadsPerPayment === "" ? 1 : Number(maxDownloadsPerPayment);
 
       return apiFetch<{ share: ShareRecord }>(
         `/api/files/${fileId}/share`,
@@ -340,6 +342,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             shareType,
             password: shareType === "PASSWORD" ? sharePassword : undefined,
             downloadPriceApt: priceValue,
+            maxDownloadsPerPayment: maxDownloads,
             sharerWallet: walletAddress,
           }),
         },
@@ -349,6 +352,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
     onSuccess: () => {
       setSharePassword("");
       setDownloadPrice(0);
+      setMaxDownloadsPerPayment(1);
       setShowShareModal(false);
       void queryClient.invalidateQueries({ queryKey: ["files", walletAddress] });
     },
@@ -1497,6 +1501,52 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                 }}
               >
                 Set 0 or leave empty for free download. Viewers get one free preview, payment required to download.
+              </p>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "var(--text-secondary)",
+                  marginBottom: 8,
+                }}
+              >
+                Downloads Per Payment
+              </label>
+              <input
+                type="number"
+                step="1"
+                min="1"
+                max="999"
+                value={maxDownloadsPerPayment}
+                onChange={(e) =>
+                  setMaxDownloadsPerPayment(e.target.value === "" ? 1 : Number(e.target.value))
+                }
+                placeholder="1"
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  border: "1px solid var(--border)",
+                  background: "rgba(255,255,255,0.03)",
+                  color: "var(--foreground)",
+                  fontSize: 13,
+                  fontFamily: "var(--font-dm-mono)",
+                }}
+              />
+              <p
+                style={{
+                  fontSize: 10,
+                  color: "var(--text-muted)",
+                  marginTop: 6,
+                  fontStyle: "italic",
+                }}
+              >
+                How many times can the receiver download this file with one payment? (1-999)
               </p>
             </div>
 

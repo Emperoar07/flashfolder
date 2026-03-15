@@ -63,20 +63,21 @@ model File {
 }
 
 model Share {
-  id               String    @id @default(cuid())
-  fileId           String?
-  vaultAssetId     String?
-  token            String    @unique
-  shareType        ShareType
-  passwordHash     String?
-  expiresAt        DateTime?
-  downloadPriceApt Float?
-  sharerWallet     String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  file             File?     @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  vaultAsset       VaultAsset? @relation(fields: [vaultAssetId], references: [id], onDelete: Cascade)
-  downloads        ShareDownload[]
+  id                    String    @id @default(cuid())
+  fileId                String?
+  vaultAssetId          String?
+  token                 String    @unique
+  shareType             ShareType
+  passwordHash          String?
+  expiresAt             DateTime?
+  downloadPriceApt      Float?
+  sharerWallet          String?
+  maxDownloadsPerPayment Int?      @default(1)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  file                  File?     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  vaultAsset            VaultAsset? @relation(fields: [vaultAssetId], references: [id], onDelete: Cascade)
+  downloads             ShareDownload[]
 
   @@index([fileId])
   @@index([vaultAssetId])
@@ -96,14 +97,14 @@ model FileView {
 }
 
 model ShareDownload {
-  id         String    @id @default(cuid())
-  shareId    String
-  txHash     String    @unique
-  buyerWallet String
-  paidAt     DateTime  @default(now())
-  downloaded Boolean   @default(false)
-  downloadAt DateTime?
-  share      Share     @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  id             String    @id @default(cuid())
+  shareId        String
+  txHash         String    @unique
+  buyerWallet    String
+  paidAt         DateTime  @default(now())
+  downloadCount  Int       @default(0)
+  lastDownloadAt DateTime?
+  share          Share     @relation(fields: [shareId], references: [id], onDelete: Cascade)
 
   @@index([shareId])
   @@index([txHash])

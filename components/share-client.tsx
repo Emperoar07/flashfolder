@@ -24,6 +24,9 @@ export function ShareClient({ token }: ShareClientProps) {
   const [purchaseError_state, setPurchaseError_state] = useState<string | null>(null);
   const [alreadyPurchased, setAlreadyPurchased] = useState(false);
   const [checkingPurchase, setCheckingPurchase] = useState(false);
+  const [downloadCount, setDownloadCount] = useState(0);
+  const [remainingDownloads, setRemainingDownloads] = useState(0);
+  const [maxDownloads, setMaxDownloads] = useState(0);
 
   // Check if wallet has already purchased this share
   useEffect(() => {
@@ -39,6 +42,9 @@ export function ShareClient({ token }: ShareClientProps) {
           if (data.hasAlreadyPaid) {
             setPurchasedDownloadId(data.downloadId);
             setAlreadyPurchased(true);
+            setDownloadCount(data.downloadCount ?? 0);
+            setRemainingDownloads(data.remainingDownloads ?? 0);
+            setMaxDownloads(data.maxDownloads ?? 1);
           }
           setCheckingPurchase(false);
         })
@@ -235,7 +241,9 @@ export function ShareClient({ token }: ShareClientProps) {
                   ✓ Already purchased with this wallet
                 </div>
                 <div style={{ fontSize: 10, opacity: 0.8 }}>
-                  You can download again at no additional cost
+                  {remainingDownloads > 0 
+                    ? `${remainingDownloads} download${remainingDownloads !== 1 ? "s" : ""} of ${maxDownloads} remaining`
+                    : "All downloads used"}
                 </div>
               </div>
             )}
@@ -275,15 +283,36 @@ export function ShareClient({ token }: ShareClientProps) {
                 </div>
               </div>
             ) : alreadyPurchased && isFile && data.share.downloadPriceApt && data.share.downloadPriceApt > 0 ? (
-              <Link
-                href={
-                  `/api/files/${data.file.id}/download?token=${token}&downloadId=${purchasedDownloadId}${password ? `&password=${encodeURIComponent(password)}` : ""}`
-                }
-                className="btn-primary"
-                style={{ textDecoration: "none", textAlign: "center" }}
-              >
-                Download (Already Paid)
-              </Link>
+              remainingDownloads > 0 ? (
+                <Link
+                  href={
+                    `/api/files/${data.file.id}/download?token=${token}&downloadId=${purchasedDownloadId}${password ? `&password=${encodeURIComponent(password)}` : ""}`
+                  }
+                  className="btn-primary"
+                  style={{ textDecoration: "none", textAlign: "center" }}
+                >
+                  Download ({remainingDownloads} of {maxDownloads})
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  style={{
+                    padding: "12px 20px",
+                    borderRadius: 10,
+                    border: "none",
+                    background: "rgba(255,255,255,0.1)",
+                    color: "var(--foreground)",
+                    cursor: "not-allowed",
+                    fontSize: 13,
+                    fontWeight: "bold",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    opacity: 0.6,
+                  }}
+                >
+                  Download Limit Reached
+                </button>
+              )
             ) : isFile && data.share.downloadPriceApt && data.share.downloadPriceApt > 0 ? (
               <>
                 {/* Paid download */}

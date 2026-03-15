@@ -22,6 +22,7 @@ export const shareSchema = z.object({
   expiresAt: z.string().datetime().optional(),
   downloadPriceApt: z.number().min(0).nullable().optional(),
   sharerWallet: z.string().min(10).nullable().optional(),
+  maxDownloadsPerPayment: z.number().min(1).max(999).nullable().optional(),
 });
 
 export const walletAuthSchema = z.object({
