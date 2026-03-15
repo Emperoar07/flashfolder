@@ -10,8 +10,15 @@ import {
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
-  const profile = await getCurrentUserProfile(getRequestWalletAddress(request));
-  return NextResponse.json(profile);
+  try {
+    const profile = await getCurrentUserProfile(getRequestWalletAddress(request));
+    return NextResponse.json(profile);
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unable to load profile." },
+      { status: 401 },
+    );
+  }
 }
 
 export async function PATCH(request: Request) {

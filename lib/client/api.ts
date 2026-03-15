@@ -17,7 +17,12 @@ export async function apiFetch<T>(
     headers,
   });
 
-  const payload = (await response.json()) as T & { error?: string };
+  let payload: T & { error?: string };
+  try {
+    payload = (await response.json()) as T & { error?: string };
+  } catch {
+    throw new Error(response.ok ? "Invalid server response." : `Request failed (${response.status}).`);
+  }
 
   if (!response.ok) {
     throw new Error(payload.error ?? "Request failed.");
