@@ -40,22 +40,17 @@ export async function POST(request: Request, context: Context) {
       return NextResponse.json({ error: "Share not found" }, { status: 404 });
     }
 
-    const maxDownloads = share.maxDownloadsPerPayment ?? 1;
-
-    // Check purchases for this wallet on this share and pick one that still has remaining downloads.
-    const existingPurchases = await prisma.shareDownload.findMany({
+    // Check if this wallet has already purchased from this share
+    const existingPurchase = await prisma.shareDownload.findFirst({
       where: {
         shareId: share.id,
         buyerWallet: walletAddress,
       },
-      orderBy: { paidAt: "desc" },
     });
 
-    const existingPurchase = existingPurchases.find((purchase) => purchase.downloadCount < maxDownloads) ?? null;
     const downloadCount = existingPurchase?.downloadCount ?? 0;
-    const remainingDownloads = existingPurchase
-      ? Math.max(0, maxDownloads - downloadCount)
-      : 0;
+    const maxDownloads = share.maxDownloadsPerPayment ?? 1;
+    const remainingDownloads = Math.max(0, maxDownloads - downloadCount);
 
     return NextResponse.json({
       hasAlreadyPaid: !!existingPurchase,

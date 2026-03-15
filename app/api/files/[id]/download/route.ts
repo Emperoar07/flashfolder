@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import {
   getFile,
   getFileShare,
-  getOptionalRequestWalletAddress,
+  getRequestWalletAddress,
   recordFileEvent,
   getShareDownload,
   markShareDownloadAsUsed,
@@ -30,7 +30,7 @@ export async function GET(request: Request, context: Context) {
     // wallet query param for browser-native media players that can't send headers
     const walletParam = searchParams.get("wallet");
 
-    const walletAddress = walletParam ?? getOptionalRequestWalletAddress(request);
+    const walletAddress = walletParam ?? getRequestWalletAddress(request);
     const fileShare = token
       ? (await getFileShare(token, password))
       : null;
@@ -45,13 +45,6 @@ export async function GET(request: Request, context: Context) {
 
     // If share has a download price and this is a download attempt (not inline preview)
     if (token && fileShare && !inline && fileShare.share.downloadPriceApt && fileShare.share.downloadPriceApt > 0) {
-      if (!walletAddress) {
-        return NextResponse.json(
-          { error: "Wallet connection required for paid download" },
-          { status: 401 },
-        );
-      }
-
       // Require downloadId from a paid purchase
       if (!downloadId) {
         return NextResponse.json(
@@ -71,15 +64,6 @@ export async function GET(request: Request, context: Context) {
           );
         }
 
-        const requesterWallet = walletAddress.trim().toLowerCase();
-        const buyerWallet = download.buyerWallet.trim().toLowerCase();
-        if (requesterWallet !== buyerWallet) {
-          return NextResponse.json(
-            { error: "This purchase belongs to a different wallet" },
-            { status: 403 },
-          );
-        }
-
         // Check if max downloads exceeded
         const maxDownloads = fileShare.share.maxDownloadsPerPayment ?? 1;
         if (download.downloadCount >= maxDownloads) {
@@ -91,7 +75,7 @@ export async function GET(request: Request, context: Context) {
 
         // Increment download count
         await markShareDownloadAsUsed(downloadId);
-      } catch {
+      } catch (err) {
         return NextResponse.json(
           { error: "Invalid purchase verification" },
           { status: 403 },

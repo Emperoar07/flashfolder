@@ -286,7 +286,7 @@ export function ShareClient({ token }: ShareClientProps) {
               remainingDownloads > 0 ? (
                 <Link
                   href={
-                    `/api/files/${data.file.id}/download?token=${token}&downloadId=${purchasedDownloadId}${walletAddress ? `&wallet=${encodeURIComponent(walletAddress)}` : ""}${password ? `&password=${encodeURIComponent(password)}` : ""}`
+                    `/api/files/${data.file.id}/download?token=${token}&downloadId=${purchasedDownloadId}${password ? `&password=${encodeURIComponent(password)}` : ""}`
                   }
                   className="btn-primary"
                   style={{ textDecoration: "none", textAlign: "center" }}
@@ -357,7 +357,7 @@ export function ShareClient({ token }: ShareClientProps) {
                       setAlreadyPurchased(true);
 
                       // Trigger download with the download ID
-                      const downloadUrl = `/api/files/${data.file.id}/download?token=${token}&downloadId=${result.downloadId}${walletAddress ? `&wallet=${encodeURIComponent(walletAddress)}` : ""}${password ? `&password=${encodeURIComponent(password)}` : ""}`;
+                      const downloadUrl = `/api/files/${data.file.id}/download?token=${token}&downloadId=${result.downloadId}${password ? `&password=${encodeURIComponent(password)}` : ""}`;
                       window.location.href = downloadUrl;
                     } catch (err) {
                       setPurchaseError_state(err instanceof Error ? err.message : "Payment failed");
