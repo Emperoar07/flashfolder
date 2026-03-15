@@ -39,7 +39,6 @@ export function Navbar() {
   const navLinks =
     pathname === "/"
       ? [
-          { href: "/", label: "Home" },
           { href: "/dashboard", label: "Dashboard" },
           { href: "/vault", label: "Vault" },
         ]
