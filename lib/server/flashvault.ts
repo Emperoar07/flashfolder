@@ -285,6 +285,8 @@ export async function createVaultShare(
     shareType: ShareType;
     password?: string;
     expiresAt?: string;
+    downloadPriceApt?: number | null;
+    maxDownloadsPerPayment?: number;
   },
 ) {
   const ownership = await verifyVaultOwnership(walletAddress, vaultAssetId);
@@ -304,6 +306,8 @@ export async function createVaultShare(
       shareType: input.shareType,
       passwordHash,
       expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+      downloadPriceApt: input.downloadPriceApt,
+      maxDownloadsPerPayment: input.maxDownloadsPerPayment ?? 1,
     },
   });
 }

@@ -28,6 +28,8 @@ export async function POST(request: Request, context: Context) {
       shareType: parsed.data.shareType as ShareType,
       password: parsed.data.password,
       expiresAt: parsed.data.expiresAt,
+      downloadPriceApt: parsed.data.downloadPriceApt,
+      maxDownloadsPerPayment: parsed.data.maxDownloadsPerPayment,
     });
 
     return NextResponse.json({ share }, { status: 201 });
