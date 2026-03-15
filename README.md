@@ -23,7 +23,7 @@ Decentralized hot-storage workspace for instant file access, sharing, and stream
 | Layer | Tech |
 |---|---|
 | Framework | Next.js 16, React 19, TypeScript |
-| Styling | Tailwind CSS 4 (dark theme, DM Mono + Bebas Neue + Playfair Display) |
+| Styling | Tailwind CSS 4, Crimson & Black dual-theme (dark/light) via CSS custom properties |
 | Database | PostgreSQL via Prisma ORM (Neon on Vercel) |
 | State | TanStack React Query |
 | Wallet | `@aptos-labs/wallet-adapter-react` + `@aptos-labs/ts-sdk` |
@@ -41,7 +41,7 @@ Decentralized hot-storage workspace for instant file access, sharing, and stream
 app/
 ├── page.tsx                    # Landing page
 ├── layout.tsx                  # Root layout + font providers
-├── globals.css                 # Dark theme tokens + grain overlay
+├── globals.css                 # Dual-theme design tokens (dark/light) + grain overlay
 ├── dashboard/                  # File workspace
 │   ├── page.tsx
 │   └── folders/[id]/page.tsx
@@ -72,10 +72,14 @@ components/
 ├── social-share-buttons.tsx    # Reusable social sharing (X, Facebook, WhatsApp, Telegram, copy)
 ├── file-detail-client.tsx      # Single file page
 ├── file-preview.tsx            # Image/video/audio/PDF renderer
+├── media-viewer.tsx            # Expanded media viewer (images, video, audio)
 ├── upload-dropzone.tsx         # Drag-and-drop file input
-├── navbar.tsx                  # Top nav with unified connect dropdown
+├── navbar.tsx                  # Top nav with TESTNET badge, theme toggle, unified connect dropdown
+├── theme-toggle.tsx            # Dark/light theme pill toggle (landing page only)
 ├── wallet-status.tsx           # Connect/disconnect + address display
+├── workspace-dropdown.tsx      # Workspace switcher dropdown
 ├── workspace-nav.tsx           # Sidebar navigation
+├── workspace-preview-card.tsx  # Workspace preview card
 └── providers.tsx               # Aptos wallet + React Query
 
 lib/
@@ -100,8 +104,10 @@ lib/
 ├── client/
 │   ├── api.ts                  # Fetch wrapper
 │   ├── hooks.ts                # React Query hooks
-│   ├── use-aptos-transaction.ts # Aptos transaction signing hook
-│   └── wallet.ts               # Wallet adapter helpers
+│   ├── upload-chunked.ts       # Chunked upload for large files
+│   ├── use-share-purchase.ts   # Share purchase flow hook
+│   ├── use-workspace-transaction.ts # Aptos workspace transaction hook
+│   └── wallet.tsx              # Wallet adapter helpers
 ├── file-kinds.ts               # MIME → preview type mapping
 ├── types.ts                    # Shared TypeScript types
 ├── utils.ts                    # Formatting helpers
@@ -260,6 +266,12 @@ Open [localhost:3000](http://localhost:3000).
 - Share with expiring or password-protected links
 - Social sharing to X, Facebook, WhatsApp, Telegram
 
+### Theme
+- Crimson & Black color palette (`#dc143c` crimson accent, `#000000` dark bg, `#f5f1ed` light bg)
+- Dark/light mode toggle on the landing page (persisted in localStorage)
+- Full CSS custom property system — all colors driven by `data-theme` attribute
+- Fonts: DM Mono, Bebas Neue, Playfair Display, Space Grotesk
+
 ### FlashVault
 - Import real NFTs from connected Aptos wallet
 - Attach owner-only media and unlockables
@@ -273,6 +285,7 @@ Open [localhost:3000](http://localhost:3000).
 - Email/password sign-up and sign-in
 - Unified connect dropdown (wallet or email)
 - Session management with HTTP-only cookies
+- Persistent wallet session across page refreshes
 
 ### Share Hub
 - Central hub for all share links
@@ -299,7 +312,7 @@ Minimum Vercel env vars: `DATABASE_URL`, `NEXT_PUBLIC_APTOS_NETWORK`, `NEXT_PUBL
 - [x] Dual auth (wallet + email/password)
 - [x] Social sharing (X, Facebook, WhatsApp, Telegram)
 - [x] File sorting and category filtering
-- [x] Dark theme redesign
+- [x] Crimson & Black dual-theme (dark/light) with CSS custom properties
 - [ ] Shelby SDK integration (blocked on early access approval)
 - [ ] Real Aptos wallet auth (challenge-response signing)
 - [ ] Micropayment-gated content via Shelby paid reads
