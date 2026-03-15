@@ -99,6 +99,7 @@ lib/
 │   │   ├── indexer-provider.ts #   Real Aptos Indexer GraphQL provider
 │   │   └── mock-provider.ts    #   Mock data for local dev
 │   ├── flashvault.ts           # Vault business logic
+│   ├── flashvault-contract.ts  # On-chain vault registry TypeScript bindings
 │   ├── workspace.ts            # Workspace helpers + share listing
 │   └── crypto.ts               # Encryption for vault uploads
 ├── client/
@@ -114,6 +115,15 @@ lib/
 ├── validation.ts               # Zod schemas
 ├── config.ts                   # Env config
 └── prisma.ts                   # Prisma client singleton
+
+contracts/                          # FlashVault Move smart contract
+├── Move.toml                       # Package manifest
+└── sources/
+    ├── registry.move               # Vault registry (register, update, status, views)
+    ├── entitlements.move           # Lightweight access grants per vault
+    ├── events.move                 # On-chain event definitions
+    ├── errors.move                 # Shared error codes
+    └── registry_tests.move         # Move unit tests
 
 docs/
 ├── developer-handoff.md        # Onboarding, blockers, next steps
@@ -174,6 +184,66 @@ The app queries the Aptos Indexer GraphQL API to discover NFTs owned by a connec
 
 ### NFT ownership verification
 FlashVault verifies on-chain ownership via the indexer before granting access to gated content. Transfer the NFT = transfer vault access.
+
+---
+
+## FlashVault Move contract
+
+The `contracts/` directory contains the on-chain vault registry — a set of Move modules deployed on Aptos.
+
+### Modules
+
+| Module | Purpose |
+|---|---|
+| `registry` | Anchors vault existence per NFT object ID. Stores registrant, teaser mode, content commitment hash, active status. |
+| `entitlements` | Lightweight access grants. Registrant can grant/revoke content access for specific holder addresses. |
+| `events` | Structured event definitions (`VaultRegistered`, `VaultUpdated`, `TeaserModeChanged`, `EntitlementGranted`, etc.) |
+| `errors` | Shared abort codes across modules. |
+
+### Entry functions
+
+| Function | Module | Description |
+|---|---|---|
+| `register_vault` | registry | Register a new vault for an NFT object ID |
+| `update_content_commitment` | registry | Update the SHA-256 manifest hash |
+| `update_teaser_mode` | registry | Toggle public teaser visibility |
+| `set_vault_status` | registry | Activate or deactivate the vault |
+| `grant_entitlement` | entitlements | Grant content access to a holder address |
+| `revoke_entitlement` | entitlements | Revoke a previously granted entitlement |
+
+### View functions
+
+| Function | Module | Returns |
+|---|---|---|
+| `has_vault` | registry | `bool` — whether a vault exists |
+| `get_vault_info` | registry | Full vault record tuple |
+| `vault_count` | registry | Total registered vaults |
+| `has_entitlement` | entitlements | `bool` — whether holder has access |
+
+### Build & test
+
+Requires the [Aptos CLI](https://aptos.dev/tools/aptos-cli/):
+
+```bash
+cd contracts
+aptos move compile --named-addresses flashvault=default
+aptos move test --named-addresses flashvault=0x1
+```
+
+### Deploy to testnet
+
+```bash
+aptos init --network testnet
+aptos move publish --named-addresses flashvault=default
+```
+
+After deploying, set `NEXT_PUBLIC_FLASHVAULT_ADDRESS` to the deployer address.
+
+### TypeScript bindings
+
+`lib/server/flashvault-contract.ts` provides:
+- Entry-function payload builders for wallet signing
+- View-function wrappers that query on-chain state via the Aptos SDK
 
 ---
 
@@ -245,6 +315,7 @@ Open [localhost:3000](http://localhost:3000).
 | `APTOS_INDEXER_URL` | Aptos indexer GraphQL (optional, public defaults used) |
 | `FLASHVAULT_USE_MOCK_NFTS` | `true` for mock NFT imports (default: `false`) |
 | `FLASHVAULT_ENCRYPTION_SECRET` | AES key for vault file encryption |
+| `NEXT_PUBLIC_FLASHVAULT_ADDRESS` | Deployed FlashVault Move contract address |
 
 ### Other
 
@@ -314,10 +385,10 @@ Minimum Vercel env vars: `DATABASE_URL`, `NEXT_PUBLIC_APTOS_NETWORK`, `NEXT_PUBL
 - [x] File sorting and category filtering
 - [x] Crimson & Black dual-theme (dark/light) with CSS custom properties
 - [ ] Shelby SDK integration (blocked on early access approval)
-- [ ] Real Aptos wallet auth (challenge-response signing)
+- [x] Real Aptos wallet auth (challenge-response signing)
 - [ ] Micropayment-gated content via Shelby paid reads
 - [ ] Cross-chain identity (Ethereum/Solana via Shelby kits)
-- [ ] On-chain vault registry (Move contract)
+- [x] On-chain vault registry (Move contract)
 
 ---
 
