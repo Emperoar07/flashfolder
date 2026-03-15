@@ -10,9 +10,8 @@ import type {
   StorageAdapter,
 } from "@/lib/storage/types";
 
-// Vercel Blob actual limit is 4.5MB but we chunk on client, so set realistic server size
-// Each chunk sent to server should be under 4.5MB
-const VERCEL_BLOB_SERVER_UPLOAD_LIMIT_BYTES = 16 * 1024 * 1024; // Reported limit for chunked uploads
+// Vercel Blob practical per-request upload limit is 4.5MB.
+const VERCEL_BLOB_SERVER_UPLOAD_LIMIT_BYTES = 4.5 * 1024 * 1024;
 
 function getBlobToken() {
   return appConfig.blob.readWriteToken;

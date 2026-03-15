@@ -518,7 +518,7 @@ export function SettingsClient() {
             label="Upload Limit"
             description="Maximum file size per upload"
           >
-            <ReadOnlyValue value={`${settings?.maxUploadMb ?? 100} MB`} />
+            <ReadOnlyValue value={`${settings?.maxUploadMb ?? 4.5} MB`} />
           </SettingRow>
 
           <SettingRow

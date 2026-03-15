@@ -7,9 +7,8 @@ export const demoWalletAddress =
 const rawStorageMode = (process.env.FLASHFOLDER_STORAGE_MODE ?? "local").trim().toLowerCase();
 const rawAptosAuthMode = (process.env.APTOS_AUTH_MODE ?? "challenge").trim().toLowerCase();
 const rawAptosNetwork = (process.env.NEXT_PUBLIC_APTOS_NETWORK ?? "testnet").trim().toLowerCase();
-const maxUploadMb = Number.parseInt(
-  process.env.FLASHFOLDER_MAX_UPLOAD_MB ?? "100",
-  10,
+const maxUploadMb = Number.parseFloat(
+  process.env.FLASHFOLDER_MAX_UPLOAD_MB ?? "4.5",
 );
 
 export const appConfig = {
@@ -22,7 +21,7 @@ export const appConfig = {
         ? "blob"
         : "local",
   maxUploadBytes: Number.isNaN(maxUploadMb)
-    ? 100 * 1024 * 1024
+    ? 4.5 * 1024 * 1024
     : maxUploadMb * 1024 * 1024,
   storageRoot: process.env.FLASHFOLDER_STORAGE_ROOT ?? ".flashfolder/storage",
   failOnStorageMisconfig:

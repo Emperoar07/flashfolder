@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/dashboard", label: "My files", icon: FolderKanban },
-  { href: "/share/flash-demo-share", label: "Shared", icon: Link2 },
+  { href: "/share", label: "Shared", icon: Link2 },
   { href: "/vault", label: "Vault", icon: Shield },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
