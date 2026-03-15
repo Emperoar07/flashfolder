@@ -646,7 +646,6 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               gap: 16,
             }}
           >
-            <span style={{ fontSize: 24 }}>&#x1F512;</span>
             <div>
               <div style={{ fontSize: 13, fontFamily: "var(--font-bebas-neue)", letterSpacing: "0.1em", marginBottom: 2 }}>
                 Wallet Required
@@ -712,7 +711,6 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               opacity: 0.6,
             }}
           >
-            <div style={{ fontSize: 22, marginBottom: 8 }}>&#x1F512;</div>
             <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
               Connect your wallet to upload files
             </div>
@@ -1092,23 +1090,43 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
       <aside className="right-panel">
         {selectedFile ? (
           <>
+            {/* Prev / Next navigation */}
+            {filteredFiles.length > 1 && (() => {
+              const idx = filteredFiles.findIndex((f) => f.id === selectedFile.id);
+              const prev = filteredFiles[idx - 1] ?? filteredFiles[filteredFiles.length - 1];
+              const next = filteredFiles[idx + 1] ?? filteredFiles[0];
+              return (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFileId(prev.id)}
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "4px 12px", color: "var(--text-secondary)", cursor: "pointer", fontSize: 13 }}
+                  >
+                    ← Prev
+                  </button>
+                  <span style={{ fontSize: 10, color: "var(--text-muted)" }}>
+                    {idx + 1} / {filteredFiles.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFileId(next.id)}
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "4px 12px", color: "var(--text-secondary)", cursor: "pointer", fontSize: 13 }}
+                  >
+                    Next →
+                  </button>
+                </div>
+              );
+            })()}
+
             <div className="detail-preview">
-              {selectedFile.previewType === PREVIEW_TYPES.VIDEO ? (
-                <div className="play-btn">&#x25B6;</div>
-              ) : selectedFile.previewType === PREVIEW_TYPES.IMAGE ? (
-                <FilePreview
-                  fileId={selectedFile.id}
-                  originalName={selectedFile.originalName}
-                  previewType={selectedFile.previewType}
-                  walletAddress={walletAddress ?? undefined}
-                />
-              ) : selectedFile.previewType === PREVIEW_TYPES.AUDIO ? (
-                <div style={{ fontSize: 32, opacity: 0.3 }}>&#x1F3B5;</div>
-              ) : (
-                <div style={{ fontSize: 32, opacity: 0.15 }}>&#x1F4C4;</div>
-              )}
+              <FilePreview
+                fileId={selectedFile.id}
+                originalName={selectedFile.originalName}
+                previewType={selectedFile.previewType}
+                walletAddress={walletAddress ?? undefined}
+              />
             </div>
-            <h3 style={{ fontFamily: "var(--font-bebas-neue)", fontSize: 18, letterSpacing: "0.1em" }}>
+            <h3 style={{ fontFamily: "var(--font-bebas-neue)", fontSize: 18, letterSpacing: "0.1em", marginTop: 12 }}>
               {selectedFile.filename}
             </h3>
             <dl className="detail-meta">
