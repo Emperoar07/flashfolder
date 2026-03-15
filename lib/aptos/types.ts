@@ -41,6 +41,15 @@ export type WalletLoginChallenge = {
   authMode: WalletAuthMode;
 };
 
+export type WalletSignedChallenge = {
+  walletAddress: string;
+  challengeId: string;
+  signature?: string;
+  publicKey?: string;
+  fullMessage?: string;
+  signedAddress?: string;
+};
+
 export type WalletSessionRecord = {
   walletAddress: string;
   sessionToken: string;

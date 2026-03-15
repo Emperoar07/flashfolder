@@ -37,8 +37,7 @@ function AuthenticatedImage({
 
   useEffect(() => {
     let revoked = false;
-    setObjectUrl(null);
-    setError(false);
+    let nextObjectUrl: string | null = null;
 
     fetch(src, { headers: { "x-wallet-address": walletAddress } })
       .then((res) => {
@@ -47,7 +46,15 @@ function AuthenticatedImage({
       })
       .then((blob) => {
         if (revoked) return;
-        setObjectUrl(URL.createObjectURL(blob));
+        nextObjectUrl = URL.createObjectURL(blob);
+        setObjectUrl((currentObjectUrl) => {
+          if (currentObjectUrl) {
+            URL.revokeObjectURL(currentObjectUrl);
+          }
+
+          return nextObjectUrl;
+        });
+        setError(false);
       })
       .catch(() => {
         if (!revoked) setError(true);
@@ -55,6 +62,9 @@ function AuthenticatedImage({
 
     return () => {
       revoked = true;
+      if (nextObjectUrl) {
+        URL.revokeObjectURL(nextObjectUrl);
+      }
     };
   }, [src, walletAddress]);
 

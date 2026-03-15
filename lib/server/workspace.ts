@@ -3,7 +3,11 @@ import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 
 import { appConfig, demoWalletAddress } from "@/lib/config";
-import { getAptosRuntimeStatus, getWalletAuthStatus } from "@/lib/server/aptos";
+import {
+  getAptosRuntimeStatus,
+  getSessionForToken,
+  getWalletAuthStatus,
+} from "@/lib/server/aptos";
 import { prisma } from "@/lib/prisma";
 import {
   getStorageAdapter,
@@ -16,6 +20,25 @@ import { inferPreviewType, slugifyFilename } from "@/lib/utils";
 
 function normalizeWalletAddress(walletAddress?: string | null) {
   return walletAddress?.trim() || demoWalletAddress;
+}
+
+function getCookieValue(request: Request, name: string) {
+  const cookieHeader = request.headers.get("cookie");
+
+  if (!cookieHeader) {
+    return null;
+  }
+
+  const cookie = cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${name}=`));
+
+  if (!cookie) {
+    return null;
+  }
+
+  return decodeURIComponent(cookie.slice(name.length + 1));
 }
 
 export async function ensureUser(
@@ -429,11 +452,32 @@ export async function recordFileEvent(
 }
 
 export function getRequestWalletAddress(request: Request) {
-  return request.headers.get("x-wallet-address") ?? demoWalletAddress;
+  const requestWallet = request.headers.get("x-wallet-address");
+  const cookieWallet = getCookieValue(request, "ff_wallet");
+  const sessionToken = getCookieValue(request, "ff_session");
+  const session = getSessionForToken(sessionToken);
+
+  if (session?.walletAddress) {
+    return session.walletAddress;
+  }
+
+  if (requestWallet) {
+    return requestWallet;
+  }
+
+  if (cookieWallet) {
+    return cookieWallet;
+  }
+
+  return demoWalletAddress;
 }
 
 export function getOptionalRequestWalletAddress(request: Request) {
-  return request.headers.get("x-wallet-address");
+  const requestWallet = request.headers.get("x-wallet-address");
+  const sessionToken = getCookieValue(request, "ff_session");
+  const session = getSessionForToken(sessionToken);
+
+  return session?.walletAddress ?? requestWallet ?? getCookieValue(request, "ff_wallet");
 }
 
 export function getSettingsSnapshot() {

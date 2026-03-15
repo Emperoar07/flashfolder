@@ -13,6 +13,7 @@ export async function apiFetch<T>(
 
   const response = await fetch(path, {
     ...options,
+    credentials: options.credentials ?? "same-origin",
     headers,
   });
 

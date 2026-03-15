@@ -6,6 +6,7 @@ export const demoWalletAddress =
 
 const rawStorageMode = (process.env.FLASHFOLDER_STORAGE_MODE ?? "local").trim().toLowerCase();
 const rawAptosAuthMode = (process.env.APTOS_AUTH_MODE ?? "mock").trim().toLowerCase();
+const rawAptosNetwork = (process.env.NEXT_PUBLIC_APTOS_NETWORK ?? "testnet").trim().toLowerCase();
 const maxUploadMb = Number.parseInt(
   process.env.FLASHFOLDER_MAX_UPLOAD_MB ?? "100",
   10,
@@ -31,11 +32,11 @@ export const appConfig = {
   blob: {
     readWriteToken: process.env.BLOB_READ_WRITE_TOKEN ?? "",
   },
-  aptosNetwork: process.env.NEXT_PUBLIC_APTOS_NETWORK ?? "testnet",
+  aptosNetwork: rawAptosNetwork,
   aptos: {
-    network: process.env.NEXT_PUBLIC_APTOS_NETWORK ?? "testnet",
-    fullnodeUrl: process.env.APTOS_FULLNODE_URL ?? "",
-    indexerUrl: process.env.APTOS_INDEXER_URL ?? "",
+    network: rawAptosNetwork,
+    fullnodeUrl: (process.env.APTOS_FULLNODE_URL ?? "").trim(),
+    indexerUrl: (process.env.APTOS_INDEXER_URL ?? "").trim(),
     authMode: (rawAptosAuthMode === "challenge" ? "challenge" : "mock") as WalletAuthMode,
     mockEnabled:
       process.env.APTOS_MOCK_ENABLED === "true" ||

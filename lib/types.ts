@@ -12,6 +12,7 @@ import type {
   AptosRuntimeStatus,
   NormalizedNftAsset,
   NftOwnershipVerificationResult,
+  WalletSignedChallenge,
   WalletAuthStatus,
   WalletLoginChallenge,
   WalletSessionRecord,
@@ -62,6 +63,8 @@ export type WalletChallengePayload = {
   challenge: WalletLoginChallenge;
   auth: WalletAuthStatus;
 };
+
+export type WalletChallengeVerifyPayload = WalletSignedChallenge;
 
 export type AptosStatusPayload = {
   aptos: AptosRuntimeStatus;

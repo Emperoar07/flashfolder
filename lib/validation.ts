@@ -36,6 +36,8 @@ export const walletChallengeVerifySchema = z.object({
   challengeId: z.string().min(6),
   signature: z.string().min(2).optional(),
   publicKey: z.string().min(2).optional(),
+  fullMessage: z.string().min(10).optional(),
+  signedAddress: z.string().min(10).optional(),
 });
 
 export const updateFileSchema = z.object({

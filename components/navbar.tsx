@@ -30,8 +30,16 @@ function WalletIcon() {
 
 export function Navbar() {
   const pathname = usePathname();
-  const { walletAddress, connected, connect, disconnect, wallets, isDemo } =
-    useWorkspaceWallet();
+  const {
+    walletAddress,
+    connected,
+    connect,
+    disconnect,
+    wallets,
+    authError,
+    isAuthenticating,
+    lastError,
+  } = useWorkspaceWallet();
   const [connectDropdownOpen, setConnectDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [googleModalOpen, setGoogleModalOpen] = useState(false);
@@ -52,6 +60,7 @@ export function Navbar() {
   }, []);
 
   const isLoggedIn = connected || !!emailUser;
+  const walletError = authError ?? lastError;
   const displayName = connected
     ? shortenWallet(walletAddress)
     : emailUser
@@ -111,6 +120,9 @@ export function Navbar() {
   function handleDisconnect() {
     setConnectDropdownOpen(false);
     if (connected) {
+      localStorage.removeItem("flashfolder.wallet");
+      document.cookie = "ff_session=; path=/; max-age=0";
+      document.cookie = "ff_wallet=; path=/; max-age=0";
       void disconnect();
     }
     if (emailUser) {
@@ -250,11 +262,12 @@ export function Navbar() {
                             setConnectDropdownOpen(false);
                             void connect(wallet.name);
                           }}
+                          disabled={isAuthenticating}
                           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[11px] text-[#f0ede6] transition hover:bg-[rgba(255,255,255,0.05)]"
                           type="button"
                         >
                           <WalletIcon />
-                          {wallet.name}
+                          {isAuthenticating ? "Verifying wallet..." : wallet.name}
                         </button>
                       ))
                     ) : (
@@ -279,6 +292,11 @@ export function Navbar() {
                       <GoogleIcon />
                       Sign in with Google / Email
                     </button>
+                    {walletError ? (
+                      <div className="mt-2 rounded-lg border border-[rgba(200,57,43,0.28)] bg-[rgba(200,57,43,0.12)] px-3 py-2 text-[11px] text-[#ffb4ac]">
+                        {walletError}
+                      </div>
+                    ) : null}
                   </>
                 )}
               </div>
@@ -369,11 +387,12 @@ export function Navbar() {
                   <button
                     key={wallet.name}
                     onClick={() => { setConnectDropdownOpen(false); void connect(wallet.name); }}
+                    disabled={isAuthenticating}
                     className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[11px] text-[#f0ede6] transition hover:bg-[rgba(255,255,255,0.05)]"
                     type="button"
                   >
                     <WalletIcon />
-                    {wallet.name}
+                    {isAuthenticating ? "Verifying wallet..." : wallet.name}
                   </button>
                 ))
               ) : (
@@ -391,6 +410,11 @@ export function Navbar() {
                 <GoogleIcon />
                 Sign in with Email
               </button>
+              {walletError ? (
+                <div className="mt-2 rounded-lg border border-[rgba(200,57,43,0.28)] bg-[rgba(200,57,43,0.12)] px-3 py-2 text-[11px] text-[#ffb4ac]">
+                  {walletError}
+                </div>
+              ) : null}
             </>
           )}
         </div>

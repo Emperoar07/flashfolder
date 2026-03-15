@@ -5,6 +5,8 @@ import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { FlashFolderWalletProvider, reportWalletError } from "@/lib/client/wallet";
+
 type ProvidersProps = {
   children: React.ReactNode;
 };
@@ -28,9 +30,16 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <AptosWalletAdapterProvider
       autoConnect={false}
+      disableTelemetry
       dappConfig={{ network: resolveNetwork() }}
+      onError={(error) => {
+        console.error("FlashFolder wallet provider error", error);
+        reportWalletError(error);
+      }}
     >
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <FlashFolderWalletProvider>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </FlashFolderWalletProvider>
     </AptosWalletAdapterProvider>
   );
 }

@@ -24,12 +24,28 @@ export async function POST(request: Request) {
 
     const user = await ensureUser(parsed.data.walletAddress, parsed.data.username);
     const session = await createSessionForWallet(parsed.data.walletAddress);
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       user,
       session,
       auth: getWalletAuthStatus(),
     });
+
+    response.cookies.set("ff_session", session.sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 86400,
+      path: "/",
+    });
+    response.cookies.set("ff_wallet", parsed.data.walletAddress, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 86400,
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     const mapped = toAptosResponse(error, "Wallet login failed.");
     return NextResponse.json({ error: mapped.message, code: mapped.code }, { status: mapped.status });
