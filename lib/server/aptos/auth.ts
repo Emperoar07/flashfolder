@@ -13,13 +13,17 @@ import { AptosIntegrationError } from "@/lib/server/aptos/errors";
 
 const challengeTtlMs = 5 * 60 * 1000;
 const sessionTtlMs = 24 * 60 * 60 * 1000;
-const authSecret = (() => {
+
+let _authSecret: string | null = null;
+function getAuthSecret() {
+  if (_authSecret !== null) return _authSecret;
   const secret = (process.env.FLASHFOLDER_AUTH_SECRET ?? process.env.FLASHVAULT_ENCRYPTION_SECRET ?? "").trim();
   if (!secret && process.env.NODE_ENV === "production") {
     throw new Error("FLASHFOLDER_AUTH_SECRET or FLASHVAULT_ENCRYPTION_SECRET must be set in production.");
   }
-  return secret || "dev-auth-secret-local-only";
-})();
+  _authSecret = secret || "dev-auth-secret-local-only";
+  return _authSecret;
+}
 
 type SignedChallengePayload = {
   kind: "challenge";
@@ -47,7 +51,7 @@ function normalizeWalletAddress(value: string) {
 
 function signPayload(payload: object) {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  const signature = createHmac("sha256", authSecret).update(body).digest("base64url");
+  const signature = createHmac("sha256", getAuthSecret()).update(body).digest("base64url");
 
   return `${body}.${signature}`;
 }
@@ -61,7 +65,7 @@ function verifySignedPayload<T extends { kind: string }>(token: string, kind: T[
     });
   }
 
-  const expectedSignature = createHmac("sha256", authSecret).update(body).digest("base64url");
+  const expectedSignature = createHmac("sha256", getAuthSecret()).update(body).digest("base64url");
   const received = Buffer.from(signature);
   const expected = Buffer.from(expectedSignature);
 
