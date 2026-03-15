@@ -460,8 +460,48 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
 
   return (
     <div className="dashboard">
+      {/* Overlay for mobile sidebar */}
+      {mobileSidebarOpen && (
+        <div
+          style={{
+            display: "none",
+            position: "fixed",
+            inset: 0,
+            zIndex: 38,
+            background: "rgba(0, 0, 0, 0.4)",
+          }}
+          className="mobile-sidebar-overlay"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* LEFT SIDEBAR */}
       <aside className={`sidebar${mobileSidebarOpen ? " mobile-open" : ""}`}>
+        {/* Mobile: Close button */}
+        <button
+          type="button"
+          onClick={() => setMobileSidebarOpen(false)}
+          style={{
+            display: "none",
+            position: "absolute",
+            top: 16,
+            right: 16,
+            background: "transparent",
+            border: "none",
+            color: "var(--text-secondary)",
+            fontSize: 20,
+            cursor: "pointer",
+            padding: 0,
+            width: 24,
+            height: 24,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          className="mobile-sidebar-close"
+          title="Close sidebar"
+        >
+          ✕
+        </button>
         <WorkspaceDropdown activePage="files" />
         <div>
           <div className="sidebar-section-label">Folders</div>
@@ -632,7 +672,6 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           type="button"
           onClick={() => setMobileSidebarOpen((o) => !o)}
           style={{
-            display: "none",
             width: "100%",
             marginBottom: 12,
             padding: "10px 14px",

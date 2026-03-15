@@ -1061,6 +1061,24 @@ select {
   }
 }
 
+.mobile-sidebar-overlay {
+  display: none !important;
+}
+
+.mobile-sidebar-close {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .mobile-sidebar-overlay {
+    display: block !important;
+  }
+
+  .mobile-sidebar-close {
+    display: flex !important;
+  }
+}
+
 /* ========== MOBILE NAV ========== */
 .mobile-menu-btn {
   display: none;
@@ -1240,15 +1258,24 @@ select {
     border: none;
     border-radius: 0;
     overflow-y: auto;
-    padding-top: 80px;
+    padding-top: 50px;
   }
 
   .sidebar.mobile-open {
     display: flex;
     flex-direction: column;
     border-bottom: none;
-    padding: 16px 16px 40px;
+    padding: 50px 16px 40px;
     gap: 24px;
+    position: relative;
+  }
+
+  .mobile-sidebar-close {
+    display: flex !important;
+  }
+
+  .mobile-sidebar-overlay {
+    display: block !important;
   }
 
   .mobile-sidebar-toggle {
