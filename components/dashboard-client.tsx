@@ -193,7 +193,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
       let transactionHash: string | undefined;
 
       if (connected) {
-        const hash = await submitFolderTransaction("create", name);
+        const hash = await submitFolderTransaction("folder_create", name);
         if (!hash) throw new Error("Transaction was rejected. Folder not created.");
         transactionHash = hash;
       }
@@ -220,7 +220,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
       let transactionHash: string | undefined;
 
       if (connected) {
-        const hash = await submitFolderTransaction("rename", name);
+        const hash = await submitFolderTransaction("folder_rename", name);
         if (!hash) throw new Error("Transaction was rejected. Folder not renamed.");
         transactionHash = hash;
       }
@@ -245,7 +245,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const deleteFolderMutation = useMutation({
     mutationFn: async (id: string) => {
       if (connected) {
-        const hash = await submitFolderTransaction("delete", "folder");
+        const hash = await submitFolderTransaction("folder_delete", "folder");
         if (!hash) throw new Error("Transaction was rejected. Folder not deleted.");
       }
 
@@ -265,6 +265,11 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
     mutationFn: async () => {
       if (!selectedUpload) {
         throw new Error("Pick a file first.");
+      }
+
+      if (connected) {
+        const hash = await submitFolderTransaction("file_upload", selectedUpload.name);
+        if (!hash) throw new Error("Transaction was rejected. File not uploaded.");
       }
 
       const formData = new FormData();
@@ -291,12 +296,18 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   });
 
   const deleteFileMutation = useMutation({
-    mutationFn: (fileId: string) =>
-      apiFetch<{ success: boolean }>(
+    mutationFn: async (fileId: string) => {
+      if (connected) {
+        const hash = await submitFolderTransaction("file_delete", "file");
+        if (!hash) throw new Error("Transaction was rejected. File not deleted.");
+      }
+
+      return apiFetch<{ success: boolean }>(
         `/api/files/${fileId}`,
         { method: "DELETE" },
         walletAddress,
-      ),
+      );
+    },
     onSuccess: () => {
       setSelectedFileId(null);
       void queryClient.invalidateQueries({ queryKey: ["files", walletAddress] });
@@ -304,8 +315,13 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   });
 
   const createShareMutation = useMutation({
-    mutationFn: (fileId: string) =>
-      apiFetch<{ share: ShareRecord }>(
+    mutationFn: async (fileId: string) => {
+      if (connected) {
+        const hash = await submitFolderTransaction("file_share", "share");
+        if (!hash) throw new Error("Transaction was rejected. Share not created.");
+      }
+
+      return apiFetch<{ share: ShareRecord }>(
         `/api/files/${fileId}/share`,
         {
           method: "POST",
@@ -316,7 +332,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           }),
         },
         walletAddress,
-      ),
+      );
+    },
     onSuccess: () => {
       setSharePassword("");
       void queryClient.invalidateQueries({ queryKey: ["files", walletAddress] });

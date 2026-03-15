@@ -3,34 +3,22 @@
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useState } from "react";
 
-export type FolderOperation = "create" | "rename" | "delete";
-
-function buildTransactionPayload(operation: FolderOperation, folderName: string) {
-  // Use a 0-APT self-transfer as a lightweight on-chain log.
-  // The operation metadata is encoded in the transaction's function arguments.
-  // This ensures every folder mutation is recorded on-chain without needing
-  // a custom Move module deployed.
-  return {
-    data: {
-      function: "0x1::aptos_account::transfer" as const,
-      typeArguments: [] as string[],
-      functionArguments: [
-        // Self-transfer: the connected wallet sends 1 octa to itself
-        "self",
-        "1",
-      ],
-    },
-  };
-}
+export type WorkspaceOperation =
+  | "folder_create"
+  | "folder_rename"
+  | "folder_delete"
+  | "file_upload"
+  | "file_delete"
+  | "file_share";
 
 export function useAptosTransaction() {
   const { account, signAndSubmitTransaction, connected } = useWallet();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function submitFolderTransaction(
-    operation: FolderOperation,
-    folderName: string,
+  async function submitTransaction(
+    operation: WorkspaceOperation,
+    label: string,
   ): Promise<string | null> {
     if (!connected || !account?.address) {
       setError("Wallet not connected. Connect your wallet to perform this action.");
@@ -61,7 +49,11 @@ export function useAptosTransaction() {
     }
   }
 
+  // Backward-compatible alias
+  const submitFolderTransaction = submitTransaction;
+
   return {
+    submitTransaction,
     submitFolderTransaction,
     isPending,
     error,
