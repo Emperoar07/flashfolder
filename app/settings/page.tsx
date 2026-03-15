@@ -7,204 +7,390 @@ export default async function SettingsPage() {
 
   return (
     <main className="mx-auto max-w-5xl px-6 pb-16 sm:px-8" style={{ paddingTop: 80 }}>
-      <div className="rounded-[2rem] bg-[#111] p-8">
-        <p className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
+      {/* Header */}
+      <div style={{ marginBottom: 32 }}>
+        <p
+          style={{
+            fontSize: 10,
+            textTransform: "uppercase",
+            letterSpacing: "0.3em",
+            color: "var(--text-muted)",
+          }}
+        >
           Settings
         </p>
-        <h1 className="mt-4 text-4xl font-semibold font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-[#f0ede6]">
-          Runtime integration settings
+        <h1
+          style={{
+            fontFamily: "var(--font-bebas-neue)",
+            fontSize: 42,
+            letterSpacing: "0.06em",
+            color: "var(--foreground)",
+            marginTop: 12,
+          }}
+        >
+          WORKSPACE SETTINGS
         </h1>
-        <p className="mt-3 max-w-2xl text-[rgba(240,237,230,0.55)]">
-          FlashFolder can now run on a temporary production-safe Blob adapter
-          while Shelby access is pending. When Shelby credentials arrive, you
-          can switch storage modes without rewriting the product layer.
-          FlashVault uses the same storage boundary, plus a separate ownership
-          verification layer for Aptos NFT content.
-        </p>
+      </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-5">
-            <p className="text-sm text-[rgba(240,237,230,0.35)]">Requested mode</p>
-            <p className="mt-2 text-2xl font-semibold text-[#f0ede6]">
-              {settings.requestedStorageMode}
-            </p>
+      {/* Account Section */}
+      <section
+        style={{
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: 20,
+          padding: 32,
+          marginBottom: 24,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 20,
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: "var(--accent-red)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 18,
+              color: "var(--foreground)",
+            }}
+          >
+            &#x1F464;
           </div>
-          <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-5">
-            <p className="text-sm text-[rgba(240,237,230,0.35)]">Aptos network</p>
-            <p className="mt-2 text-2xl font-semibold text-[#f0ede6]">
-              {settings.aptosNetwork}
-            </p>
-          </div>
-          <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-5">
-            <p className="text-sm text-[rgba(240,237,230,0.35)]">Blob configured</p>
-            <p className="mt-2 text-2xl font-semibold text-[#f0ede6]">
-              {settings.blobConfigured ? "Yes" : "Not yet"}
-            </p>
-          </div>
-          <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-5">
-            <p className="text-sm text-[rgba(240,237,230,0.35)]">Active adapter</p>
-            <p className="mt-2 text-2xl font-semibold text-[#f0ede6]">
-              {settings.activeStorageMode}
-            </p>
+          <div>
+            <h2
+              style={{
+                fontFamily: "var(--font-bebas-neue)",
+                fontSize: 22,
+                letterSpacing: "0.08em",
+                color: "var(--foreground)",
+              }}
+            >
+              ACCOUNT
+            </h2>
           </div>
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-5">
-            <p className="text-sm text-[rgba(240,237,230,0.35)]">Integration status</p>
-            <p className="mt-2 text-2xl font-semibold text-[#f0ede6]">
-              {settings.storageState.replaceAll("_", " ")}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: 16,
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              borderRadius: 16,
+              padding: 20,
+            }}
+          >
+            <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.15em" }}>
+              Network
+            </p>
+            <p style={{ fontSize: 20, fontWeight: 600, color: "var(--foreground)", marginTop: 8 }}>
+              {settings.aptosNetwork}
             </p>
           </div>
-          <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-5">
-            <p className="text-sm text-[rgba(240,237,230,0.35)]">Upload limit</p>
-            <p className="mt-2 text-2xl font-semibold text-[#f0ede6]">
+          <div
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              borderRadius: 16,
+              padding: 20,
+            }}
+          >
+            <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.15em" }}>
+              Auth Mode
+            </p>
+            <p style={{ fontSize: 20, fontWeight: 600, color: "var(--foreground)", marginTop: 8 }}>
+              {settings.walletAuth.mode === "mock" ? "Wallet + Email" : "Challenge-Response"}
+            </p>
+          </div>
+          <div
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              borderRadius: 16,
+              padding: 20,
+            }}
+          >
+            <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.15em" }}>
+              Upload Limit
+            </p>
+            <p style={{ fontSize: 20, fontWeight: 600, color: "var(--foreground)", marginTop: 8 }}>
               {settings.maxUploadMb} MB
             </p>
-            {settings.maxUploadMb !== settings.configuredMaxUploadMb ? (
-              <p className="mt-2 text-sm text-[rgba(240,237,230,0.35)]">
-                Configured for {settings.configuredMaxUploadMb} MB, capped by the
-                active adapter.
+          </div>
+        </div>
+      </section>
+
+      {/* Storage Section */}
+      <section
+        style={{
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: 20,
+          padding: 32,
+          marginBottom: 24,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 20,
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: "var(--accent-gold)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 18,
+            }}
+          >
+            &#x1F4BE;
+          </div>
+          <div>
+            <h2
+              style={{
+                fontFamily: "var(--font-bebas-neue)",
+                fontSize: 22,
+                letterSpacing: "0.08em",
+                color: "var(--foreground)",
+              }}
+            >
+              STORAGE
+            </h2>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: 16,
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              borderRadius: 16,
+              padding: 20,
+            }}
+          >
+            <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.15em" }}>
+              Active Storage
+            </p>
+            <p style={{ fontSize: 20, fontWeight: 600, color: "var(--foreground)", marginTop: 8 }}>
+              {settings.activeStorageMode === "local" ? "Local" : settings.activeStorageMode === "blob" ? "Cloud (Blob)" : settings.activeStorageMode}
+            </p>
+          </div>
+          <div
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              borderRadius: 16,
+              padding: 20,
+            }}
+          >
+            <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.15em" }}>
+              Status
+            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: settings.storageState === "active" ? "#34d399" : "var(--accent-gold)",
+                  display: "inline-block",
+                }}
+              />
+              <p style={{ fontSize: 20, fontWeight: 600, color: "var(--foreground)" }}>
+                {settings.storageState === "active" ? "Active" : "Pending"}
               </p>
-            ) : null}
+            </div>
+          </div>
+          <div
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              borderRadius: 16,
+              padding: 20,
+            }}
+          >
+            <p style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.15em" }}>
+              Cloud Backup
+            </p>
+            <p style={{ fontSize: 20, fontWeight: 600, color: "var(--foreground)", marginTop: 8 }}>
+              {settings.blobConfigured ? "Enabled" : "Not configured"}
+            </p>
           </div>
         </div>
 
         {settings.storageFallbackReason ? (
-          <div className="mt-4 rounded-3xl border border-[rgba(184,160,106,0.2)] bg-[rgba(184,160,106,0.08)] p-5 text-sm text-[#b8a06a]">
+          <div
+            style={{
+              marginTop: 16,
+              padding: 16,
+              background: "rgba(184,160,106,0.08)",
+              border: "1px solid rgba(184,160,106,0.2)",
+              borderRadius: 12,
+              fontSize: 12,
+              color: "var(--accent-gold)",
+            }}
+          >
             {settings.storageFallbackReason}
           </div>
         ) : null}
+      </section>
 
-        <div className="mt-8 grid gap-4 lg:grid-cols-2">
-          <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-6">
-            <p className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
-              Aptos provider mode
-            </p>
-            <h2 className="mt-3 text-2xl font-semibold font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-[#f0ede6]">
-              {settings.aptos.integrationState.replaceAll("_", " ")}
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[rgba(240,237,230,0.55)]">
-              {settings.aptos.notes ??
-                "Aptos services are isolated behind discovery and ownership verification providers."}
-            </p>
-          </div>
-          <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-6">
-            <p className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
-              Wallet auth mode
-            </p>
-            <h2 className="mt-3 text-2xl font-semibold font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-[#f0ede6]">
-              {settings.walletAuth.mode}
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[rgba(240,237,230,0.55)]">
-              {settings.walletAuth.challengeFlowReady
-                ? "Challenge-response login is scaffolded and ready for real signature verification wiring."
-                : "Mock wallet auth is active for local demos and product development."}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-5">
-            <p className="text-sm text-[rgba(240,237,230,0.35)]">Aptos source</p>
-            <p className="mt-2 text-2xl font-semibold text-[#f0ede6]">
-              {settings.aptos.source}
-            </p>
-          </div>
-          <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-5">
-            <p className="text-sm text-[rgba(240,237,230,0.35)]">Mock enabled</p>
-            <p className="mt-2 text-2xl font-semibold text-[#f0ede6]">
-              {settings.aptos.mockEnabled ? "Yes" : "No"}
-            </p>
-          </div>
-          <div className="rounded-3xl bg-[rgba(255,255,255,0.03)] p-5">
-            <p className="text-sm text-[rgba(240,237,230,0.35)]">Indexer configured</p>
-            <p className="mt-2 text-2xl font-semibold text-[#f0ede6]">
-              {settings.aptos.indexerConfigured ? "Yes" : "Not yet"}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-8 grid gap-4 lg:grid-cols-2">
-          <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-6">
-            <p className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
-              FlashVault mode
-            </p>
-            <h2 className="mt-3 text-2xl font-semibold font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-[#f0ede6]">
-              Private vault for Aptos NFT content
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[rgba(240,237,230,0.55)]">
-              FlashVault protects owner-gated media and unlockables. It does not
-              hide NFT ownership from the blockchain, so the correct mental model
-              is: vault the content, not the chain record.
-            </p>
-          </div>
-          <div className="rounded-3xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] p-6">
-            <p className="text-xs uppercase tracking-[0.25em] text-[rgba(240,237,230,0.35)]">
-              Mock chain reads
-            </p>
-            <h2 className="mt-3 text-2xl font-semibold font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-[#f0ede6]">
-              Replaceable Aptos ownership service
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[rgba(240,237,230,0.55)]">
-              The current build uses mock digital asset data for demo speed. When
-              you move to real networks, swap the isolated Aptos service instead
-              of rewriting the UI or the vault storage flow.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-8 rounded-3xl bg-[rgba(255,255,255,0.05)] p-6">
-          <p className="text-sm font-semibold text-[#f0ede6]">Recommended rollout</p>
-          <p className="mt-3 text-[rgba(240,237,230,0.55)]">
-            1. Connect `BLOB_READ_WRITE_TOKEN` and switch
-            `FLASHFOLDER_STORAGE_MODE` to `blob` for temporary production-safe
-            uploads on Vercel.
-          </p>
-          <p className="mt-2 text-[rgba(240,237,230,0.55)]">
-            2. Keep Blob mode for small server-side uploads while Shelby access
-            is pending.
-          </p>
-          <p className="mt-2 text-[rgba(240,237,230,0.55)]">
-            3. Add `SHELBY_API_KEY`, `SHELBY_RPC_URL`, and namespace values when
-            you receive them.
-          </p>
-          <p className="mt-2 text-[rgba(240,237,230,0.55)]">
-            4. Replace the placeholder methods in
-            `lib/storage/shelby-storage.ts`.
-          </p>
-          <p className="mt-2 text-[rgba(240,237,230,0.55)]">
-            5. Swap mock Aptos NFT reads for real wallet ownership checks in
-            `lib/server/aptos/service.ts`.
-          </p>
-          <p className="mt-2 text-[rgba(240,237,230,0.55)]">
-            6. Remove fallback-to-local behavior only after Shelby uploads,
-            downloads, and range reads pass the integration checklist.
-          </p>
-          <p className="mt-2 text-[rgba(240,237,230,0.55)]">
-            7. Replace mock wallet login with real challenge verification in
-            `lib/server/aptos/auth.ts`.
-          </p>
-          <p className="mt-4 text-sm text-[#b8a06a]">
-            On Vercel, local storage is ephemeral. Use `blob` as the temporary
-            production adapter and reserve `local` for local development only.
-          </p>
-        </div>
-
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            className="inline-flex rounded-full bg-[#c8392b] px-5 py-3 text-sm font-semibold text-[#f0ede6]"
-            href="/dashboard"
+      {/* FlashVault Section */}
+      <section
+        style={{
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: 20,
+          padding: 32,
+          marginBottom: 24,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 20,
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: "linear-gradient(135deg, var(--accent-red), var(--accent-gold))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 18,
+            }}
           >
-            Back to dashboard
-          </Link>
-          <Link
-            className="inline-flex rounded-full bg-[rgba(255,255,255,0.05)] px-5 py-3 text-sm font-semibold text-[rgba(240,237,230,0.55)]"
-            href="/vault"
-          >
-            Open vault
-          </Link>
+            &#x1F512;
+          </div>
+          <div>
+            <h2
+              style={{
+                fontFamily: "var(--font-bebas-neue)",
+                fontSize: 22,
+                letterSpacing: "0.08em",
+                color: "var(--foreground)",
+              }}
+            >
+              FLASHVAULT
+            </h2>
+          </div>
         </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 16,
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid var(--border)",
+              borderRadius: 16,
+              padding: 24,
+            }}
+          >
+            <p style={{ fontSize: 11, color: "var(--accent-gold)", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 8 }}>
+              NFT Verification
+            </p>
+            <p style={{ fontSize: 18, fontWeight: 600, color: "var(--foreground)", fontFamily: "var(--font-bebas-neue)", letterSpacing: "0.06em" }}>
+              {settings.aptos.mockEnabled ? "Demo Mode" : "Live On-Chain"}
+            </p>
+            <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 8, lineHeight: 1.6 }}>
+              {settings.aptos.mockEnabled
+                ? "Using sample NFT data for preview. Connect a wallet with real NFTs to switch to live verification."
+                : "Verifying NFT ownership directly on the Aptos blockchain."}
+            </p>
+          </div>
+          <div
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid var(--border)",
+              borderRadius: 16,
+              padding: 24,
+            }}
+          >
+            <p style={{ fontSize: 11, color: "var(--accent-gold)", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 8 }}>
+              Content Protection
+            </p>
+            <p style={{ fontSize: 18, fontWeight: 600, color: "var(--foreground)", fontFamily: "var(--font-bebas-neue)", letterSpacing: "0.06em" }}>
+              Owner-Gated Access
+            </p>
+            <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 8, lineHeight: 1.6 }}>
+              Vault content is protected behind NFT ownership checks. Only verified token holders can access gated media and unlockables.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Actions */}
+      <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+        <Link
+          href="/dashboard"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "12px 28px",
+            background: "var(--accent-red)",
+            color: "var(--foreground)",
+            borderRadius: 999,
+            fontSize: 12,
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            textDecoration: "none",
+          }}
+        >
+          Back to Dashboard
+        </Link>
+        <Link
+          href="/vault"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "12px 28px",
+            background: "rgba(255,255,255,0.05)",
+            color: "var(--text-secondary)",
+            borderRadius: 999,
+            fontSize: 12,
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            textDecoration: "none",
+            border: "1px solid var(--border)",
+          }}
+        >
+          Open Vault
+        </Link>
       </div>
     </main>
   );
