@@ -6,7 +6,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDropzone } from "react-dropzone";
 
 import { FilePreview } from "@/components/file-preview";
-import { SocialShareButtons } from "@/components/social-share-buttons";
 import { useWorkspaceWallet } from "@/components/wallet-status";
 import { WorkspaceDropdown } from "@/components/workspace-dropdown";
 import { apiFetch } from "@/lib/client/api";
@@ -1224,40 +1223,22 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             {selectedFile.shares.length > 0 && (
               <div style={{ marginTop: 24 }}>
                 <div className="sidebar-section-label">Share Links</div>
-                <div className="activity-list">
-                  {selectedFile.shares.map((share) => (
-                    <div key={share.id} style={{ marginBottom: 8 }}>
-                      <div className="activity-item">
-                        <div className={`activity-dot${share.shareType === SHARE_TYPES.PASSWORD ? " gold" : ""}`} />
-                        <div>
-                          <Link
-                            href={`/share/${share.token}`}
-                            className="activity-text"
-                            style={{ textDecoration: "none" }}
-                          >
-                            {share.shareType.toLowerCase()} link
-                          </Link>
-                          <div
-                            className="activity-time"
-                            style={{ cursor: "pointer" }}
-                            onClick={() =>
-                              void navigator.clipboard.writeText(
-                                `${window.location.origin}/share/${share.token}`,
-                              )
-                            }
-                          >
-                            Click to copy
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{ marginLeft: 20, marginTop: 4 }}>
-                        <SocialShareButtons
-                          url={`${window.location.origin}/share/${share.token}`}
-                          title={`Check out "${selectedFile.filename}" on FlashFolder`}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                  <p style={{ marginBottom: 8 }}>
+                    You have <strong>{selectedFile.shares.length}</strong> active share link{selectedFile.shares.length !== 1 ? "s" : ""} for this file.
+                  </p>
+                  <Link
+                    href="/share"
+                    style={{
+                      display: "inline-block",
+                      fontSize: 11,
+                      color: "var(--accent-red)",
+                      textDecoration: "none",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Manage in Share Hub →
+                  </Link>
                 </div>
               </div>
             )}

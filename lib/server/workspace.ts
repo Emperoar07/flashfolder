@@ -491,6 +491,32 @@ export async function getUserShares(walletAddress?: string | null) {
   });
 }
 
+export async function deleteShare(walletAddress: string | null | undefined, shareId: string) {
+  const user = await ensureUser(walletAddress);
+
+  // Verify the share belongs to this user's file
+  const share = await prisma.share.findFirst({
+    where: {
+      id: shareId,
+      file: { userId: user.id },
+    },
+  });
+
+  if (!share) {
+    throw new Error("Share not found or you don't have permission to delete it.");
+  }
+
+  // Delete associated download records first
+  await prisma.shareDownload.deleteMany({
+    where: { shareId },
+  });
+
+  // Delete the share
+  return prisma.share.delete({
+    where: { id: shareId },
+  });
+}
+
 export async function recordFileEvent(
   fileId: string,
   request: Request,

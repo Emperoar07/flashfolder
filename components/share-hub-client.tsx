@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useWorkspaceWallet } from "@/components/wallet-status";
 import { WorkspaceDropdown } from "@/components/workspace-dropdown";
@@ -23,12 +24,32 @@ type ShareWithFile = ShareRecord & {
 
 export function ShareHubClient() {
   const { walletAddress, connected } = useWorkspaceWallet();
+  const queryClient = useQueryClient();
+  const [revokingId, setRevokingId] = useState<string | null>(null);
 
   const sharesQuery = useQuery({
     queryKey: ["shares", walletAddress],
     queryFn: () =>
       apiFetch<{ shares: ShareWithFile[] }>("/api/shares", {}, walletAddress),
     enabled: connected,
+  });
+
+  const deleteShareMutation = useMutation({
+    mutationFn: async (shareId: string) => {
+      const response = await fetch(`/api/shares/${shareId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const error = await response.json() as { error?: string };
+        throw new Error(error.error ?? "Failed to revoke share");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      setRevokingId(null);
+      queryClient.invalidateQueries({ queryKey: ["shares", walletAddress] });
+    },
   });
 
   const shares = sharesQuery.data?.shares ?? [];
@@ -360,24 +381,47 @@ export function ShareHubClient() {
                       </div>
                     </div>
 
-                    {/* View button */}
-                    <Link
-                      href={`/share/${share.token}`}
-                      style={{
-                        fontSize: 10,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                        padding: "8px 20px",
-                        background: "var(--accent-red)",
-                        color: "var(--foreground)",
-                        borderRadius: 999,
-                        textDecoration: "none",
-                        whiteSpace: "nowrap",
-                        flexShrink: 0,
-                      }}
-                    >
-                      View
-                    </Link>
+                    {/* Action buttons */}
+                    <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                      <Link
+                        href={`/share/${share.token}`}
+                        style={{
+                          fontSize: 10,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.1em",
+                          padding: "8px 20px",
+                          background: "var(--accent-red)",
+                          color: "var(--foreground)",
+                          borderRadius: 999,
+                          textDecoration: "none",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        View
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setRevokingId(share.id);
+                          deleteShareMutation.mutate(share.id);
+                        }}
+                        disabled={revokingId === share.id || deleteShareMutation.isPending}
+                        style={{
+                          fontSize: 10,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.1em",
+                          padding: "8px 20px",
+                          background: "rgba(255,100,100,0.1)",
+                          border: "1px solid rgba(255,100,100,0.3)",
+                          color: "#ff6464",
+                          borderRadius: 999,
+                          cursor: revokingId === share.id ? "not-allowed" : "pointer",
+                          whiteSpace: "nowrap",
+                          opacity: revokingId === share.id ? 0.6 : 1,
+                        }}
+                      >
+                        {revokingId === share.id ? "Revoking..." : "Revoke"}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Share URL + social buttons */}
