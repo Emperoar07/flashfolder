@@ -101,7 +101,8 @@ lib/
 │   ├── flashvault.ts           # Vault business logic
 │   ├── flashvault-contract.ts  # On-chain vault registry TypeScript bindings
 │   ├── workspace.ts            # Workspace helpers + share listing
-│   └── crypto.ts               # Encryption for vault uploads
+│   ├── crypto.ts               # Encryption for vault uploads
+│   └── rate-limit.ts           # In-memory IP-based rate limiting
 ├── client/
 │   ├── api.ts                  # Fetch wrapper
 │   ├── hooks.ts                # React Query hooks
@@ -143,7 +144,7 @@ prisma/
 
 | Model | Purpose |
 |---|---|
-| `User` | Wallet-linked or email-linked identity |
+| `User` | Wallet-linked or email-linked identity (dedicated `passwordHash` column) |
 | `Folder` | Virtual folder tree (with Aptos transaction hash) |
 | `File` | Upload metadata + blob pointer |
 | `Share` | Public/private/password links |
@@ -377,6 +378,18 @@ The app auto-deploys from `main` to [flashfolder.vercel.app](https://flashfolder
 **Important:** `local` storage mode is ephemeral on Vercel. Use `blob` for durable uploads until Shelby access is approved.
 
 Minimum Vercel env vars: `DATABASE_URL`, `NEXT_PUBLIC_APTOS_NETWORK`, `FLASHFOLDER_STORAGE_MODE`, `APTOS_AUTH_MODE`, `FLASHFOLDER_AUTH_SECRET`, `FLASHVAULT_ENCRYPTION_SECRET`, `NEXT_PUBLIC_FLASHVAULT_ADDRESS`.
+
+---
+
+## Security
+
+- **Security headers** — X-Content-Type-Options, X-Frame-Options, HSTS, Referrer-Policy, Permissions-Policy via `next.config.ts`
+- **Cookie hardening** — All auth cookies are `httpOnly`, `secure` in production, `sameSite: strict` (OAuth callback uses `lax` for redirect compatibility)
+- **Rate limiting** — In-memory IP-based rate limiter on all auth endpoints and purchase routes (5–20 requests/minute depending on endpoint)
+- **Session validation** — HMAC-signed session tokens with expiry and network binding (tokens created for testnet are rejected on mainnet)
+- **Password storage** — Dedicated `passwordHash` column with bcrypt (cost 12); legacy `username::hash` format auto-migrated
+- **Input validation** — Zod schemas on all POST bodies; RFC 5322 email regex; transaction hash format validation (`0x` + 64 hex chars)
+- **Path traversal protection** — `resolveBlobPath` rejects any storage path that escapes the storage root
 
 ### FlashVault contract address
 The production deployment is wired to the live testnet contract:
