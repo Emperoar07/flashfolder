@@ -7,7 +7,7 @@ import { useWorkspaceWallet } from "@/components/wallet-status";
 import { WorkspaceDropdown } from "@/components/workspace-dropdown";
 import { SocialShareButtons } from "@/components/social-share-buttons";
 import { apiFetch } from "@/lib/client/api";
-import { formatBytes, formatDate, shortenWallet } from "@/lib/utils";
+import { formatBytes, formatDate } from "@/lib/utils";
 import type { ShareRecord } from "@/lib/types";
 
 type ShareWithFile = ShareRecord & {
@@ -423,7 +423,7 @@ export function ShareHubClient() {
       </main>
 
       {/* RIGHT SIDEBAR */}
-      <aside className="detail-sidebar">
+      <aside className="right-panel">
         <div className="detail-preview">
           <div style={{ fontSize: 48, opacity: 0.15 }}>&#x1F517;</div>
         </div>

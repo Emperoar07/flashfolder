@@ -18,6 +18,7 @@ export function useCurrentUser(walletAddress: string) {
   return useQuery({
     queryKey: ["me", walletAddress],
     queryFn: () => apiFetch<CurrentUserProfile>("/api/me", {}, walletAddress),
+    enabled: Boolean(walletAddress),
   });
 }
 
@@ -26,18 +27,57 @@ export function useFolders(walletAddress: string) {
     queryKey: ["folders", walletAddress],
     queryFn: () =>
       apiFetch<{ folders: FolderRecord[] }>("/api/folders", {}, walletAddress),
+    enabled: Boolean(walletAddress),
   });
 }
 
-export function useFiles(walletAddress: string, folderId?: string | null) {
+type FileSortField = "name" | "size" | "date" | "type";
+type FileSortDir = "asc" | "desc";
+type FileScope = "folder" | "workspace";
+
+type UseFilesOptions = {
+  folderId?: string | null;
+  search?: string;
+  sortField?: FileSortField;
+  sortDir?: FileSortDir;
+  scope?: FileScope;
+  enabled?: boolean;
+};
+
+export function useFiles(walletAddress: string, options: UseFilesOptions = {}) {
+  const params = new URLSearchParams();
+
+  if (options.folderId) {
+    params.set("folderId", options.folderId);
+  }
+  if (options.search?.trim()) {
+    params.set("search", options.search.trim());
+  }
+  if (options.sortField) {
+    params.set("sortField", options.sortField);
+  }
+  if (options.sortDir) {
+    params.set("sortDir", options.sortDir);
+  }
+  if (options.scope) {
+    params.set("scope", options.scope);
+  }
+
+  const query = params.toString();
+
   return useQuery({
-    queryKey: ["files", walletAddress, folderId],
+    queryKey: [
+      "files",
+      walletAddress,
+      options.folderId ?? null,
+      options.search ?? "",
+      options.sortField ?? "date",
+      options.sortDir ?? "desc",
+      options.scope ?? "workspace",
+    ],
     queryFn: () =>
-      apiFetch<{ files: FileRecord[] }>(
-        `/api/files${folderId ? `?folderId=${folderId}` : ""}`,
-        {},
-        walletAddress,
-      ),
+      apiFetch<{ files: FileRecord[] }>(`/api/files${query ? `?${query}` : ""}`, {}, walletAddress),
+    enabled: options.enabled ?? Boolean(walletAddress),
   });
 }
 

@@ -1,6 +1,4 @@
 "use client";
-
-import Image from "next/image";
 import Link from "next/link";
 
 import { useWorkspaceWallet } from "@/components/wallet-status";
@@ -11,7 +9,6 @@ import {
   useVaultAssets,
   useWalletNfts,
 } from "@/lib/client/hooks";
-import { VAULT_FILE_ROLES } from "@/lib/file-kinds";
 import { formatDate } from "@/lib/utils";
 
 const GRAD_CLASSES = ["grad1", "grad2", "grad3"];

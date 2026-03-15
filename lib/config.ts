@@ -5,7 +5,7 @@ export const demoWalletAddress =
   "0x4c617368466f6c64657244656d6f57616c6c6574";
 
 const rawStorageMode = (process.env.FLASHFOLDER_STORAGE_MODE ?? "local").trim().toLowerCase();
-const rawAptosAuthMode = (process.env.APTOS_AUTH_MODE ?? "mock").trim().toLowerCase();
+const rawAptosAuthMode = (process.env.APTOS_AUTH_MODE ?? "challenge").trim().toLowerCase();
 const rawAptosNetwork = (process.env.NEXT_PUBLIC_APTOS_NETWORK ?? "testnet").trim().toLowerCase();
 const maxUploadMb = Number.parseInt(
   process.env.FLASHFOLDER_MAX_UPLOAD_MB ?? "100",
@@ -20,8 +20,6 @@ export const appConfig = {
       ? "shelby"
       : rawStorageMode === "blob"
         ? "blob"
-      : rawStorageMode === "mock"
-        ? "mock"
         : "local",
   maxUploadBytes: Number.isNaN(maxUploadMb)
     ? 100 * 1024 * 1024
@@ -37,14 +35,10 @@ export const appConfig = {
     network: rawAptosNetwork,
     fullnodeUrl: (process.env.APTOS_FULLNODE_URL ?? "").trim(),
     indexerUrl: (process.env.APTOS_INDEXER_URL ?? "").trim(),
-    authMode: (rawAptosAuthMode === "challenge" ? "challenge" : "mock") as WalletAuthMode,
-    mockEnabled:
-      process.env.APTOS_MOCK_ENABLED === "true" ||
-      process.env.FLASHVAULT_USE_MOCK_NFTS === "true",
+    authMode: (rawAptosAuthMode === "challenge" ? "challenge" : "challenge") as WalletAuthMode,
+    mockEnabled: false,
   },
-  useMockNfts:
-    process.env.APTOS_MOCK_ENABLED === "true" ||
-    process.env.FLASHVAULT_USE_MOCK_NFTS === "true",
+  useMockNfts: false,
   vaultEncryptionSecret:
     process.env.FLASHVAULT_ENCRYPTION_SECRET ?? "flashvault-demo-secret",
   shelby: {

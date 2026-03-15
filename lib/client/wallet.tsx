@@ -10,14 +10,12 @@ import {
 } from "react";
 
 import { apiFetch } from "@/lib/client/api";
-import { demoWalletAddress } from "@/lib/config";
 import type {
   AuthSessionPayload,
   WalletChallengePayload,
   WalletChallengeVerifyPayload,
 } from "@/lib/types";
 
-const storageKey = "flashfolder.wallet";
 const walletErrorEvent = "flashfolder:wallet-error";
 
 type WalletErrorDetail = {
@@ -27,7 +25,7 @@ type WalletErrorDetail = {
 type WalletRuntimeContextValue = {
   account: ReturnType<typeof useWallet>["account"];
   authError: string | null;
-  authMode: AuthSessionPayload["session"]["authMode"] | "mock";
+  authMode: AuthSessionPayload["session"]["authMode"];
   authSession: AuthSessionPayload | null;
   connect: (walletName: string) => Promise<void>;
   connected: boolean;
@@ -45,10 +43,6 @@ type WalletRuntimeContextValue = {
 };
 
 const WalletRuntimeContext = createContext<WalletRuntimeContextValue | null>(null);
-
-function isPersistedEmailIdentity(value: string | null) {
-  return Boolean(value && value.startsWith("email:"));
-}
 
 function getReadableWalletError(error: unknown) {
   if (error instanceof Error && error.message.trim()) {
@@ -88,18 +82,6 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
   const [authSession, setAuthSession] = useState<AuthSessionPayload | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [fallbackWallet] = useState(() => {
-    if (typeof window === "undefined") {
-      return demoWalletAddress;
-    }
-
-    const persisted = window.localStorage.getItem(storageKey);
-    if (!persisted || isPersistedEmailIdentity(persisted)) {
-      return demoWalletAddress;
-    }
-
-    return persisted;
-  });
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -115,14 +97,8 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
     return () => window.removeEventListener(walletErrorEvent, handleWalletError);
   }, []);
 
-  useEffect(() => {
-    if (account?.address) {
-      window.localStorage.setItem(storageKey, account.address.toString());
-    }
-  }, [account?.address]);
-
-  const walletAddress = account?.address?.toString() ?? fallbackWallet;
-  const isDemo = walletAddress === demoWalletAddress && !connected;
+  const walletAddress = account?.address?.toString() ?? authSession?.user.walletAddress ?? "";
+  const isDemo = false;
   const network = process.env.NEXT_PUBLIC_APTOS_NETWORK ?? "testnet";
 
   async function connect(walletName: string) {
@@ -153,7 +129,8 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
     }
 
     const currentWalletAddress = account.address.toString();
-    const currentPublicKey = account.publicKey.toString();
+    const publicKeyStr = account.publicKey.toString();
+    const currentPublicKey = publicKeyStr.startsWith("0x") ? publicKeyStr : `0x${publicKeyStr}`;
     const activeSession = authSession?.session;
     const isCurrentSessionFresh =
       authSession?.user.walletAddress === currentWalletAddress &&
@@ -181,19 +158,6 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
           currentWalletAddress,
         );
 
-        if (challengePayload.auth.mode === "mock") {
-          const payload = await apiFetch<AuthSessionPayload>("/api/auth/wallet", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ walletAddress: currentWalletAddress }),
-          });
-
-          if (!cancelled) {
-            setAuthSession(payload);
-          }
-          return;
-        }
-
         const signed = await signMessage({
           address: true,
           application: true,
@@ -201,14 +165,49 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
           message: challengePayload.challenge.message,
           nonce: challengePayload.challenge.challengeId,
         });
+
+        // Format signature as hex string (handle multiple formats)
+        let signatureHex = "";
+        const sig = signed.signature as unknown;
+        if (typeof sig === "string") {
+          signatureHex = sig.startsWith("0x") ? sig : `0x${sig}`;
+        } else if (sig instanceof Uint8Array) {
+          signatureHex = `0x${Array.from(sig).map(b => b.toString(16).padStart(2, "0")).join("")}`;
+        } else if (sig && typeof (sig as any).toString === "function") {
+          const str = (sig as any).toString();
+          signatureHex = str.startsWith("0x") ? str : `0x${str}`;
+        } else {
+          signatureHex = `0x${String(sig)}`;
+        }
+
+        // Format fullMessage as string (handle both string and Uint8Array)
+        let fullMessageStr = "";
+        const fullMsg = signed.fullMessage as unknown;
+        if (typeof fullMsg === "string") {
+          fullMessageStr = fullMsg;
+        } else if (fullMsg instanceof Uint8Array) {
+          fullMessageStr = new TextDecoder().decode(fullMsg);
+        } else {
+          fullMessageStr = String(fullMsg);
+        }
+
         const verificationInput: WalletChallengeVerifyPayload = {
           walletAddress: currentWalletAddress,
           challengeId: challengePayload.challenge.challengeId,
-          signature: signed.signature.toString(),
+          signature: signatureHex,
           publicKey: currentPublicKey,
-          fullMessage: signed.fullMessage,
+          fullMessage: fullMessageStr,
           signedAddress: signed.address,
         };
+
+        // Debug log
+        console.debug("[Wallet] Verification payload prepared", {
+          signature_length: signatureHex.length,
+          publicKey_length: currentPublicKey.length,
+          fullMessage_length: fullMessageStr.length,
+          signedAddress: signed.address,
+        });
+
         const payload = await apiFetch<AuthSessionPayload>("/api/auth/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -242,7 +241,7 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
   return {
     account,
     authError,
-    authMode: authSession?.session.authMode ?? "mock",
+    authMode: authSession?.session.authMode ?? "challenge",
     authSession,
     connect,
     connected,

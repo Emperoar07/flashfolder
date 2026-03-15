@@ -44,7 +44,7 @@ function mimeLabel(mime: string) {
   return mime.split("/")[1]?.toUpperCase() ?? "File";
 }
 
-const DEMO_FILES = [
+const PREVIEW_FILES = [
   { name: "cover-art-final.png", meta: "PNG Image", size: "4.2 MB", icon: "img", emoji: "\u{1F5BC}" },
   { name: "teaser-clip.mp4", meta: "MP4 Video", size: "28 MB", icon: "vid", emoji: "\u25B6" },
   { name: "whitepaper-v3.pdf", meta: "PDF Document", size: "1.8 MB", icon: "doc", emoji: "\u{1F4C4}" },
@@ -56,11 +56,6 @@ export function WorkspacePreviewCard() {
   const filesQuery = useFiles(walletAddress);
   const files = filesQuery.data?.files ?? [];
   const isLoading = filesQuery.isLoading;
-
-  // When wallet connected: show real files only (or empty state)
-  // When not connected: show demo files as preview
-  const showDemo = !connected;
-  const displayFiles = showDemo ? DEMO_FILES : null;
   const realFiles = files.slice(0, 4);
 
   return (
@@ -74,8 +69,8 @@ export function WorkspacePreviewCard() {
         </div>
       </div>
       <div className="preview-card-body">
-        {showDemo
-          ? DEMO_FILES.map((file) => (
+        {!connected
+          ? PREVIEW_FILES.map((file) => (
               <div key={file.name} className="file-row">
                 <div className={`file-icon ${file.icon}`}>{file.emoji}</div>
                 <div className="file-info">

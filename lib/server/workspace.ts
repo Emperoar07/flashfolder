@@ -18,6 +18,18 @@ import {
 } from "@/lib/storage";
 import { inferPreviewType, slugifyFilename } from "@/lib/utils";
 
+type FileSortField = "name" | "size" | "date" | "type";
+type FileSortDir = "asc" | "desc";
+type FileListScope = "folder" | "workspace";
+
+type FileListOptions = {
+  folderId?: string | null;
+  scope?: FileListScope;
+  search?: string | null;
+  sortField?: FileSortField;
+  sortDir?: FileSortDir;
+};
+
 function normalizeWalletAddress(walletAddress?: string | null) {
   return walletAddress?.trim() || demoWalletAddress;
 }
@@ -258,16 +270,52 @@ export async function updateFile(
   });
 }
 
+function buildFileOrderBy(
+  sortField: FileSortField = "date",
+  sortDir: FileSortDir = "desc",
+): Prisma.FileOrderByWithRelationInput[] {
+  switch (sortField) {
+    case "name":
+      return [{ filename: sortDir }];
+    case "size":
+      return [{ size: sortDir }];
+    case "type":
+      return [{ previewType: sortDir }, { filename: "asc" }];
+    case "date":
+    default:
+      return [{ updatedAt: sortDir }];
+  }
+}
+
 export async function getFiles(
   walletAddress?: string | null,
-  folderId?: string | null,
+  options: FileListOptions = {},
 ) {
   const user = await ensureUser(walletAddress);
+  const trimmedSearch = options.search?.trim();
+  const shouldLimitToFolder =
+    options.scope === "folder" && !trimmedSearch && options.folderId;
+  const orderBy = buildFileOrderBy(options.sortField, options.sortDir);
 
   return prisma.file.findMany({
     where: {
       userId: user.id,
-      folderId: folderId ?? undefined,
+      folderId: shouldLimitToFolder ? options.folderId ?? undefined : undefined,
+      ...(trimmedSearch
+        ? {
+            OR: [
+              { filename: { contains: trimmedSearch, mode: "insensitive" } },
+              { originalName: { contains: trimmedSearch, mode: "insensitive" } },
+              { description: { contains: trimmedSearch, mode: "insensitive" } },
+              { mimeType: { contains: trimmedSearch, mode: "insensitive" } },
+              {
+                folder: {
+                  is: { name: { contains: trimmedSearch, mode: "insensitive" } },
+                },
+              },
+            ],
+          }
+        : {}),
     },
     include: {
       folder: true,
@@ -277,7 +325,7 @@ export async function getFiles(
         take: 5,
       },
     },
-    orderBy: [{ updatedAt: "desc" }],
+    orderBy,
   });
 }
 

@@ -50,7 +50,6 @@ export function WalletStatus() {
     authError,
     isAuthenticating,
     isLoading,
-    isDemo,
     lastError,
     walletAddress,
     wallets,
@@ -66,9 +65,9 @@ export function WalletStatus() {
       ) : null}
       <div className="flex flex-wrap items-center justify-end gap-3">
       <div className="rounded-full border border-[rgba(255,255,255,0.07)] bg-[#111] px-4 py-2 text-sm text-[rgba(240,237,230,0.55)]">
-        {isDemo ? "Demo workspace" : "Wallet live"}:{" "}
+        Wallet:{" "}
         <span className="font-semibold text-[#f0ede6]">
-          {shortenWallet(walletAddress)}
+          {walletAddress ? shortenWallet(walletAddress) : "Not connected"}
         </span>
       </div>
       {connected ? (
@@ -96,7 +95,7 @@ export function WalletStatus() {
       )}
       {!connected && wallets.length === 0 ? (
         <div className="rounded-full border border-[rgba(184,160,106,0.2)] bg-[rgba(184,160,106,0.08)] px-4 py-2 text-sm text-[#b8a06a]">
-          Install an Aptos wallet to replace demo mode.
+          Install an Aptos wallet to connect on testnet.
         </div>
       ) : null}
       </div>

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:degenola.xyz)",
+      "Bash(wc -l /c/FlashFolder/components/*.tsx)",
+      "Bash(start \"\" \"c:\\\\FlashFolder\\\\preview\\\\flashfolder-redesign.html\")",
+      "Bash(npx next:*)"
+    ]
+  }
+}

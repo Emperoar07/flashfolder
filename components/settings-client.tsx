@@ -9,7 +9,6 @@ import { WorkspaceDropdown } from "@/components/workspace-dropdown";
 import { useCurrentUser } from "@/lib/client/hooks";
 import { apiFetch } from "@/lib/client/api";
 import { shortenWallet, formatDate } from "@/lib/utils";
-import type { CurrentUserProfile } from "@/lib/types";
 
 type SettingsData = {
   aptosNetwork: string;
@@ -19,7 +18,7 @@ type SettingsData = {
   blobConfigured: boolean;
   maxUploadMb: number;
   walletAuth: { mode: string };
-  aptos: { mockEnabled: boolean };
+  aptos: { integrationState: string };
 };
 
 function SettingRow({
@@ -179,7 +178,6 @@ export function SettingsClient() {
             </p>
           </div>
         </main>
-        <aside className="detail-sidebar" />
       </div>
     );
   }
@@ -443,13 +441,7 @@ export function SettingsClient() {
             label="Auth Mode"
             description="How your identity is verified"
           >
-            <ReadOnlyValue
-              value={
-                settings?.walletAuth.mode === "mock"
-                  ? "Wallet + Email"
-                  : "Challenge-Response"
-              }
-            />
+            <ReadOnlyValue value="Challenge-Response" />
           </SettingRow>
         </section>
 
@@ -606,9 +598,11 @@ export function SettingsClient() {
             description="How vault ownership is verified"
           >
             <StatusBadge
-              active={!settings?.aptos.mockEnabled}
+              active={settings?.aptos.integrationState === "active"}
               label={
-                settings?.aptos.mockEnabled ? "Demo Mode" : "Live On-Chain"
+                settings?.aptos.integrationState === "active"
+                  ? "Live On-Chain"
+                  : "Indexer Pending"
               }
             />
           </SettingRow>
@@ -654,7 +648,7 @@ export function SettingsClient() {
       </main>
 
       {/* RIGHT SIDEBAR */}
-      <aside className="detail-sidebar">
+      <aside className="right-panel">
         <div className="detail-preview">
           <div style={{ fontSize: 48, opacity: 0.15 }}>&#x2699;</div>
         </div>
@@ -708,15 +702,18 @@ export function SettingsClient() {
               <div
                 className="activity-dot"
                 style={{
-                  background: settings?.aptos.mockEnabled
-                    ? "var(--accent-gold)"
-                    : "#34d399",
+                  background:
+                    settings?.aptos.integrationState === "active"
+                      ? "#34d399"
+                      : "var(--accent-gold)",
                 }}
               />
               <div>
                 <div className="activity-text">FlashVault</div>
                 <div className="activity-time">
-                  {settings?.aptos.mockEnabled ? "Demo mode" : "Live on-chain"}
+                  {settings?.aptos.integrationState === "active"
+                    ? "Live on-chain"
+                    : "Waiting for indexer"}
                 </div>
               </div>
             </div>

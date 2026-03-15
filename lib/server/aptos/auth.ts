@@ -132,21 +132,11 @@ function verifySignedMessageMatchesChallenge(
 }
 
 export function getWalletAuthStatus(): WalletAuthStatus {
-  if (appConfig.aptos.authMode === "mock") {
-    return {
-      mode: "mock",
-      integrationState: "mock",
-      challengeFlowReady: false,
-      mockEnabled: true,
-      network: appConfig.aptos.network,
-    };
-  }
-
   return {
     mode: "challenge",
     integrationState: "active",
     challengeFlowReady: true,
-    mockEnabled: appConfig.aptos.mockEnabled,
+    mockEnabled: false,
     network: appConfig.aptos.network,
   };
 }
@@ -198,14 +188,6 @@ export async function verifySignedChallenge(input: WalletSignedChallenge) {
     });
   }
 
-  if (appConfig.aptos.authMode === "mock") {
-    return {
-      verified: true,
-      reason: undefined,
-      session: await createSessionForWallet(input.walletAddress),
-    };
-  }
-
   assertSignedChallengeInput(input);
   verifySignedMessageMatchesChallenge(challenge, input);
 
@@ -247,7 +229,7 @@ export async function createSessionForWallet(
     authMode: appConfig.aptos.authMode,
     network: appConfig.aptos.network,
     expiresAt,
-    isMock: appConfig.aptos.authMode === "mock",
+    isMock: false,
   };
   return session;
 }

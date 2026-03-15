@@ -10,7 +10,6 @@ import { SocialShareButtons } from "@/components/social-share-buttons";
 import { useWorkspaceWallet } from "@/components/wallet-status";
 import { WorkspaceDropdown } from "@/components/workspace-dropdown";
 import { apiFetch } from "@/lib/client/api";
-import { useAptosTransaction } from "@/lib/client/use-aptos-transaction";
 import { useCurrentUser } from "@/lib/client/hooks";
 import {
   PREVIEW_TYPES,
@@ -18,7 +17,7 @@ import {
   type PreviewTypeValue,
 } from "@/lib/file-kinds";
 import type { FileRecord, FolderRecord, ShareRecord } from "@/lib/types";
-import { formatBytes, formatDate, shortenWallet } from "@/lib/utils";
+import { formatBytes, formatDate } from "@/lib/utils";
 
 /* ── File type categories ── */
 
@@ -52,24 +51,6 @@ function getFileCategory(previewType: PreviewTypeValue): FileCategory {
 
 type SortField = "name" | "size" | "date" | "type";
 type SortDir = "asc" | "desc";
-
-function sortFiles(files: FileRecord[], field: SortField, dir: SortDir) {
-  const mult = dir === "asc" ? 1 : -1;
-  return [...files].sort((a, b) => {
-    switch (field) {
-      case "name":
-        return mult * a.filename.localeCompare(b.filename);
-      case "size":
-        return mult * (a.size - b.size);
-      case "date":
-        return mult * (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
-      case "type":
-        return mult * a.previewType.localeCompare(b.previewType);
-      default:
-        return 0;
-    }
-  });
-}
 
 /* ── Helpers ── */
 
@@ -124,7 +105,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   );
   const [search, setSearch] = useState("");
   const [description, setDescription] = useState("");
-  const [shareType, setShareType] = useState<
+  const [shareType] = useState<
     "PUBLIC" | "PRIVATE" | "PASSWORD"
   >("PUBLIC");
   const [sharePassword, setSharePassword] = useState("");
@@ -133,20 +114,13 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const [moveTargetFolderId, setMoveTargetFolderId] = useState<string>("");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const deferredSearch = useDeferredValue(search);
+  const trimmedSearch = deferredSearch.trim();
+  const isWorkspaceSearch = Boolean(trimmedSearch);
 
   // File category & sorting state
   const [activeCategory, setActiveCategory] = useState<FileCategory>("all");
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-
-  // Aptos transaction hook
-  const {
-    submitFolderTransaction,
-    isPending: txPending,
-    error: txError,
-    clearError: clearTxError,
-    walletConnected,
-  } = useAptosTransaction();
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -164,16 +138,40 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
     queryKey: ["folders", walletAddress],
     queryFn: () =>
       apiFetch<{ folders: FolderRecord[] }>("/api/folders", {}, walletAddress),
+    enabled: connected && Boolean(walletAddress),
   });
 
   const filesQuery = useQuery({
-    queryKey: ["files", walletAddress, activeFolderId],
+    queryKey: [
+      "files",
+      walletAddress,
+      activeFolderId,
+      trimmedSearch,
+      sortField,
+      sortDir,
+      isWorkspaceSearch ? "workspace" : activeFolderId ? "folder" : "workspace",
+    ],
     queryFn: () =>
-      apiFetch<{ files: FileRecord[] }>(
-        `/api/files${activeFolderId ? `?folderId=${activeFolderId}` : ""}`,
-        {},
-        walletAddress,
-      ),
+      apiFetch<{ files: FileRecord[] }>((() => {
+        const params = new URLSearchParams();
+
+        if (activeFolderId) {
+          params.set("folderId", activeFolderId);
+        }
+        if (trimmedSearch) {
+          params.set("search", trimmedSearch);
+        }
+        params.set("sortField", sortField);
+        params.set("sortDir", sortDir);
+        params.set(
+          "scope",
+          isWorkspaceSearch ? "workspace" : activeFolderId ? "folder" : "workspace",
+        );
+
+        const query = params.toString();
+        return `/api/files${query ? `?${query}` : ""}`;
+      })(), {}, walletAddress),
+    enabled: connected && Boolean(walletAddress),
   });
 
   const settingsQuery = useQuery({
@@ -194,20 +192,13 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const createFolderMutation = useMutation({
     mutationFn: async () => {
       const name = folderName || "New Folder";
-      let transactionHash: string | undefined;
-
-      if (connected) {
-        const hash = await submitFolderTransaction("folder_create", name);
-        if (!hash) throw new Error("Transaction was rejected. Folder not created.");
-        transactionHash = hash;
-      }
 
       return apiFetch<{ folder: FolderRecord }>(
         "/api/folders",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, transactionHash }),
+          body: JSON.stringify({ name }),
         },
         walletAddress,
       );
@@ -220,25 +211,16 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   });
 
   const renameFolderMutation = useMutation({
-    mutationFn: async ({ id, name }: { id: string; name: string }) => {
-      let transactionHash: string | undefined;
-
-      if (connected) {
-        const hash = await submitFolderTransaction("folder_rename", name);
-        if (!hash) throw new Error("Transaction was rejected. Folder not renamed.");
-        transactionHash = hash;
-      }
-
-      return apiFetch<{ folder: FolderRecord }>(
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      apiFetch<{ folder: FolderRecord }>(
         `/api/folders/${id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, transactionHash }),
+          body: JSON.stringify({ name }),
         },
         walletAddress,
-      );
-    },
+      ),
     onSuccess: () => {
       setRenamingFolderId(null);
       setRenameValue("");
@@ -247,18 +229,12 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   });
 
   const deleteFolderMutation = useMutation({
-    mutationFn: async (id: string) => {
-      if (connected) {
-        const hash = await submitFolderTransaction("folder_delete", "folder");
-        if (!hash) throw new Error("Transaction was rejected. Folder not deleted.");
-      }
-
-      return apiFetch<{ success: boolean }>(
+    mutationFn: (id: string) =>
+      apiFetch<{ success: boolean }>(
         `/api/folders/${id}`,
         { method: "DELETE" },
         walletAddress,
-      );
-    },
+      ),
     onSuccess: () => {
       setActiveFolderId(null);
       void queryClient.invalidateQueries({ queryKey: ["folders", walletAddress] });
@@ -269,11 +245,6 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
     mutationFn: async () => {
       if (!selectedUpload) {
         throw new Error("Pick a file first.");
-      }
-
-      if (connected) {
-        const hash = await submitFolderTransaction("file_upload", selectedUpload.name);
-        if (!hash) throw new Error("Transaction was rejected. File not uploaded.");
       }
 
       const formData = new FormData();
@@ -300,18 +271,12 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   });
 
   const deleteFileMutation = useMutation({
-    mutationFn: async (fileId: string) => {
-      if (connected) {
-        const hash = await submitFolderTransaction("file_delete", "file");
-        if (!hash) throw new Error("Transaction was rejected. File not deleted.");
-      }
-
-      return apiFetch<{ success: boolean }>(
+    mutationFn: (fileId: string) =>
+      apiFetch<{ success: boolean }>(
         `/api/files/${fileId}`,
         { method: "DELETE" },
         walletAddress,
-      );
-    },
+      ),
     onSuccess: () => {
       setSelectedFileId(null);
       void queryClient.invalidateQueries({ queryKey: ["files", walletAddress] });
@@ -319,13 +284,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   });
 
   const createShareMutation = useMutation({
-    mutationFn: async (fileId: string) => {
-      if (connected) {
-        const hash = await submitFolderTransaction("file_share", "share");
-        if (!hash) throw new Error("Transaction was rejected. Share not created.");
-      }
-
-      return apiFetch<{ share: ShareRecord }>(
+    mutationFn: (fileId: string) =>
+      apiFetch<{ share: ShareRecord }>(
         `/api/files/${fileId}/share`,
         {
           method: "POST",
@@ -336,8 +296,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           }),
         },
         walletAddress,
-      );
-    },
+      ),
     onSuccess: () => {
       setSharePassword("");
       void queryClient.invalidateQueries({ queryKey: ["files", walletAddress] });
@@ -345,13 +304,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   });
 
   const moveFileMutation = useMutation({
-    mutationFn: async ({ fileId, folderId }: { fileId: string; folderId: string | null }) => {
-      if (connected) {
-        const hash = await submitFolderTransaction("file_move", "move file");
-        if (!hash) throw new Error("Transaction was rejected. File not moved.");
-      }
-
-      return apiFetch<{ file: FileRecord }>(
+    mutationFn: ({ fileId, folderId }: { fileId: string; folderId: string | null }) =>
+      apiFetch<{ file: FileRecord }>(
         `/api/files/${fileId}`,
         {
           method: "PATCH",
@@ -359,8 +313,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           body: JSON.stringify({ folderId }),
         },
         walletAddress,
-      );
-    },
+      ),
     onSuccess: () => {
       setMovingFileId(null);
       setMoveTargetFolderId("");
@@ -383,19 +336,12 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
 
   // Filter by search + category, then sort
   const filteredFiles = useMemo(() => {
-    const lowered = deferredSearch.toLowerCase();
-    let result = files.filter((file) => {
-      const matchesSearch = lowered
-        ? file.filename.toLowerCase().includes(lowered) ||
-          file.description?.toLowerCase().includes(lowered)
-        : true;
+    return files.filter((file) => {
       const matchesCategory =
         activeCategory === "all" || getFileCategory(file.previewType) === activeCategory;
-      return matchesSearch && matchesCategory;
+      return matchesCategory;
     });
-    result = sortFiles(result, sortField, sortDir);
-    return result;
-  }, [deferredSearch, files, activeCategory, sortField, sortDir]);
+  }, [files, activeCategory]);
 
   const selectedFile =
     filteredFiles.find((file) => file.id === selectedFileId) ??
@@ -434,6 +380,13 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
         <div>
           <div className="sidebar-section-label">Folders</div>
           <div className="folder-tree">
+            <div
+              className="folder-item"
+              style={!activeFolderId ? { color: "var(--accent-red)" } : undefined}
+              onClick={() => startTransition(() => setActiveFolderId(null))}
+            >
+              &#x1F4C1; All Files
+            </div>
             {folders.map((folder) => (
               <div
                 key={folder.id}
@@ -456,15 +409,15 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                       value={renameValue}
                       onChange={(e) => setRenameValue(e.target.value)}
                       autoFocus
-                      disabled={renameFolderMutation.isPending || txPending}
+                      disabled={renameFolderMutation.isPending}
                     />
                     <button
                       type="submit"
                       className="btn-primary"
                       style={{ padding: "4px 8px", fontSize: 9 }}
-                      disabled={renameFolderMutation.isPending || txPending}
+                      disabled={renameFolderMutation.isPending}
                     >
-                      {txPending ? "Signing..." : "OK"}
+                      {renameFolderMutation.isPending ? "Saving..." : "OK"}
                     </button>
                     <button
                       type="button"
@@ -537,15 +490,15 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                     value={folderName}
                     onChange={(e) => setFolderName(e.target.value)}
                     autoFocus
-                    disabled={createFolderMutation.isPending || txPending}
+                    disabled={createFolderMutation.isPending}
                   />
                   <button
                     type="submit"
                     className="btn-primary"
                     style={{ padding: "4px 8px", fontSize: 9 }}
-                    disabled={createFolderMutation.isPending || txPending}
+                    disabled={createFolderMutation.isPending}
                   >
-                    {txPending ? "Signing..." : "Add"}
+                    {createFolderMutation.isPending ? "Adding..." : "Add"}
                   </button>
                 </form>
               ) : (
@@ -633,8 +586,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                 Wallet Required
               </div>
               <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
-                Connect your Aptos wallet to upload files, create folders, share, and more.
-                You are currently browsing in read-only demo mode.
+                Connect your Aptos wallet to open your Aptos testnet workspace,
+                upload files, create folders, and manage shares.
               </div>
             </div>
           </div>
@@ -664,29 +617,6 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             </div>
           </div>
         </div>
-
-        {/* Transaction status */}
-        {txError && (
-          <div
-            style={{
-              padding: "10px 16px",
-              marginBottom: 16,
-              background: "rgba(200, 57, 43, 0.15)",
-              border: "1px solid var(--accent-red)",
-              borderRadius: "var(--radius-sm)",
-              color: "var(--accent-red)",
-              fontSize: 12,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span>{txError}</span>
-            <span style={{ cursor: "pointer", opacity: 0.7 }} onClick={clearTxError}>
-              &#x2715;
-            </span>
-          </div>
-        )}
 
         {(createFolderMutation.error || renameFolderMutation.error || deleteFolderMutation.error) && (
           <div
@@ -809,11 +739,11 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                   <button
                     className="btn-primary"
                     style={{ padding: "10px 24px", fontSize: 10 }}
-                    disabled={uploadMutation.isPending || txPending}
+                    disabled={uploadMutation.isPending}
                     onClick={() => uploadMutation.mutate()}
                     type="button"
                   >
-                    {txPending ? "Signing..." : uploadMutation.isPending ? "Uploading..." : "Upload"}
+                    {uploadMutation.isPending ? "Uploading..." : "Upload"}
                   </button>
                 </div>
                 {uploadMutation.error && (
@@ -889,17 +819,60 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
 
           <div className="file-table-header">
             <h3>
-              {activeCategory === "all"
-                ? "ALL FILES"
-                : FILE_CATEGORIES.find((c) => c.key === activeCategory)?.label.toUpperCase()}
+              {trimmedSearch
+                ? "SEARCH RESULTS"
+                : activeCategory === "all"
+                  ? activeFolderId
+                    ? "FOLDER FILES"
+                    : "ALL FILES"
+                  : FILE_CATEGORIES.find((c) => c.key === activeCategory)?.label.toUpperCase()}
             </h3>
             <input
               type="text"
               className="search-input"
-              placeholder="Search files..."
+              placeholder="Search across every folder..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 10,
+              alignItems: "center",
+              marginBottom: 14,
+            }}
+          >
+            <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+              {trimmedSearch
+                ? `Searching every folder for "${trimmedSearch}".`
+                : activeFolderId
+                  ? `Showing files in ${folders.find((folder) => folder.id === activeFolderId)?.name ?? "selected folder"}.`
+                  : "Showing files across your full workspace."}
+            </div>
+            <div style={{ marginLeft: "auto", display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <select
+                className="search-input"
+                style={{ width: "auto", minWidth: 148 }}
+                value={sortField}
+                onChange={(event) => setSortField(event.target.value as SortField)}
+              >
+                <option value="date">Sort: Updated</option>
+                <option value="name">Sort: Name</option>
+                <option value="size">Sort: Size</option>
+                <option value="type">Sort: Type</option>
+              </select>
+              <select
+                className="search-input"
+                style={{ width: "auto", minWidth: 148 }}
+                value={sortDir}
+                onChange={(event) => setSortDir(event.target.value as SortDir)}
+              >
+                <option value="desc">Descending</option>
+                <option value="asc">Ascending</option>
+              </select>
+            </div>
           </div>
           <div className="file-table">
             <div className="file-table-row header">
@@ -938,7 +911,18 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                   <div className={`file-icon sm ${fileIconClass(file.previewType)}`}>
                     {fileIconEmoji(file.previewType)}
                   </div>
-                  <span>{file.filename}</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div>{file.filename}</div>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: "var(--text-muted)",
+                        marginTop: 2,
+                      }}
+                    >
+                      {file.folder?.name ?? "Root"} &middot; {file.mimeType}
+                    </div>
+                  </div>
                 </div>
                 <span className="file-size">{formatBytes(file.size)}</span>
                 <span className="file-meta">{formatDate(file.updatedAt)}</span>
@@ -958,7 +942,9 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               <div className="file-table-row" style={{ cursor: "default" }}>
                 <span style={{ color: "var(--text-muted)", gridColumn: "1 / -1", textAlign: "center" }}>
                   {activeCategory === "all"
-                    ? "No files yet. Upload something to get started."
+                    ? trimmedSearch
+                      ? "No files matched your workspace search."
+                      : "No files yet. Upload something to get started."
                     : `No ${FILE_CATEGORIES.find((c) => c.key === activeCategory)?.label.toLowerCase()} found.`}
                 </span>
               </div>
@@ -1108,7 +1094,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                       type="button"
                       className="btn-primary"
                       style={{ flex: 1, padding: "8px", fontSize: 10 }}
-                      disabled={!moveTargetFolderId || moveFileMutation.isPending || txPending}
+                      disabled={!moveTargetFolderId || moveFileMutation.isPending}
                       onClick={() =>
                         moveFileMutation.mutate({
                           fileId: selectedFile.id,
@@ -1116,7 +1102,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                         })
                       }
                     >
-                      {txPending ? "Signing…" : moveFileMutation.isPending ? "Moving…" : "Confirm Move"}
+                      {moveFileMutation.isPending ? "Moving..." : "Confirm Move"}
                     </button>
                     <button
                       type="button"
