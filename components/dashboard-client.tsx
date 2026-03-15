@@ -493,7 +493,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                     &#x1F4C2; {folder.name}
                   </span>
                 )}
-                {renamingFolderId !== folder.id && (
+                {renamingFolderId !== folder.id && connected && (
                   <span style={{ display: "flex", gap: 6, marginLeft: 8 }}>
                     <span
                       style={{ cursor: "pointer", fontSize: 11, opacity: 0.5 }}
@@ -520,40 +520,49 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                 )}
               </div>
             ))}
-            {showFolderInput ? (
-              <form
-                className="folder-item"
-                style={{ display: "flex", gap: 4 }}
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  createFolderMutation.mutate();
-                }}
-              >
-                <input
-                  className="search-input"
-                  style={{ flex: 1, padding: "4px 8px", fontSize: 11 }}
-                  placeholder="Folder name"
-                  value={folderName}
-                  onChange={(e) => setFolderName(e.target.value)}
-                  autoFocus
-                  disabled={createFolderMutation.isPending || txPending}
-                />
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ padding: "4px 8px", fontSize: 9 }}
-                  disabled={createFolderMutation.isPending || txPending}
+            {connected ? (
+              showFolderInput ? (
+                <form
+                  className="folder-item"
+                  style={{ display: "flex", gap: 4 }}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    createFolderMutation.mutate();
+                  }}
                 >
-                  {txPending ? "Signing..." : "Add"}
-                </button>
-              </form>
+                  <input
+                    className="search-input"
+                    style={{ flex: 1, padding: "4px 8px", fontSize: 11 }}
+                    placeholder="Folder name"
+                    value={folderName}
+                    onChange={(e) => setFolderName(e.target.value)}
+                    autoFocus
+                    disabled={createFolderMutation.isPending || txPending}
+                  />
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    style={{ padding: "4px 8px", fontSize: 9 }}
+                    disabled={createFolderMutation.isPending || txPending}
+                  >
+                    {txPending ? "Signing..." : "Add"}
+                  </button>
+                </form>
+              ) : (
+                <div
+                  className="folder-item"
+                  style={{ color: "var(--accent-red)", cursor: "pointer" }}
+                  onClick={() => setShowFolderInput(true)}
+                >
+                  + New Folder
+                </div>
+              )
             ) : (
               <div
                 className="folder-item"
-                style={{ color: "var(--accent-red)", cursor: "pointer" }}
-                onClick={() => setShowFolderInput(true)}
+                style={{ color: "var(--text-muted)", fontSize: 11, cursor: "default" }}
               >
-                + New Folder
+                Connect wallet to manage folders
               </div>
             )}
           </div>
@@ -604,6 +613,33 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           <span>&#x1F4C1;</span>
           {mobileSidebarOpen ? "Hide Folders" : `Folders${activeFolderId ? ` · ${folders.find((f) => f.id === activeFolderId)?.name ?? ""}` : ""}`}
         </button>
+        {/* Wallet-connect gate */}
+        {!connected && (
+          <div
+            style={{
+              marginBottom: 20,
+              padding: "20px 20px",
+              borderRadius: 12,
+              border: "1px solid rgba(232,170,48,0.25)",
+              background: "rgba(232,170,48,0.05)",
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+            }}
+          >
+            <span style={{ fontSize: 24 }}>&#x1F512;</span>
+            <div>
+              <div style={{ fontSize: 13, fontFamily: "var(--font-bebas-neue)", letterSpacing: "0.1em", marginBottom: 2 }}>
+                Wallet Required
+              </div>
+              <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+                Connect your Aptos wallet to upload files, create folders, share, and more.
+                You are currently browsing in read-only demo mode.
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="dash-hero">
           <h2>GOOD EVENING</h2>
           <p>Welcome back to your workspace. Here&apos;s your overview.</p>
@@ -668,8 +704,24 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           </div>
         )}
 
-        {/* Folder-required gate */}
-        {!activeFolderId ? (
+        {/* Upload area — wallet + folder required */}
+        {!connected ? (
+          <div
+            style={{
+              padding: "28px 20px",
+              borderRadius: 10,
+              border: "1px dashed var(--border)",
+              textAlign: "center",
+              marginTop: 24,
+              opacity: 0.6,
+            }}
+          >
+            <div style={{ fontSize: 22, marginBottom: 8 }}>&#x1F512;</div>
+            <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+              Connect your wallet to upload files
+            </div>
+          </div>
+        ) : !activeFolderId ? (
           <div
             style={{
               padding: "20px 16px",
@@ -951,8 +1003,11 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             <div className="detail-actions">
               <button
                 className="action-share"
-                onClick={() => createShareMutation.mutate(selectedFile.id)}
+                onClick={() => connected && createShareMutation.mutate(selectedFile.id)}
+                disabled={!connected || createShareMutation.isPending}
                 type="button"
+                title={!connected ? "Connect wallet to share" : undefined}
+                style={!connected ? { opacity: 0.4, cursor: "not-allowed" } : undefined}
               >
                 Share
               </button>
@@ -1011,9 +1066,9 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               </div>
             )}
 
-            {/* Move to folder */}
+            {/* Move to folder — wallet required */}
             <div style={{ marginTop: 16 }}>
-              {movingFileId === selectedFile.id ? (
+              {!connected ? null : movingFileId === selectedFile.id ? (
                 <div
                   style={{
                     padding: "12px",
@@ -1109,26 +1164,28 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
               )}
             </div>
 
-            <div style={{ marginTop: 12 }}>
-              <button
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  fontSize: 10,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                  background: "transparent",
-                  color: "var(--accent-red)",
-                  border: "1px solid var(--border-hover)",
-                  borderRadius: "var(--radius-sm)",
-                  cursor: "pointer",
-                }}
-                onClick={() => deleteFileMutation.mutate(selectedFile.id)}
-                type="button"
-              >
-                Delete File
-              </button>
-            </div>
+            {connected && (
+              <div style={{ marginTop: 12 }}>
+                <button
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    fontSize: 10,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    background: "transparent",
+                    color: "var(--accent-red)",
+                    border: "1px solid var(--border-hover)",
+                    borderRadius: "var(--radius-sm)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => deleteFileMutation.mutate(selectedFile.id)}
+                  type="button"
+                >
+                  Delete File
+                </button>
+              </div>
+            )}
           </>
         ) : (
           <>
