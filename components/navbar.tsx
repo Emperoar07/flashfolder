@@ -89,8 +89,12 @@ export function Navbar() {
         { href: "/", label: "Home" },
         { href: "/dashboard", label: "Dashboard" },
         { href: "/vault", label: "Vault" },
-        ...(isLoggedIn ? [{ href: "/share", label: "Share" }] : []),
-        { href: "/settings", label: "Settings" },
+        ...(isLoggedIn
+          ? [
+              { href: "/share", label: "Share" },
+              { href: "/settings", label: "Settings" },
+            ]
+          : []),
       ]
     : [
         { href: "/", label: "Home" },

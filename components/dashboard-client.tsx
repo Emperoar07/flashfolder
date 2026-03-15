@@ -415,6 +415,9 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             >
               <span className="icon">&#x1F4C1;</span> My Files
             </a>
+            <Link href="/share">
+              <span className="icon">&#x1F517;</span> Shared
+            </Link>
             <Link href="/vault">
               <span className="icon">&#x1F512;</span> Vault
             </Link>
