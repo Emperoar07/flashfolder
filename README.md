@@ -230,14 +230,20 @@ aptos move compile --named-addresses flashvault=default
 aptos move test --named-addresses flashvault=0x1
 ```
 
-### Deploy to testnet
+### Deployed contract (testnet)
+
+**Module address:** `0x2b5ba2492a89fe038f033f91cdf95ce8873f15d4d55d61dbef436ba6642481c4`
+
+**Publish transaction:** [view on explorer](https://explorer.aptoslabs.com/txn/0xf8d7ab08aa034fe9e8bf62ad5a1d884398ed2c9111f20b618fdb52dedacceb8a?network=testnet)
+
+To redeploy to a fresh account:
 
 ```bash
-aptos init --network testnet
-aptos move publish --named-addresses flashvault=default
+aptos init --network testnet   # creates a new profile
+aptos move publish --named-addresses flashvault=default --max-gas 200000
 ```
 
-After deploying, set `NEXT_PUBLIC_FLASHVAULT_ADDRESS` to the deployer address.
+Then set `NEXT_PUBLIC_FLASHVAULT_ADDRESS` to the new deployer address in your environment (local `.env.local` and Vercel project env vars).
 
 ### TypeScript bindings
 
@@ -315,7 +321,7 @@ Open [localhost:3000](http://localhost:3000).
 | `APTOS_INDEXER_URL` | Aptos indexer GraphQL (optional, public defaults used) |
 | `FLASHVAULT_USE_MOCK_NFTS` | `true` for mock NFT imports (default: `false`) |
 | `FLASHVAULT_ENCRYPTION_SECRET` | AES key for vault file encryption |
-| `NEXT_PUBLIC_FLASHVAULT_ADDRESS` | Deployed FlashVault Move contract address |
+| `NEXT_PUBLIC_FLASHVAULT_ADDRESS` | Deployed FlashVault Move contract address (testnet: `0x2b5ba2492a89fe038f033f91cdf95ce8873f15d4d55d61dbef436ba6642481c4`) |
 
 ### Other
 
@@ -372,7 +378,14 @@ The app auto-deploys from `main` to [flashfolder.vercel.app](https://flashfolder
 
 **Important:** `local` storage mode is ephemeral on Vercel. Use `blob` for durable uploads until Shelby access is approved.
 
-Minimum Vercel env vars: `DATABASE_URL`, `NEXT_PUBLIC_APTOS_NETWORK`, `NEXT_PUBLIC_DEFAULT_WALLET`, `FLASHFOLDER_STORAGE_MODE`, `APTOS_AUTH_MODE`.
+Minimum Vercel env vars: `DATABASE_URL`, `NEXT_PUBLIC_APTOS_NETWORK`, `NEXT_PUBLIC_DEFAULT_WALLET`, `FLASHFOLDER_STORAGE_MODE`, `APTOS_AUTH_MODE`, `NEXT_PUBLIC_FLASHVAULT_ADDRESS`.
+
+### FlashVault contract address
+The production deployment is wired to the live testnet contract:
+```
+NEXT_PUBLIC_FLASHVAULT_ADDRESS=0x2b5ba2492a89fe038f033f91cdf95ce8873f15d4d55d61dbef436ba6642481c4
+```
+This is already set in the Vercel production and preview environments.
 
 ---
 
@@ -388,7 +401,7 @@ Minimum Vercel env vars: `DATABASE_URL`, `NEXT_PUBLIC_APTOS_NETWORK`, `NEXT_PUBL
 - [x] Real Aptos wallet auth (challenge-response signing)
 - [ ] Micropayment-gated content via Shelby paid reads
 - [ ] Cross-chain identity (Ethereum/Solana via Shelby kits)
-- [x] On-chain vault registry (Move contract)
+- [x] On-chain vault registry (Move contract — deployed to Aptos testnet)
 
 ---
 
