@@ -1,7 +1,7 @@
 "use client";
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { Aptos, AptosConfig, Network, AccountAddress } from "@aptos-labs/ts-sdk";
+import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { useState } from "react";
 
 type WorkspaceOperation =
@@ -46,14 +46,14 @@ export function useWorkspaceTransaction() {
       const cost = OPERATION_COSTS[operation];
 
       // Submit via wallet adapter using InputTransactionData format
-      const recipientAddress = AccountAddress.from("0x0000000000000000000000000000000000000000000000000000000000000fee");
+      // Use string address directly instead of AccountAddress.from() to avoid mobile parsing issues
       const response = await signAndSubmitTransaction({
         data: {
           function: "0x1::coin::transfer",
           typeArguments: ["0x1::aptos_coin::AptosCoin"],
           functionArguments: [
-            recipientAddress,
-            cost,
+            "0x0000000000000000000000000000000000000000000000000000000000000fee",
+            cost.toString(),
           ],
         },
       });
