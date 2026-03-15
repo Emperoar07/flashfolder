@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { FilePreview } from "@/components/file-preview";
@@ -22,6 +22,32 @@ export function ShareClient({ token }: ShareClientProps) {
   const [password, setPassword] = useState("");
   const [purchasedDownloadId, setPurchasedDownloadId] = useState<string | null>(null);
   const [purchaseError_state, setPurchaseError_state] = useState<string | null>(null);
+  const [alreadyPurchased, setAlreadyPurchased] = useState(false);
+  const [checkingPurchase, setCheckingPurchase] = useState(false);
+
+  // Check if wallet has already purchased this share
+  useEffect(() => {
+    if (connected && walletAddress) {
+      setCheckingPurchase(true);
+      fetch(`/api/share/${token}/purchased`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ walletAddress }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.hasAlreadyPaid) {
+            setPurchasedDownloadId(data.downloadId);
+            setAlreadyPurchased(true);
+          }
+          setCheckingPurchase(false);
+        })
+        .catch((err) => {
+          console.error("Failed to check purchase status:", err);
+          setCheckingPurchase(false);
+        });
+    }
+  }, [connected, walletAddress, token]);
 
   const query = useQuery({
     queryKey: ["share", token, password],
@@ -192,6 +218,45 @@ export function ShareClient({ token }: ShareClientProps) {
             )}
           </div>
           <div style={{ display: "flex", gap: 8, flexDirection: "column" }}>
+            {/* Already purchased status */}
+            {alreadyPurchased && connected && (
+              <div
+                style={{
+                  background: "rgba(100,200,100,0.1)",
+                  border: "1px solid rgba(100,200,100,0.3)",
+                  borderRadius: 10,
+                  padding: 12,
+                  fontSize: 12,
+                  color: "var(--text-secondary)",
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ marginBottom: 4, color: "rgba(100,200,100,0.9)", fontWeight: "bold" }}>
+                  ✓ Already purchased with this wallet
+                </div>
+                <div style={{ fontSize: 10, opacity: 0.8 }}>
+                  You can download again at no additional cost
+                </div>
+              </div>
+            )}
+
+            {/* Checking purchase status */}
+            {connected && checkingPurchase && (
+              <div
+                style={{
+                  background: "rgba(150,150,150,0.1)",
+                  border: "1px solid rgba(150,150,150,0.3)",
+                  borderRadius: 10,
+                  padding: 12,
+                  fontSize: 12,
+                  color: "var(--text-secondary)",
+                  textAlign: "center",
+                }}
+              >
+                Verifying purchase status...
+              </div>
+            )}
+
             {/* Download section - require wallet connection */}
             {!connected ? (
               <div
@@ -209,6 +274,16 @@ export function ShareClient({ token }: ShareClientProps) {
                   Connect your wallet to access this {isFile ? "file" : "content"}
                 </div>
               </div>
+            ) : alreadyPurchased && isFile && data.share.downloadPriceApt && data.share.downloadPriceApt > 0 ? (
+              <Link
+                href={
+                  `/api/files/${data.file.id}/download?token=${token}&downloadId=${purchasedDownloadId}${password ? `&password=${encodeURIComponent(password)}` : ""}`
+                }
+                className="btn-primary"
+                style={{ textDecoration: "none", textAlign: "center" }}
+              >
+                Download (Already Paid)
+              </Link>
             ) : isFile && data.share.downloadPriceApt && data.share.downloadPriceApt > 0 ? (
               <>
                 {/* Paid download */}
@@ -250,6 +325,7 @@ export function ShareClient({ token }: ShareClientProps) {
 
                       // Mark as purchased and disable further downloads
                       setPurchasedDownloadId(result.downloadId);
+                      setAlreadyPurchased(true);
 
                       // Trigger download with the download ID
                       const downloadUrl = `/api/files/${data.file.id}/download?token=${token}&downloadId=${result.downloadId}${password ? `&password=${encodeURIComponent(password)}` : ""}`;
