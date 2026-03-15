@@ -192,78 +192,104 @@ export function ShareClient({ token }: ShareClientProps) {
             )}
           </div>
           <div style={{ display: "flex", gap: 8, flexDirection: "column" }}>
-            {/* Show price info if paid download */}
-            {isFile && data.share.downloadPriceApt && data.share.downloadPriceApt > 0 && (
-              <div
-                style={{
-                  background: "rgba(232,170,48,0.1)",
-                  border: "1px solid rgba(232,170,48,0.3)",
-                  borderRadius: 10,
-                  padding: 12,
-                  fontSize: 12,
-                  color: "var(--text-secondary)",
-                  textAlign: "center",
-                }}
-              >
-                <div style={{ marginBottom: 4 }}>
-                  Download requires payment of{" "}
-                  <span style={{ fontWeight: "bold", color: "var(--accent-gold)" }}>
-                    {data.share.downloadPriceApt} APT
-                  </span>
-                </div>
-                <div style={{ fontSize: 10, opacity: 0.8 }}>
-                  Payment will be sent to {shortenWallet(data.share.sharerWallet || "")}
-                </div>
-              </div>
-            )}
-
             {/* Download button - handle paid vs free */}
             {isFile && data.share.downloadPriceApt && data.share.downloadPriceApt > 0 ? (
-              <button
-                onClick={async () => {
-                  if (!connected) {
-                    setPurchaseError_state("Please connect your wallet to download");
-                    return;
-                  }
-                  if (!walletAddress) {
-                    setPurchaseError_state("Wallet address not available");
-                    return;
-                  }
+              <>
+                {/* Show price info only if wallet is connected */}
+                {connected && (
+                  <div
+                    style={{
+                      background: "rgba(232,170,48,0.1)",
+                      border: "1px solid rgba(232,170,48,0.3)",
+                      borderRadius: 10,
+                      padding: 12,
+                      fontSize: 12,
+                      color: "var(--text-secondary)",
+                      textAlign: "center",
+                    }}
+                  >
+                    <div style={{ marginBottom: 4 }}>
+                      Download requires payment of{" "}
+                      <span style={{ fontWeight: "bold", color: "var(--accent-gold)" }}>
+                        {data.share.downloadPriceApt} APT
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 10, opacity: 0.8 }}>
+                      Payment will be sent to {shortenWallet(data.share.sharerWallet || "")}
+                    </div>
+                  </div>
+                )}
 
-                  try {
-                    const result = await purchaseDownload({
-                      shareToken: token,
-                      sharerWallet: data.share.sharerWallet || "",
-                      priceApt: data.share.downloadPriceApt || 0,
-                    });
+                {/* Show message if wallet not connected */}
+                {!connected && (
+                  <div
+                    style={{
+                      background: "rgba(100,150,255,0.1)",
+                      border: "1px solid rgba(100,150,255,0.3)",
+                      borderRadius: 10,
+                      padding: 12,
+                      fontSize: 12,
+                      color: "var(--text-secondary)",
+                      textAlign: "center",
+                    }}
+                  >
+                    <div style={{ marginBottom: 4 }}>
+                      Connect your wallet to pay{" "}
+                      <span style={{ fontWeight: "bold", color: "rgba(100,150,255,0.8)" }}>
+                        {data.share.downloadPriceApt} APT
+                      </span>
+                      {" "}and download
+                    </div>
+                  </div>
+                )}
 
-                    // Mark as purchased and disable further downloads
-                    setPurchasedDownloadId(result.downloadId);
+                {/* Download button */}
+                <button
+                  onClick={async () => {
+                    if (!connected) {
+                      setPurchaseError_state("Please connect your wallet to download");
+                      return;
+                    }
+                    if (!walletAddress) {
+                      setPurchaseError_state("Wallet address not available");
+                      return;
+                    }
 
-                    // Trigger download with the download ID
-                    const downloadUrl = `/api/files/${data.file.id}/download?token=${token}&downloadId=${result.downloadId}${password ? `&password=${encodeURIComponent(password)}` : ""}`;
-                    window.location.href = downloadUrl;
-                  } catch (err) {
-                    setPurchaseError_state(err instanceof Error ? err.message : "Payment failed");
-                  }
-                }}
-                disabled={isPurchasing || !connected || purchasedDownloadId !== null}
-                style={{
-                  padding: "12px 20px",
-                  borderRadius: 10,
-                  border: "none",
-                  background: purchasedDownloadId ? "rgba(255,255,255,0.1)" : connected ? "var(--accent-red)" : "rgba(255,255,255,0.1)",
-                  color: "var(--foreground)",
-                  cursor: purchasedDownloadId || !connected || isPurchasing ? "not-allowed" : "pointer",
-                  fontSize: 13,
-                  fontWeight: "bold",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  opacity: purchasedDownloadId || !connected || isPurchasing ? 0.6 : 1,
-                }}
-              >
-                {purchasedDownloadId ? "Already Downloaded" : isPurchasing ? "Processing Payment..." : connected ? "Pay & Download" : "Connect Wallet"}
-              </button>
+                    try {
+                      const result = await purchaseDownload({
+                        shareToken: token,
+                        sharerWallet: data.share.sharerWallet || "",
+                        priceApt: data.share.downloadPriceApt || 0,
+                      });
+
+                      // Mark as purchased and disable further downloads
+                      setPurchasedDownloadId(result.downloadId);
+
+                      // Trigger download with the download ID
+                      const downloadUrl = `/api/files/${data.file.id}/download?token=${token}&downloadId=${result.downloadId}${password ? `&password=${encodeURIComponent(password)}` : ""}`;
+                      window.location.href = downloadUrl;
+                    } catch (err) {
+                      setPurchaseError_state(err instanceof Error ? err.message : "Payment failed");
+                    }
+                  }}
+                  disabled={isPurchasing || !connected || purchasedDownloadId !== null}
+                  style={{
+                    padding: "12px 20px",
+                    borderRadius: 10,
+                    border: "none",
+                    background: purchasedDownloadId ? "rgba(255,255,255,0.1)" : connected ? "var(--accent-red)" : "rgba(255,255,255,0.1)",
+                    color: "var(--foreground)",
+                    cursor: purchasedDownloadId || !connected || isPurchasing ? "not-allowed" : "pointer",
+                    fontSize: 13,
+                    fontWeight: "bold",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    opacity: purchasedDownloadId || !connected || isPurchasing ? 0.6 : 1,
+                  }}
+                >
+                  {purchasedDownloadId ? "Already Downloaded" : isPurchasing ? "Processing Payment..." : connected ? `Pay ${data.share.downloadPriceApt} APT to Download` : "Connect Wallet to Download"}
+                </button>
+              </>
             ) : (
               <Link
                 href={
