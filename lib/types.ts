@@ -40,7 +40,7 @@ export type VaultAssetRecord = VaultAsset & {
 };
 
 export type CurrentUserProfile = {
-  user: User;
+  user: Omit<User, "passwordHash">;
   stats: {
     folderCount: number;
     fileCount: number;
@@ -54,7 +54,7 @@ export type CurrentUserProfile = {
 };
 
 export type AuthSessionPayload = {
-  user: User;
+  user: Omit<User, "passwordHash">;
   session: WalletSessionRecord;
   auth: WalletAuthStatus;
 };
