@@ -52,10 +52,16 @@ const DEMO_FILES = [
 ];
 
 export function WorkspacePreviewCard() {
-  const { walletAddress } = useWorkspaceWallet();
+  const { walletAddress, connected } = useWorkspaceWallet();
   const filesQuery = useFiles(walletAddress);
   const files = filesQuery.data?.files ?? [];
-  const hasRealFiles = files.length > 0;
+  const isLoading = filesQuery.isLoading;
+
+  // When wallet connected: show real files only (or empty state)
+  // When not connected: show demo files as preview
+  const showDemo = !connected;
+  const displayFiles = showDemo ? DEMO_FILES : null;
+  const realFiles = files.slice(0, 4);
 
   return (
     <div className="preview-card">
@@ -68,20 +74,8 @@ export function WorkspacePreviewCard() {
         </div>
       </div>
       <div className="preview-card-body">
-        {hasRealFiles
-          ? files.slice(0, 4).map((file) => (
-              <div key={file.id} className="file-row">
-                <div className={`file-icon ${iconClass(file.previewType)}`}>
-                  {iconEmoji(file.previewType)}
-                </div>
-                <div className="file-info">
-                  <div className="file-name">{file.filename}</div>
-                  <div className="file-meta">{mimeLabel(file.mimeType)}</div>
-                </div>
-                <div className="file-size">{formatBytes(file.size)}</div>
-              </div>
-            ))
-          : DEMO_FILES.map((file) => (
+        {showDemo
+          ? DEMO_FILES.map((file) => (
               <div key={file.name} className="file-row">
                 <div className={`file-icon ${file.icon}`}>{file.emoji}</div>
                 <div className="file-info">
@@ -90,7 +84,31 @@ export function WorkspacePreviewCard() {
                 </div>
                 <div className="file-size">{file.size}</div>
               </div>
-            ))}
+            ))
+          : isLoading
+            ? (
+              <div style={{ padding: "24px 0", textAlign: "center", fontSize: 11, color: "var(--text-muted)" }}>
+                Loading files...
+              </div>
+            )
+            : realFiles.length > 0
+              ? realFiles.map((file) => (
+                  <div key={file.id} className="file-row">
+                    <div className={`file-icon ${iconClass(file.previewType)}`}>
+                      {iconEmoji(file.previewType)}
+                    </div>
+                    <div className="file-info">
+                      <div className="file-name">{file.filename}</div>
+                      <div className="file-meta">{mimeLabel(file.mimeType)}</div>
+                    </div>
+                    <div className="file-size">{formatBytes(file.size)}</div>
+                  </div>
+                ))
+              : (
+                <div style={{ padding: "24px 0", textAlign: "center", fontSize: 11, color: "var(--text-muted)" }}>
+                  No files yet. Upload from your dashboard.
+                </div>
+              )}
       </div>
     </div>
   );
