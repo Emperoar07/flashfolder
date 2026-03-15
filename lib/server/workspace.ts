@@ -31,7 +31,14 @@ type FileListOptions = {
 };
 
 function normalizeWalletAddress(walletAddress?: string | null) {
-  return walletAddress?.trim() || demoWalletAddress;
+  const normalized = walletAddress?.trim() ?? demoWalletAddress;
+  
+  // Ensure address is not too short (basic validation)
+  if (normalized.startsWith("0x") && normalized.length < 10) {
+    return demoWalletAddress;
+  }
+  
+  return normalized;
 }
 
 function getCookieValue(request: Request, name: string) {
