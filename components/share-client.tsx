@@ -235,7 +235,7 @@ export function ShareClient({ token }: ShareClientProps) {
                     const result = await purchaseDownload({
                       shareToken: token,
                       sharerWallet: data.share.sharerWallet || "",
-                      priceApt: data.share.downloadPriceApt,
+                      priceApt: data.share.downloadPriceApt || 0,
                     });
 
                     // Trigger download with the download ID
