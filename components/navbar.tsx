@@ -127,7 +127,7 @@ export function Navbar() {
         </div>
 
         <div className="hidden items-center gap-6 sm:flex">
-          <ThemeToggle />
+          {pathname === "/" && <ThemeToggle />}
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -327,7 +327,7 @@ export function Navbar() {
                     Testnet
                   </span>
                 </div>
-                <ThemeToggle />
+                {pathname === "/" && <ThemeToggle />}
               </div>
             </div>
             {navLinks.map((link) => (

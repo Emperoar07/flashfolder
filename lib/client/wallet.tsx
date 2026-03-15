@@ -159,6 +159,29 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
       setIsAuthenticating(true);
       setAuthError(null);
 
+      // --- Step 1: try to restore existing server-side session (cookie-based) ---
+      try {
+        const restored = await apiFetch<AuthSessionPayload>(
+          "/api/auth/verify",
+          { method: "GET" },
+          currentWalletAddress,
+        );
+        // Validate the session belongs to the same wallet
+        if (
+          restored.session.walletAddress?.toLowerCase() === currentWalletAddress.toLowerCase() &&
+          new Date(restored.session.expiresAt).getTime() > Date.now()
+        ) {
+          if (!cancelled) {
+            setAuthSession(restored);
+            setIsAuthenticating(false);
+          }
+          return;
+        }
+      } catch {
+        // No valid session cookie — fall through to fresh challenge
+      }
+
+      // --- Step 2: fresh challenge + sign flow ---
       try {
         const challengePayload = await apiFetch<WalletChallengePayload>(
           "/api/auth/challenge",
