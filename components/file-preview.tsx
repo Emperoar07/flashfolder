@@ -33,6 +33,12 @@ function useObjectUrl(src: string, walletAddress?: string) {
     let cancelled = false;
     let url: string | null = null;
 
+    if (!src) {
+      setError(true);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(false);
 
@@ -41,7 +47,10 @@ function useObjectUrl(src: string, walletAddress?: string) {
 
     fetch(src, { headers })
       .then((res) => {
-        if (!res.ok) throw new Error("failed");
+        if (!res.ok) {
+          console.warn(`[FilePreview] Fetch failed with status ${res.status} for ${src}`);
+          throw new Error(`HTTP ${res.status}`);
+        }
         return res.blob();
       })
       .then((blob) => {
@@ -53,8 +62,9 @@ function useObjectUrl(src: string, walletAddress?: string) {
         });
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
         if (!cancelled) {
+          console.warn(`[FilePreview] Fetch error for ${src}:`, err);
           setError(true);
           setLoading(false);
         }
@@ -235,8 +245,8 @@ function VideoPreview({
   onFullscreen: () => void;
   onCloseFullscreen: () => void;
 }) {
-  // For video we need an object URL because the browser can't send custom headers
-  const { objectUrl, loading, error } = useObjectUrl(src, walletAddress);
+  // src already has wallet in query param (from buildSrc), don't pass walletAddress again
+  const { objectUrl, loading, error } = useObjectUrl(src);
   const videoSrc = objectUrl ?? src;
 
   return (
@@ -281,7 +291,8 @@ function AudioPreview({
   src: string;
   walletAddress?: string;
 }) {
-  const { objectUrl, loading, error } = useObjectUrl(src, walletAddress);
+  // src already has wallet in query param (from buildSrc), don't pass walletAddress again
+  const { objectUrl, loading, error } = useObjectUrl(src);
   const audioSrc = objectUrl ?? src;
 
   return (
