@@ -1,6 +1,7 @@
 /// FlashVault on-chain events.
 module flashvault::events {
     use std::string::String;
+    use aptos_framework::event;
 
     #[event]
     struct VaultRegistered has drop, store {
@@ -45,54 +46,79 @@ module flashvault::events {
         holder: address,
     }
 
-    // ── Public constructors ──
+    // ── Public emitters ──
 
-    public fun vault_registered(
+    public fun emit_vault_registered(
         nft_object_id: address,
         registrant: address,
         collection_name: String,
         teaser_enabled: bool,
-    ): VaultRegistered {
-        VaultRegistered { nft_object_id, registrant, collection_name, teaser_enabled }
+    ) {
+        event::emit(VaultRegistered {
+            nft_object_id,
+            registrant,
+            collection_name,
+            teaser_enabled,
+        });
     }
 
-    public fun vault_updated(
+    public fun emit_vault_updated(
         nft_object_id: address,
         registrant: address,
         content_commitment: String,
-    ): VaultUpdated {
-        VaultUpdated { nft_object_id, registrant, content_commitment }
+    ) {
+        event::emit(VaultUpdated {
+            nft_object_id,
+            registrant,
+            content_commitment,
+        });
     }
 
-    public fun vault_status_changed(
+    public fun emit_vault_status_changed(
         nft_object_id: address,
         registrant: address,
         active: bool,
-    ): VaultStatusChanged {
-        VaultStatusChanged { nft_object_id, registrant, active }
+    ) {
+        event::emit(VaultStatusChanged {
+            nft_object_id,
+            registrant,
+            active,
+        });
     }
 
-    public fun teaser_mode_changed(
+    public fun emit_teaser_mode_changed(
         nft_object_id: address,
         registrant: address,
         teaser_enabled: bool,
-    ): TeaserModeChanged {
-        TeaserModeChanged { nft_object_id, registrant, teaser_enabled }
+    ) {
+        event::emit(TeaserModeChanged {
+            nft_object_id,
+            registrant,
+            teaser_enabled,
+        });
     }
 
-    public fun entitlement_granted(
+    public fun emit_entitlement_granted(
         nft_object_id: address,
         grantor: address,
         holder: address,
-    ): EntitlementGranted {
-        EntitlementGranted { nft_object_id, grantor, holder }
+    ) {
+        event::emit(EntitlementGranted {
+            nft_object_id,
+            grantor,
+            holder,
+        });
     }
 
-    public fun entitlement_revoked(
+    public fun emit_entitlement_revoked(
         nft_object_id: address,
         grantor: address,
         holder: address,
-    ): EntitlementRevoked {
-        EntitlementRevoked { nft_object_id, grantor, holder }
+    ) {
+        event::emit(EntitlementRevoked {
+            nft_object_id,
+            grantor,
+            holder,
+        });
     }
 }

@@ -1,4 +1,4 @@
-/// Unit tests for the FlashVault registry + entitlements modules.
+// Unit tests for the FlashVault registry + entitlements modules.
 #[test_only]
 module flashvault::registry_tests {
     use std::string;

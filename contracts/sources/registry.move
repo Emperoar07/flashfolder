@@ -7,7 +7,6 @@ module flashvault::registry {
     use std::signer;
     use std::string::String;
     use aptos_std::smart_table::{Self, SmartTable};
-    use aptos_framework::event;
     use aptos_framework::timestamp;
 
     use flashvault::errors;
@@ -72,12 +71,12 @@ module flashvault::registry {
         });
         registry.vault_count = registry.vault_count + 1;
 
-        event::emit(events::vault_registered(
+        events::emit_vault_registered(
             nft_object_id,
             registrant,
             collection_name,
             teaser_enabled,
-        ));
+        );
     }
 
     /// Update the content commitment hash (e.g. SHA-256 of the vault manifest).
@@ -100,7 +99,7 @@ module flashvault::registry {
         record.content_commitment = new_commitment;
         record.updated_at_us = timestamp::now_microseconds();
 
-        event::emit(events::vault_updated(nft_object_id, registrant, new_commitment));
+        events::emit_vault_updated(nft_object_id, registrant, new_commitment);
     }
 
     /// Toggle teaser mode.
@@ -123,7 +122,7 @@ module flashvault::registry {
         record.teaser_enabled = teaser_enabled;
         record.updated_at_us = timestamp::now_microseconds();
 
-        event::emit(events::teaser_mode_changed(nft_object_id, registrant, teaser_enabled));
+        events::emit_teaser_mode_changed(nft_object_id, registrant, teaser_enabled);
     }
 
     /// Activate or deactivate the vault.
@@ -145,7 +144,7 @@ module flashvault::registry {
         record.active = active;
         record.updated_at_us = timestamp::now_microseconds();
 
-        event::emit(events::vault_status_changed(nft_object_id, registrant, active));
+        events::emit_vault_status_changed(nft_object_id, registrant, active);
     }
 
     // ── View functions ──

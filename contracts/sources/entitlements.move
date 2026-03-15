@@ -6,7 +6,6 @@
 module flashvault::entitlements {
     use std::signer;
     use aptos_std::smart_table::{Self, SmartTable};
-    use aptos_framework::event;
     use aptos_framework::timestamp;
 
     use flashvault::errors;
@@ -66,7 +65,7 @@ module flashvault::entitlements {
             granted_at_us: timestamp::now_microseconds(),
         });
 
-        event::emit(events::entitlement_granted(nft_object_id, grantor, holder));
+        events::emit_entitlement_granted(nft_object_id, grantor, holder);
     }
 
     /// Revoke a previously granted entitlement.
@@ -92,7 +91,7 @@ module flashvault::entitlements {
 
         smart_table::remove(vault_table, holder);
 
-        event::emit(events::entitlement_revoked(nft_object_id, grantor, holder));
+        events::emit_entitlement_revoked(nft_object_id, grantor, holder);
     }
 
     // ── View functions ──
