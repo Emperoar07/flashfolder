@@ -126,26 +126,6 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
-  // Keyboard arrow navigation for selected file
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (!filteredFiles.length) return;
-      const idx = filteredFiles.findIndex((f) => f.id === selectedFileId);
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-        e.preventDefault();
-        const next = filteredFiles[(idx + 1) % filteredFiles.length];
-        if (next) setSelectedFileId(next.id);
-      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-        e.preventDefault();
-        const prev = filteredFiles[(idx - 1 + filteredFiles.length) % filteredFiles.length];
-        if (prev) setSelectedFileId(prev.id);
-      }
-    }
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [filteredFiles, selectedFileId]);
-
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       setSelectedUpload(acceptedFiles[0] ?? null);
@@ -433,6 +413,26 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
     filteredFiles.find((file) => file.id === selectedFileId) ??
     filteredFiles[0] ??
     null;
+
+  // Keyboard arrow navigation for selected file
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (!filteredFiles.length) return;
+      const idx = filteredFiles.findIndex((f) => f.id === selectedFileId);
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        const next = filteredFiles[(idx + 1) % filteredFiles.length];
+        if (next) setSelectedFileId(next.id);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const prev = filteredFiles[(idx - 1 + filteredFiles.length) % filteredFiles.length];
+        if (prev) setSelectedFileId(prev.id);
+      }
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [filteredFiles, selectedFileId]);
 
   const metrics = useMemo(() => {
     const totalStorage = files.reduce((sum, file) => sum + file.size, 0);
