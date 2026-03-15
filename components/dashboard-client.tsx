@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useDeferredValue, useMemo, useState, useTransition } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDropzone } from "react-dropzone";
 
@@ -125,6 +125,26 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
   const [activeCategory, setActiveCategory] = useState<FileCategory>("all");
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  // Keyboard arrow navigation for selected file
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (!filteredFiles.length) return;
+      const idx = filteredFiles.findIndex((f) => f.id === selectedFileId);
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        const next = filteredFiles[(idx + 1) % filteredFiles.length];
+        if (next) setSelectedFileId(next.id);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const prev = filteredFiles[(idx - 1 + filteredFiles.length) % filteredFiles.length];
+        if (prev) setSelectedFileId(prev.id);
+      }
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [filteredFiles, selectedFileId]);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
