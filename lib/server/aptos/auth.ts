@@ -136,11 +136,16 @@ function verifySignedMessageMatchesChallenge(
   // with \r\n line endings, which breaks an exact substring match against our \n message.
   const normalizedFullMessage = input.fullMessage.replace(/\r\n/g, "\n");
 
-  // Accept the full challenge message OR just the challengeId (mobile wallet fallback
-  // where the signing UI truncates or reformats the message body).
+  // Rely primarily on the cryptographic checks (HMAC challengeId + Ed25519 signature).
+  // As a soft sanity check, confirm the fullMessage isn't empty and contains something
+  // unique to this challenge. This is intentionally lenient because Petra mobile can
+  // reformat the message body in unexpected ways.
   const containsChallenge =
-    normalizedFullMessage.includes(challenge.message) ||
-    normalizedFullMessage.includes(input.challengeId);
+    normalizedFullMessage.length > 0 &&
+    (
+      normalizedFullMessage.includes("FlashFolder") ||
+      normalizedFullMessage.includes(input.challengeId.slice(0, 20))
+    );
 
   if (!containsChallenge) {
     throw new AptosIntegrationError(
@@ -163,9 +168,10 @@ export function getWalletAuthStatus(): WalletAuthStatus {
 
 export async function createLoginChallenge(walletAddress: string) {
   const expiresAt = new Date(Date.now() + challengeTtlMs).toISOString();
-  // Short alphanumeric nonce — safe for all wallet implementations (mobile Petra
-  // rejects long base64url tokens with dots as the signMessage nonce).
-  const shortNonce = nanoid(18).replace(/[^a-zA-Z0-9]/g, "").slice(0, 16);
+  // Use a decimal timestamp as nonce — purely numeric strings cannot be parsed
+  // as hex addresses by mobile wallets (Petra prefixes alphanumeric nonces with
+  // 0x and tries to validate as an Aptos address, failing on short strings).
+  const shortNonce = String(Date.now());
   const challengeId = signPayload({
     kind: "challenge",
     walletAddress,

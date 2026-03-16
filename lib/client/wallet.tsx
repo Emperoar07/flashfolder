@@ -184,11 +184,9 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
 
         const signed = await signMessage({
           address: true,
-          application: true,
-          chainId: true,
           message: challengePayload.challenge.message,
-          // Use the short alphanumeric nonce — mobile wallets (Petra) reject
-          // long base64url tokens with dots as the nonce value.
+          // Purely numeric nonce — Petra mobile rejects alphanumeric nonces by trying
+          // to parse them as hex Aptos addresses and failing on short strings.
           nonce: challengePayload.challenge.nonce,
         });
 
