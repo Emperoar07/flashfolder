@@ -140,11 +140,20 @@ function verifySignedMessageMatchesChallenge(
   // As a soft sanity check, confirm the fullMessage isn't empty and contains something
   // unique to this challenge. This is intentionally lenient because Petra mobile can
   // reformat the message body in unexpected ways.
+  const includesWallet = normalizedFullMessage
+    .toLowerCase()
+    .includes(normalizeWalletAddress(challenge.walletAddress));
+  const includesNonce = normalizedFullMessage.includes(challenge.nonce);
+  const includesChallengeId = normalizedFullMessage.includes(
+    input.challengeId.slice(0, 12),
+  );
   const containsChallenge =
     normalizedFullMessage.length > 0 &&
     (
       normalizedFullMessage.includes("FlashFolder") ||
-      normalizedFullMessage.includes(input.challengeId.slice(0, 20))
+      includesChallengeId ||
+      includesNonce ||
+      includesWallet
     );
 
   if (!containsChallenge) {
