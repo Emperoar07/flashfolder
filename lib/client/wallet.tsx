@@ -102,6 +102,22 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
   const isDemo = false;
   const network = process.env.NEXT_PUBLIC_APTOS_NETWORK ?? "testnet";
 
+  function normalizePublicKey(pk: unknown): string | null {
+    if (typeof pk === "string") {
+      const first = pk.split(",")[0]?.trim();
+      if (!first) return null;
+      return first.startsWith("0x") ? first : `0x${first}`;
+    }
+
+    if (Array.isArray(pk) && pk.length > 0 && typeof pk[0] === "string") {
+      const first = pk[0].trim();
+      if (!first) return null;
+      return first.startsWith("0x") ? first : `0x${first}`;
+    }
+
+    return null;
+  }
+
   async function connect(walletName: string) {
     setLastError(null);
 
@@ -130,8 +146,12 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
     }
 
     const currentWalletAddress = account.address.toString();
-    const publicKeyStr = account.publicKey.toString();
-    const currentPublicKey = publicKeyStr.startsWith("0x") ? publicKeyStr : `0x${publicKeyStr}`;
+    const currentPublicKey = normalizePublicKey(account.publicKey);
+
+    if (!currentPublicKey) {
+      setAuthError("Wallet public key was not provided by the adapter.");
+      return;
+    }
     const activeSession = authSession?.session;
     const isCurrentSessionFresh =
       authSession?.user.walletAddress === currentWalletAddress &&

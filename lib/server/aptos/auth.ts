@@ -90,7 +90,9 @@ function verifySignedPayload<T extends { kind: string }>(token: string, kind: T[
 }
 
 function parsePublicKey(publicKey: string) {
-  return new Ed25519PublicKey(normalizeHex(publicKey.trim()));
+  // Some mobile adapters return comma-separated multi-keys; take the first entry.
+  const first = publicKey.split(",")[0]?.trim() ?? "";
+  return new Ed25519PublicKey(normalizeHex(first));
 }
 
 function parseSignature(signature: string) {

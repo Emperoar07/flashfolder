@@ -63,59 +63,59 @@
 }
 
 [data-theme="light"] {
-  --background: #1e1a18;
-  --foreground: #e8e0d8;
-  --card: #272220;
-  --card-hover: #312a28;
-  --bg-elevated: #2e2624;
-  --text-secondary: rgba(232, 224, 216, 0.6);
-  --text-muted: rgba(232, 224, 216, 0.38);
-  --accent-red: #e0304f;
-  --accent-red-hover: #b01030;
-  --accent-gold: #c4a46a;
-  --accent-gold-dim: rgba(196, 164, 106, 0.4);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(224, 48, 79, 0.3);
-  --border-gold: rgba(196, 164, 106, 0.22);
+  --background: #ffffff;
+  --foreground: #14100d;
+  --card: #f8f6f2;
+  --card-hover: #f1ede6;
+  --bg-elevated: #f4f0ea;
+  --text-secondary: rgba(20, 16, 13, 0.62);
+  --text-muted: rgba(20, 16, 13, 0.42);
+  --accent-red: #d1253f;
+  --accent-red-hover: #a81833;
+  --accent-gold: #b88a3b;
+  --accent-gold-dim: rgba(184, 138, 59, 0.32);
+  --border: rgba(20, 16, 13, 0.1);
+  --border-hover: rgba(209, 37, 63, 0.22);
+  --border-gold: rgba(184, 138, 59, 0.24);
   /* Extended tokens */
-  --navbar-bg: rgba(24, 20, 18, 0.88);
-  --accent-red-subtle: rgba(224, 48, 79, 0.1);
-  --accent-gold-subtle: rgba(196, 164, 106, 0.09);
-  --surface-subtle: rgba(255, 255, 255, 0.03);
-  --surface-subtle-hover: rgba(255, 255, 255, 0.055);
-  --error-text: #ffa8a8;
-  --phantom-text: rgba(255, 255, 255, 0.05);
-  --toggle-track: rgba(255, 255, 255, 0.06);
-  --toggle-border: rgba(255, 255, 255, 0.12);
-  --toggle-thumb: #e0304f;
+  --navbar-bg: rgba(255, 255, 255, 0.9);
+  --accent-red-subtle: rgba(209, 37, 63, 0.1);
+  --accent-gold-subtle: rgba(184, 138, 59, 0.1);
+  --surface-subtle: rgba(20, 16, 13, 0.03);
+  --surface-subtle-hover: rgba(20, 16, 13, 0.05);
+  --error-text: #a81833;
+  --phantom-text: rgba(20, 16, 13, 0.08);
+  --toggle-track: rgba(20, 16, 13, 0.08);
+  --toggle-border: rgba(20, 16, 13, 0.14);
+  --toggle-thumb: #d1253f;
   /* Semantic status */
-  --success: #34d399;
-  --success-subtle: rgba(52, 211, 153, 0.12);
-  --error: #ff6464;
-  --error-subtle: rgba(255, 100, 100, 0.1);
-  --error-border: rgba(255, 100, 100, 0.3);
-  --success-border: rgba(52, 211, 153, 0.3);
-  --neutral-bg: rgba(150, 150, 150, 0.1);
-  --neutral-border: rgba(150, 150, 150, 0.3);
-  --info-bg: rgba(100, 150, 255, 0.1);
-  --info-border: rgba(100, 150, 255, 0.3);
-  --gold-bg: rgba(196, 164, 106, 0.1);
-  --gold-border: rgba(196, 164, 106, 0.3);
+  --success: #1f9d68;
+  --success-subtle: rgba(31, 157, 104, 0.12);
+  --error: #d1253f;
+  --error-subtle: rgba(209, 37, 63, 0.1);
+  --error-border: rgba(209, 37, 63, 0.24);
+  --success-border: rgba(31, 157, 104, 0.24);
+  --neutral-bg: rgba(20, 16, 13, 0.06);
+  --neutral-border: rgba(20, 16, 13, 0.14);
+  --info-bg: rgba(52, 116, 200, 0.12);
+  --info-border: rgba(52, 116, 200, 0.24);
+  --gold-bg: rgba(184, 138, 59, 0.12);
+  --gold-border: rgba(184, 138, 59, 0.26);
   /* Overlays & surfaces */
-  --overlay: rgba(0, 0, 0, 0.65);
-  --overlay-heavy: rgba(0, 0, 0, 0.92);
-  --surface-hover: rgba(255, 255, 255, 0.06);
-  --surface-active: rgba(255, 255, 255, 0.09);
+  --overlay: rgba(0, 0, 0, 0.28);
+  --overlay-heavy: rgba(0, 0, 0, 0.5);
+  --surface-hover: rgba(20, 16, 13, 0.07);
+  --surface-active: rgba(20, 16, 13, 0.12);
   /* Workspace nav (gold-accented) */
-  --ws-accent: #c4a46a;
-  --ws-accent-text: #d4b880;
-  --ws-bg: #2a2118;
-  --ws-bg-deep: #1e180e;
-  --ws-border: #2e2520;
-  --ws-hover: #342a20;
-  --ws-inactive: #5a5650;
-  --ws-inactive-text: #8a8680;
-  --ws-label: #666;
+  --ws-accent: #b88a3b;
+  --ws-accent-text: #8a6a2f;
+  --ws-bg: #fbf7f0;
+  --ws-bg-deep: #f3ede3;
+  --ws-border: rgba(20, 16, 13, 0.1);
+  --ws-hover: #f2ebdf;
+  --ws-inactive: #9c8d7c;
+  --ws-inactive-text: #7a6e62;
+  --ws-label: #8a7b6a;
 }
 
 @theme inline {
