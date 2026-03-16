@@ -109,6 +109,19 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
       return first.startsWith("0x") ? first : `0x${first}`;
     }
 
+    if (pk instanceof Uint8Array) {
+      const hex = Array.from(pk).map((b) => b.toString(16).padStart(2, "0")).join("");
+      return hex ? `0x${hex}` : undefined;
+    }
+
+    if (pk && typeof (pk as { toString?: () => string }).toString === "function") {
+      const str = (pk as { toString: () => string }).toString();
+      if (!str) return undefined;
+      const first = str.split(",")[0]?.trim();
+      if (!first) return undefined;
+      return first.startsWith("0x") ? first : `0x${first}`;
+    }
+
     if (Array.isArray(pk) && pk.length > 0 && typeof pk[0] === "string") {
       const first = pk[0].trim();
       if (!first) return undefined;
