@@ -146,13 +146,6 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
     }
 
     const currentWalletAddress = account.address.toString();
-    const currentPublicKey = normalizePublicKey(account.publicKey);
-
-    if (!currentPublicKey) {
-      setAuthError("Wallet public key was not provided by the adapter.");
-      setIsAuthenticating(false);
-      return;
-    }
     const activeSession = authSession?.session;
     const isCurrentSessionFresh =
       authSession?.user.walletAddress === currentWalletAddress &&
@@ -211,6 +204,15 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
           nonce: challengePayload.challenge.nonce,
         });
 
+        // Prefer signed.publicKey if provided; otherwise fall back to adapter account key.
+        const signedPublicKey = normalizePublicKey(
+          (signed as { publicKey?: unknown }).publicKey ?? account.publicKey,
+        );
+
+        if (!signedPublicKey) {
+          throw new Error("Wallet public key was not provided by the adapter.");
+        }
+
         // Format signature as hex string (handle multiple formats)
         let signatureHex = "";
         const sig = signed.signature as unknown;
@@ -240,7 +242,7 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
           walletAddress: currentWalletAddress,
           challengeId: challengePayload.challenge.challengeId,
           signature: signatureHex,
-          publicKey: currentPublicKey,
+          publicKey: signedPublicKey,
           fullMessage: fullMessageStr,
           signedAddress: signed.address,
         };
