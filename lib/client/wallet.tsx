@@ -146,6 +146,7 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
     }
 
     const currentWalletAddress = account.address.toString();
+    const adapterPublicKey = account.publicKey;
     const activeSession = authSession?.session;
     const isCurrentSessionFresh =
       authSession?.user.walletAddress === currentWalletAddress &&
@@ -206,7 +207,7 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
 
         // Prefer signed.publicKey if provided; otherwise fall back to adapter account key.
         const signedPublicKey = normalizePublicKey(
-          (signed as { publicKey?: unknown }).publicKey ?? account.publicKey,
+          (signed as { publicKey?: unknown }).publicKey ?? adapterPublicKey,
         );
 
         if (!signedPublicKey) {
