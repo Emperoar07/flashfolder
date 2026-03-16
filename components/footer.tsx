@@ -13,7 +13,7 @@ export function Footer() {
         <span className="site-footer__dot">·</span>
         <span>Aptos Labs</span>
         <span className="site-footer__dot">·</span>
-        <span>© 2026 DataMesh</span>
+        <span>© 2026 FlashFolder</span>
       </div>
     </footer>
   );
