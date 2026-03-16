@@ -1007,11 +1007,16 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
         <div style={{ marginTop: 32 }}>
           {/* Category tabs */}
           <div
+            className="tabs-scroll"
             style={{
               display: "flex",
               gap: 0,
               marginBottom: 16,
               borderBottom: "1px solid var(--border)",
+              overflowX: "auto",
+              WebkitOverflowScrolling: "touch" as React.CSSProperties["WebkitOverflowScrolling"],
+              scrollbarWidth: "none" as React.CSSProperties["scrollbarWidth"],
+              msOverflowStyle: "none" as React.CSSProperties["msOverflowStyle"],
             }}
           >
             {FILE_CATEGORIES.map((cat) => (
@@ -1037,6 +1042,8 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
                       : "2px solid transparent",
                   cursor: "pointer",
                   transition: "all 0.2s",
+                  flexShrink: 0,
+                  whiteSpace: "nowrap",
                 }}
               >
                 {cat.label}

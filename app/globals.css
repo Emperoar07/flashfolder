@@ -201,6 +201,11 @@ select {
   background: rgba(26, 10, 10, 0.28);
 }
 
+/* Hide scrollbar on horizontal scroll strips (category tabs) */
+.tabs-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* ========== THEME TOGGLE ========== */
 .theme-toggle {
   position: relative;
