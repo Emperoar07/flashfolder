@@ -102,20 +102,20 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
   const isDemo = false;
   const network = process.env.NEXT_PUBLIC_APTOS_NETWORK ?? "testnet";
 
-  function normalizePublicKey(pk: unknown): string | null {
+  function normalizePublicKey(pk: unknown): string | undefined {
     if (typeof pk === "string") {
       const first = pk.split(",")[0]?.trim();
-      if (!first) return null;
+      if (!first) return undefined;
       return first.startsWith("0x") ? first : `0x${first}`;
     }
 
     if (Array.isArray(pk) && pk.length > 0 && typeof pk[0] === "string") {
       const first = pk[0].trim();
-      if (!first) return null;
+      if (!first) return undefined;
       return first.startsWith("0x") ? first : `0x${first}`;
     }
 
-    return null;
+    return undefined;
   }
 
   async function connect(walletName: string) {
