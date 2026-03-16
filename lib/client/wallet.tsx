@@ -150,6 +150,7 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
 
     if (!currentPublicKey) {
       setAuthError("Wallet public key was not provided by the adapter.");
+      setIsAuthenticating(false);
       return;
     }
     const activeSession = authSession?.session;
