@@ -666,6 +666,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
           onClick={() => setMobileSidebarOpen((o) => !o)}
           style={{
             width: "100%",
+            marginTop: 6,
             marginBottom: 12,
             padding: "10px 14px",
             background: "var(--card)",
@@ -676,13 +677,32 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
             textTransform: "uppercase",
             letterSpacing: "0.1em",
             cursor: "pointer",
+            display: "flex",
             alignItems: "center",
+            justifyContent: "space-between",
             gap: 8,
           }}
           className="mobile-sidebar-toggle"
         >
-          <span>&#x1F4C1;</span>
-          {mobileSidebarOpen ? "Hide Folders" : `Folders${activeFolderId ? ` · ${folders.find((f) => f.id === activeFolderId)?.name ?? ""}` : ""}`}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <span>&#x1F4C1;</span>
+            <span>
+              {mobileSidebarOpen
+                ? "Hide Folders"
+                : `Folders${activeFolderId ? ` · ${folders.find((f) => f.id === activeFolderId)?.name ?? ""}` : ""}`}
+            </span>
+          </span>
+          <span
+            aria-hidden="true"
+            style={{
+              fontSize: 12,
+              opacity: 0.75,
+              transform: mobileSidebarOpen ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 180ms ease",
+            }}
+          >
+            ▾
+          </span>
         </button>
         {/* Wallet-connect gate */}
         {!connected && (
