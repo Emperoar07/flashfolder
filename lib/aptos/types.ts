@@ -34,6 +34,8 @@ export type NftOwnershipVerificationResult = {
 
 export type WalletLoginChallenge = {
   challengeId: string;
+  /** Short alphanumeric nonce for use with wallet signMessage (mobile-safe). */
+  nonce: string;
   message: string;
   walletAddress: string;
   network: string;

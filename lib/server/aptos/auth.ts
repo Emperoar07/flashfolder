@@ -132,7 +132,17 @@ function verifySignedMessageMatchesChallenge(
     );
   }
 
-  if (!input.fullMessage.includes(challenge.message)) {
+  // Normalize CRLF → LF: mobile wallets (Petra on Android/iOS) return fullMessage
+  // with \r\n line endings, which breaks an exact substring match against our \n message.
+  const normalizedFullMessage = input.fullMessage.replace(/\r\n/g, "\n");
+
+  // Accept the full challenge message OR just the challengeId (mobile wallet fallback
+  // where the signing UI truncates or reformats the message body).
+  const containsChallenge =
+    normalizedFullMessage.includes(challenge.message) ||
+    normalizedFullMessage.includes(input.challengeId);
+
+  if (!containsChallenge) {
     throw new AptosIntegrationError(
       "INVALID_SIGNATURE",
       "Signed message did not include the active FlashFolder challenge.",
@@ -153,15 +163,19 @@ export function getWalletAuthStatus(): WalletAuthStatus {
 
 export async function createLoginChallenge(walletAddress: string) {
   const expiresAt = new Date(Date.now() + challengeTtlMs).toISOString();
+  // Short alphanumeric nonce — safe for all wallet implementations (mobile Petra
+  // rejects long base64url tokens with dots as the signMessage nonce).
+  const shortNonce = nanoid(18).replace(/[^a-zA-Z0-9]/g, "").slice(0, 16);
   const challengeId = signPayload({
     kind: "challenge",
     walletAddress,
     network: appConfig.aptos.network,
     expiresAt,
-    nonce: nanoid(18),
+    nonce: shortNonce,
   } satisfies SignedChallengePayload);
   const challenge: WalletLoginChallenge = {
     challengeId,
+    nonce: shortNonce,
     walletAddress,
     network: appConfig.aptos.network,
     expiresAt,
@@ -179,6 +193,7 @@ export async function verifySignedChallenge(input: WalletSignedChallenge) {
   );
   const challenge: WalletLoginChallenge = {
     challengeId: input.challengeId,
+    nonce: challengeToken.nonce,
     walletAddress: challengeToken.walletAddress,
     network: challengeToken.network,
     expiresAt: challengeToken.expiresAt,

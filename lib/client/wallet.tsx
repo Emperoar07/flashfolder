@@ -187,7 +187,9 @@ function useWalletRuntimeValue(): WalletRuntimeContextValue {
           application: true,
           chainId: true,
           message: challengePayload.challenge.message,
-          nonce: challengePayload.challenge.challengeId,
+          // Use the short alphanumeric nonce — mobile wallets (Petra) reject
+          // long base64url tokens with dots as the nonce value.
+          nonce: challengePayload.challenge.nonce,
         });
 
         // Format signature as hex string (handle multiple formats)
