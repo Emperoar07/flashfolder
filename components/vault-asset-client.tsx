@@ -534,14 +534,14 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
             <p className="text-xs uppercase tracking-[0.25em] text-[var(--text-muted)]">
               Access logs
             </p>
-            <div className="mt-4 space-y-2">
+            <div className="mt-4 max-h-80 space-y-2 overflow-y-auto pr-1">
               {vaultAsset.accessLogs.map((log) => (
                 <div key={log.id} className="rounded-md bg-[var(--surface-subtle)] p-4">
                   <p className="text-sm font-semibold text-[var(--foreground)]">
                     {log.accessType.replaceAll("_", " ").toLowerCase()}
                   </p>
                   <p className="mt-1 text-sm text-[var(--text-muted)]">{formatDate(log.createdAt)}</p>
-                  <p className="mt-1 text-xs text-[var(--text-muted)]">
+                  <p className="mt-1 truncate text-xs font-mono text-[var(--text-muted)]" title={log.accessorWallet ?? undefined}>
                     {log.accessorWallet ?? "Anonymous or share route"}
                   </p>
                 </div>

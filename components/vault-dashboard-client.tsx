@@ -165,7 +165,7 @@ export function VaultDashboardClient() {
           {vaultAssets.map((asset, i) => {
             const meta = asset.nftMetadataSnapshot as { imageUrl?: string } | null;
             return (
-            <Link key={asset.id} href={`/vault/${asset.id}`} className="nft-card" style={{ textDecoration: "none", color: "inherit" }}>
+            <div key={asset.id} className="nft-card" style={{ color: "inherit" }}>
               <div className="nft-thumb">
                 {meta?.imageUrl ? (
                   <img
@@ -191,8 +191,15 @@ export function VaultDashboardClient() {
                     <strong>{asset.shares.length}</strong> shares
                   </span>
                 </div>
+                <Link
+                  href={`/vault/${asset.id}`}
+                  className="btn-primary"
+                  style={{ display: "block", textAlign: "center", marginTop: 12, textDecoration: "none" }}
+                >
+                  Open Vault
+                </Link>
               </div>
-            </Link>
+            </div>
             );
           })}
         </div>
