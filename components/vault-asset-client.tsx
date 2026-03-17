@@ -22,6 +22,7 @@ import {
   useVaultAsset,
   useVerifyVaultOwnership,
 } from "@/lib/client/hooks";
+import { useWorkspaceTransaction } from "@/lib/client/use-workspace-transaction";
 import {
   SHARE_TYPES,
   VAULT_FILE_ROLES,
@@ -43,6 +44,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
   const verifyOwnership = useVerifyVaultOwnership(walletAddress, vaultAssetId);
   const uploadVaultFile = useUploadVaultFile(walletAddress, vaultAssetId);
   const createVaultShare = useCreateVaultShare(walletAddress, vaultAssetId);
+  const { submitTransaction, isSubmitting: isTxSubmitting, error: txError } = useWorkspaceTransaction();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [description, setDescription] = useState("");
   const [role, setRole] = useState<"PRIMARY_MEDIA" | "UNLOCKABLE" | "ATTACHMENT" | "TEASER">(
@@ -196,15 +198,31 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
               </div>
               <button
                 className="inline-flex items-center gap-2 rounded-md bg-[var(--accent-red)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] disabled:opacity-50"
-                disabled={verifyOwnership.isPending}
-                onClick={() => verifyOwnership.mutate()}
+                disabled={verifyOwnership.isPending || isTxSubmitting}
+                onClick={async () => {
+                  try {
+                    await submitTransaction("vault_verify");
+                    verifyOwnership.mutate();
+                  } catch {
+                    // txError state is handled below
+                  }
+                }}
                 type="button"
               >
                 <ShieldCheck className="h-4 w-4" />
-                {verifyOwnership.isPending ? "Checking..." : "Verify ownership"}
+                {isTxSubmitting
+                  ? "Approve in wallet..."
+                  : verifyOwnership.isPending
+                    ? "Checking..."
+                    : "Verify ownership"}
               </button>
             </div>
 
+            {(txError && !verifyOwnership.isPending && !uploadVaultFile.isPending && !createVaultShare.isPending) ? (
+              <div className="mt-4 rounded-xl bg-[var(--accent-red-subtle)] border border-[var(--accent-red)] px-4 py-3 text-sm text-[var(--foreground)]">
+                {txError}
+              </div>
+            ) : null}
             {verifyOwnership.isError ? (
               <div className="mt-4 rounded-xl bg-[var(--accent-red-subtle)] border border-[var(--accent-red)] px-4 py-3 text-sm text-[var(--foreground)]">
                 {verifyOwnership.error instanceof Error
@@ -385,27 +403,26 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                 ) : null}
                 <button
                   className="rounded-md bg-[var(--accent-red)] px-4 py-3 text-sm font-semibold text-[var(--foreground)] disabled:opacity-50"
-                  disabled={!selectedFile || uploadVaultFile.isPending}
-                  onClick={() =>
-                    selectedFile &&
-                    uploadVaultFile.mutate(
-                      {
-                        file: selectedFile,
-                        role,
-                        description,
-                        encrypt,
-                      },
-                      {
-                        onSuccess: () => {
-                          setSelectedFile(null);
-                          setDescription("");
-                        },
-                      },
-                    )
-                  }
+                  disabled={!selectedFile || uploadVaultFile.isPending || isTxSubmitting}
+                  onClick={async () => {
+                    if (!selectedFile) return;
+                    try {
+                      await submitTransaction("vault_upload");
+                      uploadVaultFile.mutate(
+                        { file: selectedFile, role, description, encrypt },
+                        { onSuccess: () => { setSelectedFile(null); setDescription(""); } },
+                      );
+                    } catch {
+                      // txError displayed above
+                    }
+                  }}
                   type="button"
                 >
-                  {uploadVaultFile.isPending ? "Uploading..." : "Upload vault content"}
+                  {isTxSubmitting
+                    ? "Approve in wallet..."
+                    : uploadVaultFile.isPending
+                      ? "Uploading..."
+                      : "Upload vault content"}
                 </button>
               </div>
             </div>
@@ -447,16 +464,25 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
 
               <button
                 className="mt-4 w-full rounded-md bg-[var(--accent-red)] px-4 py-3 text-sm font-semibold text-[var(--foreground)] disabled:opacity-50"
-                disabled={createVaultShare.isPending}
-                onClick={() =>
-                  createVaultShare.mutate({
-                    shareType,
-                    password: shareType === SHARE_TYPES.PASSWORD ? sharePassword : undefined,
-                  })
-                }
+                disabled={createVaultShare.isPending || isTxSubmitting}
+                onClick={async () => {
+                  try {
+                    await submitTransaction("vault_share");
+                    createVaultShare.mutate({
+                      shareType,
+                      password: shareType === SHARE_TYPES.PASSWORD ? sharePassword : undefined,
+                    });
+                  } catch {
+                    // txError displayed inline
+                  }
+                }}
                 type="button"
               >
-                {createVaultShare.isPending ? "Creating..." : "Create vault share"}
+                {isTxSubmitting
+                  ? "Approve in wallet..."
+                  : createVaultShare.isPending
+                    ? "Creating..."
+                    : "Create vault share"}
               </button>
 
               {createVaultShare.isError ? (

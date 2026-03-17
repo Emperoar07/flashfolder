@@ -38,10 +38,16 @@ export const appConfig = {
     mockEnabled: false,
   },
   get vaultEncryptionSecret(): string {
-    const secret = process.env.FLASHVAULT_ENCRYPTION_SECRET;
-    if (secret) return secret;
+    // Accept either dedicated secret or the shared auth secret so deployers
+    // only need to set one env var in Vercel / production.
+    const secret =
+      process.env.FLASHVAULT_ENCRYPTION_SECRET ??
+      process.env.FLASHFOLDER_AUTH_SECRET;
+    if (secret?.trim()) return secret.trim();
     if (process.env.NODE_ENV === "production") {
-      throw new Error("FLASHVAULT_ENCRYPTION_SECRET must be set in production.");
+      throw new Error(
+        "Set FLASHVAULT_ENCRYPTION_SECRET (or FLASHFOLDER_AUTH_SECRET) in your Vercel environment variables.",
+      );
     }
     return "flashvault-dev-local-only";
   },

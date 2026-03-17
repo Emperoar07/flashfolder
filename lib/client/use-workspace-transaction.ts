@@ -11,7 +11,10 @@ type WorkspaceOperation =
   | "file_upload"
   | "file_delete"
   | "file_share"
-  | "file_move";
+  | "file_move"
+  | "vault_verify"
+  | "vault_upload"
+  | "vault_share";
 
 const OPERATION_COSTS: Record<WorkspaceOperation, number> = {
   folder_create: 100,      // 0.001 APT
@@ -21,6 +24,9 @@ const OPERATION_COSTS: Record<WorkspaceOperation, number> = {
   file_delete: 100,        // 0.001 APT
   file_share: 200,         // 0.002 APT
   file_move: 150,          // 0.0015 APT
+  vault_verify: 100,       // 0.001 APT – on-chain ownership check
+  vault_upload: 500,       // 0.005 APT – encrypted vault upload
+  vault_share: 200,        // 0.002 APT – collector share creation
 };
 
 export function useWorkspaceTransaction() {
