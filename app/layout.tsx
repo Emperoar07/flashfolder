@@ -3,7 +3,6 @@ import { DM_Mono, Bebas_Neue, Playfair_Display, Space_Grotesk } from "next/font/
 
 import { Navbar } from "@/components/navbar";
 import { Providers } from "@/components/providers";
-import { Footer } from "@/components/footer";
 import "./globals.css";
 
 function NavbarWrapper() {
@@ -52,7 +51,6 @@ export default function RootLayout({
         <Providers>
           <NavbarWrapper />
           {children}
-          <Footer />
         </Providers>
       </body>
     </html>
