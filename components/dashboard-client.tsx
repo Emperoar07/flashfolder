@@ -87,11 +87,10 @@ function fileIconEmoji(type: PreviewTypeValue) {
   }
 }
 
-function getTimeBasedGreeting(): string {
+function getTimeBasedGreeting(name?: string | null): string {
   const hour = new Date().getHours();
-  if (hour < 12) return "GOOD MORNING";
-  if (hour < 18) return "GOOD AFTERNOON";
-  return "GOOD EVENING";
+  const timeGreeting = hour < 12 ? "GOOD MORNING" : hour < 18 ? "GOOD AFTERNOON" : "GOOD EVENING";
+  return name ? `${timeGreeting}, ${name.toUpperCase()}` : timeGreeting;
 }
 
 type DashboardClientProps = {
@@ -731,7 +730,7 @@ export function DashboardClient({ initialFolderId }: DashboardClientProps) {
         )}
 
         <div className="dash-hero">
-          <h2>{getTimeBasedGreeting()}</h2>
+          <h2>{getTimeBasedGreeting(profileQuery.data?.user?.username)}</h2>
           <p>Welcome back to your workspace. Here&apos;s your overview.</p>
           <div className="metrics-row">
             <div className="metric">
