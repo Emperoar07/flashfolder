@@ -488,10 +488,122 @@ select {
   background: var(--accent-red);
   color: #fff;
   text-decoration: none;
+  border: none;
+  cursor: pointer;
   transition: opacity 0.2s;
 }
 .preview-card-upload-btn:hover {
   opacity: 0.85;
+}
+
+/* ========== QUICK UPLOAD MODAL ========== */
+.quick-upload-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.quick-upload-modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 380px;
+  max-width: 92vw;
+  overflow: hidden;
+}
+.quick-upload-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.quick-upload-header span {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--foreground);
+}
+.quick-upload-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+.quick-upload-close:hover {
+  color: var(--foreground);
+}
+.quick-upload-body {
+  padding: 20px;
+}
+.quick-upload-dropzone {
+  border: 1px dashed var(--border-hover);
+  border-radius: var(--radius-sm);
+  padding: 28px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.quick-upload-dropzone p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+.quick-upload-dropzone:hover,
+.quick-upload-dropzone.active {
+  border-color: var(--accent-red);
+  background: rgba(200, 57, 43, 0.06);
+}
+.quick-upload-file-size {
+  margin-top: 4px !important;
+  font-size: 11px !important;
+  opacity: 0.6;
+}
+.quick-upload-progress {
+  margin-top: 14px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.quick-upload-progress-bar {
+  height: 100%;
+  background: var(--accent-red);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+.quick-upload-error {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--accent-red);
+}
+.quick-upload-submit {
+  margin-top: 14px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent-red);
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.quick-upload-submit:hover:not(:disabled) {
+  opacity: 0.85;
+}
+.quick-upload-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* ========== TICKER ========== */
