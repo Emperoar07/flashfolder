@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useWorkspaceWallet } from "@/components/wallet-status";
 import { useFiles } from "@/lib/client/hooks";
 import { PREVIEW_TYPES, type PreviewTypeValue } from "@/lib/file-kinds";
@@ -57,6 +59,7 @@ export function WorkspacePreviewCard() {
   const files = filesQuery.data?.files ?? [];
   const isLoading = filesQuery.isLoading;
   const realFiles = files.slice(0, 4);
+  const router = useRouter();
 
   return (
     <div className="preview-card">
@@ -88,7 +91,14 @@ export function WorkspacePreviewCard() {
             )
             : realFiles.length > 0
               ? realFiles.map((file) => (
-                  <div key={file.id} className="file-row">
+                  <div
+                    key={file.id}
+                    className="file-row"
+                    onClick={() => router.push(`/files/${file.id}`)}
+                    role="link"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === "Enter") router.push(`/files/${file.id}`); }}
+                  >
                     <div className={`file-icon ${iconClass(file.previewType)}`}>
                       {iconEmoji(file.previewType)}
                     </div>
@@ -105,6 +115,16 @@ export function WorkspacePreviewCard() {
                 </div>
               )}
       </div>
+      {connected && (
+        <div className="preview-card-footer">
+          <Link href="/dashboard" className="preview-card-link">
+            View All →
+          </Link>
+          <Link href="/dashboard" className="preview-card-upload-btn">
+            ↑ Upload
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

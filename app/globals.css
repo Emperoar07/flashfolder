@@ -463,6 +463,36 @@ select {
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
+.preview-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+.preview-card-link {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.preview-card-link:hover {
+  color: var(--foreground);
+}
+.preview-card-upload-btn {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-red);
+  color: #fff;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.preview-card-upload-btn:hover {
+  opacity: 0.85;
+}
 
 /* ========== TICKER ========== */
 .ticker-wrap {
