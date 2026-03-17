@@ -230,3 +230,23 @@ export function useCreateVaultShare(walletAddress: string, vaultAssetId: string)
     },
   });
 }
+
+export function useRevokeShare(walletAddress: string, vaultAssetId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (shareId: string) =>
+      apiFetch<{ success: boolean }>(
+        `/api/shares/${shareId}`,
+        { method: "DELETE" },
+        walletAddress,
+      ),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["vault-asset", walletAddress, vaultAssetId],
+      });
+      void queryClient.invalidateQueries({ queryKey: ["vault-assets", walletAddress] });
+      void queryClient.invalidateQueries({ queryKey: ["me", walletAddress] });
+    },
+  });
+}

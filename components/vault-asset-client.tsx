@@ -8,6 +8,7 @@ import {
   Lock,
   Shield,
   ShieldCheck,
+  Trash2,
   UploadCloud,
 } from "lucide-react";
 import Link from "next/link";
@@ -18,6 +19,7 @@ import { UploadDropzone } from "@/components/upload-dropzone";
 import { useWorkspaceWallet } from "@/components/wallet-status";
 import {
   useCreateVaultShare,
+  useRevokeShare,
   useUploadVaultFile,
   useVaultAsset,
   useVerifyVaultOwnership,
@@ -44,6 +46,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
   const verifyOwnership = useVerifyVaultOwnership(walletAddress, vaultAssetId);
   const uploadVaultFile = useUploadVaultFile(walletAddress, vaultAssetId);
   const createVaultShare = useCreateVaultShare(walletAddress, vaultAssetId);
+  const revokeShare = useRevokeShare(walletAddress, vaultAssetId);
   const { submitTransaction, isSubmitting: isTxSubmitting, error: txError } = useWorkspaceTransaction();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [description, setDescription] = useState("");
@@ -511,17 +514,33 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                         {share.shareType.toLowerCase()} link
                       </Link>
                     </div>
-                    <button
-                      className="rounded-md bg-[var(--card-hover)] p-2 text-[var(--text-secondary)]"
-                      onClick={() =>
-                        void navigator.clipboard.writeText(
-                          `${window.location.origin}/share/${share.token}`,
-                        )
-                      }
-                      type="button"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="rounded-md bg-[var(--card-hover)] p-2 text-[var(--text-secondary)] hover:text-[var(--foreground)]"
+                        onClick={() =>
+                          void navigator.clipboard.writeText(
+                            `${window.location.origin}/share/${share.token}`,
+                          )
+                        }
+                        title="Copy share link"
+                        type="button"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </button>
+                      <button
+                        className="rounded-md bg-[var(--card-hover)] p-2 text-[var(--text-secondary)] hover:text-red-500 disabled:opacity-40"
+                        disabled={revokeShare.isPending}
+                        onClick={() => {
+                          if (confirm("Revoke this share link? Anyone with the link will lose access.")) {
+                            revokeShare.mutate(share.id);
+                          }
+                        }}
+                        title="Revoke share link"
+                        type="button"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
 
@@ -530,6 +549,14 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                     No collector links yet. Create a share when you want to expose
                     teaser or gated media outside your wallet session.
                   </div>
+                ) : null}
+
+                {revokeShare.isError ? (
+                  <p className="rounded-md bg-[var(--accent-red-subtle)] border border-[var(--accent-red)] px-4 py-3 text-sm text-[var(--foreground)]">
+                    {revokeShare.error instanceof Error
+                      ? revokeShare.error.message
+                      : "Failed to revoke share. Please try again."}
+                  </p>
                 ) : null}
               </div>
             </div>
