@@ -22,12 +22,12 @@ export function FileDetailClient({ fileId }: FileDetailClientProps) {
   });
 
   if (query.isLoading) {
-    return <div className="rounded-[2rem] bg-[var(--card)] p-8 text-[var(--text-secondary)]">Loading file...</div>;
+    return <div className="rounded-[20px] bg-[var(--card)] p-8 text-[var(--text-secondary)]">Loading file...</div>;
   }
 
   if (!query.data?.file) {
     return (
-      <div className="rounded-[2rem] bg-[var(--card)] p-8 text-[var(--text-secondary)]">
+      <div className="rounded-[20px] bg-[var(--card)] p-8 text-[var(--text-secondary)]">
         File not found.
       </div>
     );
@@ -37,7 +37,7 @@ export function FileDetailClient({ fileId }: FileDetailClientProps) {
 
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="space-y-6 rounded-[2rem] bg-[var(--card)] p-8">
+      <div className="space-y-6 rounded-[20px] bg-[var(--card)] p-8">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-[var(--text-muted)]">
             File detail
@@ -55,28 +55,28 @@ export function FileDetailClient({ fileId }: FileDetailClientProps) {
           previewType={file.previewType}
         />
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-3xl bg-[var(--surface-subtle)] p-4">
-            <p className="text-sm text-[var(--text-muted)]">Folder</p>
-            <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">
+          <div className="rounded-md bg-[var(--surface-subtle)] p-4">
+            <p className="text-xs text-[var(--text-muted)]" style={{ textTransform: 'uppercase', letterSpacing: '0.2em' }}>Folder</p>
+            <p className="mt-1 text-lg font-semibold text-[var(--foreground)]">
               {file.folder?.name ?? "Root"}
             </p>
           </div>
-          <div className="rounded-3xl bg-[var(--surface-subtle)] p-4">
-            <p className="text-sm text-[var(--text-muted)]">Size</p>
-            <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">
+          <div className="rounded-md bg-[var(--surface-subtle)] p-4">
+            <p className="text-xs text-[var(--text-muted)]" style={{ textTransform: 'uppercase', letterSpacing: '0.2em' }}>Size</p>
+            <p className="mt-1 text-lg font-semibold text-[var(--foreground)]">
               {formatBytes(file.size)}
             </p>
           </div>
-          <div className="rounded-3xl bg-[var(--surface-subtle)] p-4">
-            <p className="text-sm text-[var(--text-muted)]">Updated</p>
-            <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">
+          <div className="rounded-md bg-[var(--surface-subtle)] p-4">
+            <p className="text-xs text-[var(--text-muted)]" style={{ textTransform: 'uppercase', letterSpacing: '0.2em' }}>Updated</p>
+            <p className="mt-1 text-lg font-semibold text-[var(--foreground)]">
               {formatDate(file.updatedAt)}
             </p>
           </div>
         </div>
       </div>
 
-      <aside className="space-y-6 rounded-[2rem] bg-[var(--card)] p-8">
+      <aside className="space-y-6 rounded-[20px] bg-[var(--card)] p-8">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-[var(--text-muted)]">
             Active shares
@@ -85,14 +85,14 @@ export function FileDetailClient({ fileId }: FileDetailClientProps) {
             {file.shares.map((share) => (
               <Link
                 key={share.id}
-                className="block rounded-3xl bg-[var(--surface-subtle)] px-4 py-4 text-sm font-medium text-[var(--foreground)]"
+                className="block rounded-md bg-[var(--surface-subtle)] px-4 py-4 text-sm font-medium text-[var(--foreground)]"
                 href={`/share/${share.token}`}
               >
                 {share.shareType.toLowerCase()} link
               </Link>
             ))}
             {file.shares.length === 0 ? (
-              <div className="rounded-3xl bg-[var(--surface-subtle)] px-4 py-4 text-sm text-[var(--text-muted)]">
+              <div className="rounded-md bg-[var(--surface-subtle)] px-4 py-4 text-sm text-[var(--text-muted)]">
                 No shares have been created for this file yet.
               </div>
             ) : null}
@@ -104,7 +104,7 @@ export function FileDetailClient({ fileId }: FileDetailClientProps) {
           </p>
           <div className="mt-4 space-y-3">
             {file.views.map((view) => (
-              <div key={view.id} className="rounded-3xl bg-[var(--surface-subtle)] px-4 py-4">
+              <div key={view.id} className="rounded-md bg-[var(--surface-subtle)] px-4 py-4">
                 <p className="text-sm font-medium text-[var(--foreground)]">
                   {view.eventType.toLowerCase()}
                 </p>
@@ -114,7 +114,7 @@ export function FileDetailClient({ fileId }: FileDetailClientProps) {
               </div>
             ))}
             {file.views.length === 0 ? (
-              <div className="rounded-3xl bg-[var(--surface-subtle)] px-4 py-4 text-sm text-[var(--text-muted)]">
+              <div className="rounded-md bg-[var(--surface-subtle)] px-4 py-4 text-sm text-[var(--text-muted)]">
                 Analytics will appear after preview and download events.
               </div>
             ) : null}

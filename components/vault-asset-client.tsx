@@ -131,12 +131,12 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
   }
 
   if (vaultAssetQuery.isLoading) {
-    return <div className="rounded-[2rem] bg-[var(--card)] p-8 text-[var(--foreground)]">Loading vault asset...</div>;
+    return <div className="rounded-[20px] bg-[var(--card)] p-8 text-[var(--foreground)]">Loading vault asset...</div>;
   }
 
   if (!vaultAsset) {
     return (
-      <div className="rounded-[2rem] bg-[var(--card)] p-8 text-[var(--text-secondary)]">
+      <div className="rounded-[20px] bg-[var(--card)] p-8 text-[var(--text-secondary)]">
         Vault asset not found.
       </div>
     );
@@ -156,26 +156,26 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
 
   return (
     <div className="space-y-8">
-      <div className="rounded-[2rem] bg-[var(--background)] border-[var(--border)] p-8 text-[var(--foreground)]">
+      <div className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-8 text-[var(--foreground)]" style={{ background: 'linear-gradient(135deg, var(--card) 0%, var(--bg-elevated) 60%, var(--accent-red-subtle) 100%)' }}>
         <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-[var(--text-muted)]">
+          <p className="text-xs uppercase tracking-[0.25em] text-[var(--text-muted)]">
             FlashVault asset
           </p>
-          <h1 className="mt-4 font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-4xl font-semibold sm:text-5xl">
+          <h1 className="mt-3 font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-4xl font-semibold sm:text-5xl">
             {vaultAsset.nftName ?? vaultAsset.nftObjectId}
           </h1>
-          <p className="mt-4 max-w-2xl text-base text-[var(--text-secondary)]">
+          <p className="mt-3 max-w-2xl text-sm text-[var(--text-secondary)]">
             Private vault for Aptos NFT content with verified owner access,
             collector sharing, and optional encrypted uploads.
           </p>
-          <div className="mt-5 flex flex-wrap gap-3 text-sm">
-            <span className="rounded-full border border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-2">
+          <div className="mt-4 flex flex-wrap gap-2 text-xs">
+            <span className="rounded-md border border-[var(--border)] bg-[var(--surface-subtle)] px-3 py-1.5">
               {vaultAsset.collectionName ?? "Unassigned collection"}
             </span>
-            <span className="rounded-full border border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-2">
+            <span className="rounded-md border border-[var(--border)] bg-[var(--surface-subtle)] px-3 py-1.5">
               {vaultAsset.ownerOnly ? "Owner only access" : "Shared access enabled"}
             </span>
-            <span className="rounded-full border border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-2">
+            <span className="rounded-md border border-[var(--border)] bg-[var(--surface-subtle)] px-3 py-1.5">
               {vaultAsset.publicPreviewMode.toLowerCase()} preview mode
             </span>
           </div>
@@ -184,18 +184,18 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
         <section className="space-y-6">
-          <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6 backdrop-blur">
+          <div className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.25em] text-[var(--text-muted)]">
                   Protected media
                 </p>
-                <h2 className="mt-3 font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-2xl font-semibold text-[var(--foreground)]">
+                <h2 className="mt-2 font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-2xl font-semibold text-[var(--foreground)]">
                   Preview vault content
                 </h2>
               </div>
               <button
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--accent-red)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
+                className="inline-flex items-center gap-2 rounded-md bg-[var(--accent-red)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
                 disabled={verifyOwnership.isPending}
                 onClick={() => verifyOwnership.mutate()}
                 type="button"
@@ -205,7 +205,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
               </button>
             </div>
 
-            <div className="mt-5 rounded-3xl border border-[var(--border)] bg-[var(--surface-subtle)] p-5">
+            <div className="mt-5 rounded-xl border border-[var(--border)] bg-[var(--surface-subtle)] p-4">
               <p className="text-sm font-semibold text-[var(--foreground)]">
                 Vault the content, not the chain record.
               </p>
@@ -224,7 +224,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                   src={previewSrc}
                 />
               ) : (
-                <div className="flex h-72 items-center justify-center rounded-3xl border border-dashed border-[var(--border-hover)] bg-[var(--surface-subtle)] p-8 text-center text-sm text-[var(--text-secondary)]">
+                <div className="flex h-72 items-center justify-center rounded-xl border border-dashed border-[var(--border-hover)] bg-[var(--surface-subtle)] p-8 text-center text-sm text-[var(--text-secondary)]">
                   Add a teaser file or load protected media after ownership
                   verification to preview this vault asset.
                 </div>
@@ -236,7 +236,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                 <button
                   key={entry.id}
                   className={cn(
-                    "rounded-full px-4 py-2 text-sm font-semibold",
+                    "rounded-md px-3 py-1.5 text-sm font-semibold",
                     previewRole === entry.role
                       ? "bg-[var(--accent-red)] text-[var(--foreground)]"
                       : "bg-[var(--surface-subtle-hover)] text-[var(--text-secondary)]",
@@ -255,7 +255,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               {vaultAsset.vaultFiles.map((entry) => (
-                <div key={entry.id} className="rounded-3xl border border-[var(--border)] bg-[var(--card-hover)] p-4">
+                <div key={entry.id} className="rounded-xl border border-[var(--border)] bg-[var(--card-hover)] p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-[var(--foreground)]">
@@ -265,22 +265,22 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                         {prettyRole(entry.role)}
                       </p>
                     </div>
-                    <span className="rounded-full bg-[var(--surface-subtle-hover)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
+                    <span className="rounded-md bg-[var(--surface-subtle-hover)] px-2.5 py-1 text-xs font-semibold text-[var(--text-secondary)]">
                       {entry.file.isEncrypted ? "Encrypted" : "Plain"}
                     </span>
                   </div>
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs text-[var(--text-secondary)]">
-                    <span className="rounded-full bg-[var(--surface-subtle-hover)] px-3 py-2">
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--text-secondary)]">
+                    <span className="rounded-md bg-[var(--surface-subtle-hover)] px-2.5 py-1.5">
                       {formatBytes(entry.file.size)}
                     </span>
-                    <span className="rounded-full bg-[var(--surface-subtle-hover)] px-3 py-2">
+                    <span className="rounded-md bg-[var(--surface-subtle-hover)] px-2.5 py-1.5">
                       {entry.file.mimeType}
                     </span>
                   </div>
                   <div className="mt-4 flex gap-3">
                     {entry.role === VAULT_FILE_ROLES.TEASER ? (
                       <button
-                        className="inline-flex items-center gap-2 rounded-full bg-[var(--accent-red)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
+                        className="inline-flex items-center gap-2 rounded-md bg-[var(--accent-red)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
                         onClick={() => setPreviewRole(entry.role)}
                         type="button"
                       >
@@ -289,7 +289,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                     ) : (
                       <>
                         <button
-                          className="inline-flex items-center gap-2 rounded-full bg-[var(--accent-red)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
+                          className="inline-flex items-center gap-2 rounded-md bg-[var(--accent-red)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
                           disabled={isLoadingPreview}
                           onClick={() => loadProtectedContent(entry.role)}
                           type="button"
@@ -298,7 +298,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                           {isLoadingPreview ? "Loading..." : "Load protected"}
                         </button>
                         <button
-                          className="inline-flex items-center gap-2 rounded-full bg-[var(--surface-subtle-hover)] px-4 py-2 text-sm font-semibold text-[var(--text-secondary)]"
+                          className="inline-flex items-center gap-2 rounded-md bg-[var(--surface-subtle-hover)] px-4 py-2 text-sm font-semibold text-[var(--text-secondary)]"
                           disabled={isLoadingPreview}
                           onClick={() => loadProtectedContent(entry.role, true)}
                           type="button"
@@ -315,9 +315,9 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6 backdrop-blur">
+            <div className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent-red)] text-[var(--foreground)]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-red)] text-[var(--foreground)]">
                   <UploadCloud className="h-5 w-5" />
                 </div>
                 <div>
@@ -339,7 +339,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
 
               <div className="mt-4 grid gap-4">
                 <select
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--card-hover)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                  className="rounded-md border border-[var(--border)] bg-[var(--card-hover)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
                   onChange={(event) => setRole(event.target.value as typeof role)}
                   value={role}
                 >
@@ -350,12 +350,12 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                   ))}
                 </select>
                 <textarea
-                  className="h-28 rounded-3xl border border-[var(--border)] bg-[var(--card-hover)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                  className="h-28 rounded-xl border border-[var(--border)] bg-[var(--card-hover)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
                   onChange={(event) => setDescription(event.target.value)}
                   placeholder="Describe what collectors unlock here."
                   value={description}
                 />
-                <label className="flex items-center gap-3 rounded-2xl bg-[var(--surface-subtle)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                <label className="flex items-center gap-3 rounded-md bg-[var(--surface-subtle)] px-4 py-3 text-sm text-[var(--text-secondary)]">
                   <input
                     checked={encrypt}
                     className="h-4 w-4"
@@ -365,7 +365,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                   Encrypt before upload for owner-only media.
                 </label>
                 <button
-                  className="rounded-2xl bg-[var(--accent-red)] px-4 py-3 text-sm font-semibold text-[var(--foreground)]"
+                  className="rounded-md bg-[var(--accent-red)] px-4 py-3 text-sm font-semibold text-[var(--foreground)]"
                   disabled={!selectedFile || uploadVaultFile.isPending}
                   onClick={() =>
                     selectedFile &&
@@ -391,20 +391,20 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6 backdrop-blur">
+            <div className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-6">
               <p className="text-xs uppercase tracking-[0.25em] text-[var(--text-muted)]">
                 Access settings
               </p>
-              <h2 className="mt-3 font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-2xl font-semibold text-[var(--foreground)]">
+              <h2 className="mt-2 font-[family-name:var(--font-bebas-neue)] tracking-[0.06em] text-2xl font-semibold text-[var(--foreground)]">
                 Share with collectors
               </h2>
 
-              <div className="mt-5 grid grid-cols-3 gap-2">
+              <div className="mt-4 grid grid-cols-3 gap-2">
                 {(["PUBLIC", "PRIVATE", "PASSWORD"] as const).map((type) => (
                   <button
                     key={type}
                     className={cn(
-                      "rounded-2xl px-3 py-3 text-xs font-semibold",
+                      "rounded-md px-3 py-2.5 text-xs font-semibold",
                       shareType === type
                         ? "bg-[var(--accent-red)] text-[var(--foreground)]"
                         : "bg-[var(--surface-subtle-hover)] text-[var(--text-secondary)]",
@@ -419,7 +419,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
 
               {shareType === SHARE_TYPES.PASSWORD ? (
                 <input
-                  className="mt-4 w-full rounded-2xl border border-[var(--border)] bg-[var(--card-hover)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                  className="mt-4 w-full rounded-md border border-[var(--border)] bg-[var(--card-hover)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
                   onChange={(event) => setSharePassword(event.target.value)}
                   placeholder="Collector password"
                   value={sharePassword}
@@ -427,7 +427,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
               ) : null}
 
               <button
-                className="mt-4 w-full rounded-2xl bg-[var(--accent-red)] px-4 py-3 text-sm font-semibold text-[var(--foreground)]"
+                className="mt-4 w-full rounded-md bg-[var(--accent-red)] px-4 py-3 text-sm font-semibold text-[var(--foreground)]"
                 onClick={() =>
                   createVaultShare.mutate({
                     shareType,
@@ -443,7 +443,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                 {vaultAsset.shares.map((share) => (
                   <div
                     key={share.id}
-                    className="flex items-center justify-between rounded-3xl border border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-3"
+                    className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-3"
                   >
                     <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                       {share.shareType === SHARE_TYPES.PASSWORD ? (
@@ -458,7 +458,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                       </Link>
                     </div>
                     <button
-                      className="rounded-full bg-[var(--card-hover)] p-2 text-[var(--text-secondary)]"
+                      className="rounded-md bg-[var(--card-hover)] p-2 text-[var(--text-secondary)]"
                       onClick={() =>
                         void navigator.clipboard.writeText(
                           `${window.location.origin}/share/${share.token}`,
@@ -472,7 +472,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                 ))}
 
                 {vaultAsset.shares.length === 0 ? (
-                  <div className="rounded-3xl bg-[var(--surface-subtle)] p-4 text-sm text-[var(--text-secondary)]">
+                  <div className="rounded-xl bg-[var(--surface-subtle)] p-4 text-sm text-[var(--text-secondary)]">
                     No collector links yet. Create a share when you want to expose
                     teaser or gated media outside your wallet session.
                   </div>
@@ -483,11 +483,11 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
         </section>
 
         <aside className="space-y-6">
-          <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6 backdrop-blur">
+          <div className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-6">
             <p className="text-xs uppercase tracking-[0.25em] text-[var(--text-muted)]">
               Ownership status
             </p>
-            <div className="mt-4 rounded-3xl bg-[var(--surface-subtle)] p-5">
+            <div className="mt-4 rounded-xl bg-[var(--surface-subtle)] p-4">
               <p className="text-sm font-semibold text-[var(--foreground)]">
                 {verifyOwnership.data?.isOwner
                   ? "Ownership verified for the connected wallet."
@@ -500,43 +500,43 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
               </p>
             </div>
 
-            <div className="mt-5 grid gap-3">
-              <div className="rounded-3xl bg-[var(--surface-subtle)] p-4">
-                <p className="text-sm text-[var(--text-muted)]">Public preview mode</p>
-                <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">
+            <div className="mt-4 grid gap-2">
+              <div className="rounded-md bg-[var(--surface-subtle)] p-4">
+                <p className="text-xs text-[var(--text-muted)]" style={{ textTransform: 'uppercase', letterSpacing: '0.2em' }}>Public preview mode</p>
+                <p className="mt-1 text-lg font-semibold text-[var(--foreground)]" style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', letterSpacing: '0.05em' }}>
                   {vaultAsset.publicPreviewMode === VAULT_PREVIEW_MODES.PLACEHOLDER
                     ? "Placeholder"
                     : vaultAsset.publicPreviewMode.toLowerCase()}
                 </p>
               </div>
-              <div className="rounded-3xl bg-[var(--surface-subtle)] p-4">
-                <p className="text-sm text-[var(--text-muted)]">Protected files</p>
-                <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">
+              <div className="rounded-md bg-[var(--surface-subtle)] p-4">
+                <p className="text-xs text-[var(--text-muted)]" style={{ textTransform: 'uppercase', letterSpacing: '0.2em' }}>Protected files</p>
+                <p className="mt-1 text-lg font-semibold text-[var(--foreground)]" style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', letterSpacing: '0.05em' }}>
                   {vaultAsset.vaultFiles.length}
                 </p>
               </div>
-              <div className="rounded-3xl bg-[var(--surface-subtle)] p-4">
-                <p className="text-sm text-[var(--text-muted)]">Has teaser content</p>
-                <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">
+              <div className="rounded-md bg-[var(--surface-subtle)] p-4">
+                <p className="text-xs text-[var(--text-muted)]" style={{ textTransform: 'uppercase', letterSpacing: '0.2em' }}>Has teaser content</p>
+                <p className="mt-1 text-lg font-semibold text-[var(--foreground)]" style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', letterSpacing: '0.05em' }}>
                   {teaserFile ? "Yes" : "Not yet"}
                 </p>
               </div>
-              <div className="rounded-3xl bg-[var(--surface-subtle)] p-4">
-                <p className="text-sm text-[var(--text-muted)]">Has protected preview</p>
-                <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">
+              <div className="rounded-md bg-[var(--surface-subtle)] p-4">
+                <p className="text-xs text-[var(--text-muted)]" style={{ textTransform: 'uppercase', letterSpacing: '0.2em' }}>Has protected preview</p>
+                <p className="mt-1 text-lg font-semibold text-[var(--foreground)]" style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', letterSpacing: '0.05em' }}>
                   {hasProtectedPreview ? "Yes" : "No"}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6 backdrop-blur">
+          <div className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-6">
             <p className="text-xs uppercase tracking-[0.25em] text-[var(--text-muted)]">
               Access logs
             </p>
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-2">
               {vaultAsset.accessLogs.map((log) => (
-                <div key={log.id} className="rounded-3xl bg-[var(--surface-subtle)] p-4">
+                <div key={log.id} className="rounded-md bg-[var(--surface-subtle)] p-4">
                   <p className="text-sm font-semibold text-[var(--foreground)]">
                     {log.accessType.replaceAll("_", " ").toLowerCase()}
                   </p>
@@ -548,7 +548,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
               ))}
 
               {vaultAsset.accessLogs.length === 0 ? (
-                <div className="rounded-3xl bg-[var(--surface-subtle)] p-4 text-sm text-[var(--text-secondary)]">
+                <div className="rounded-md bg-[var(--surface-subtle)] p-4 text-sm text-[var(--text-secondary)]">
                   Vault access logs appear after verification checks, shared views,
                   or protected downloads.
                 </div>
