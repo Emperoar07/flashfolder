@@ -178,8 +178,9 @@ export const indexerAptosNftProvider: AptosNftProvider = {
     const token = data.current_token_ownerships_v2[0];
     if (!token) return null;
 
-    // If walletAddress provided, verify it matches
-    if (walletAddress && token.owner_address !== walletAddress) {
+    // If walletAddress provided, verify it matches (case-insensitive — indexer
+    // may return mixed-case addresses while sessions store lowercase).
+    if (walletAddress && token.owner_address.toLowerCase() !== walletAddress.toLowerCase()) {
       return null;
     }
 
@@ -191,7 +192,7 @@ export const indexerAptosNftProvider: AptosNftProvider = {
     nftObjectId: string,
   ): Promise<NftOwnershipVerificationResult> {
     const nft = await this.getNftByObjectId(nftObjectId, walletAddress);
-    const verified = nft !== null && nft.ownerAddress === walletAddress;
+    const verified = nft !== null && nft.ownerAddress.toLowerCase() === walletAddress.toLowerCase();
 
     return {
       verified,

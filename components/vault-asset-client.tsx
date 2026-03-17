@@ -195,7 +195,7 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                 </h2>
               </div>
               <button
-                className="inline-flex items-center gap-2 rounded-md bg-[var(--accent-red)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
+                className="inline-flex items-center gap-2 rounded-md bg-[var(--accent-red)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] disabled:opacity-50"
                 disabled={verifyOwnership.isPending}
                 onClick={() => verifyOwnership.mutate()}
                 type="button"
@@ -204,6 +204,18 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                 {verifyOwnership.isPending ? "Checking..." : "Verify ownership"}
               </button>
             </div>
+
+            {verifyOwnership.isError ? (
+              <div className="mt-4 rounded-xl bg-[var(--accent-red-subtle)] border border-[var(--accent-red)] px-4 py-3 text-sm text-[var(--foreground)]">
+                {verifyOwnership.error instanceof Error
+                  ? verifyOwnership.error.message
+                  : "Ownership check failed. Make sure your wallet is connected."}
+              </div>
+            ) : verifyOwnership.data && !verifyOwnership.data.isOwner ? (
+              <div className="mt-4 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                Ownership not confirmed for the connected wallet. Protected content is restricted to the current NFT holder.
+              </div>
+            ) : null}
 
             <div className="mt-5 rounded-xl border border-[var(--border)] bg-[var(--surface-subtle)] p-4">
               <p className="text-sm font-semibold text-[var(--foreground)]">
@@ -364,8 +376,15 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                   />
                   Encrypt before upload for owner-only media.
                 </label>
+                {uploadVaultFile.isError ? (
+                  <p className="rounded-md bg-[var(--accent-red-subtle)] border border-[var(--accent-red)] px-4 py-3 text-sm text-[var(--foreground)]">
+                    {uploadVaultFile.error instanceof Error
+                      ? uploadVaultFile.error.message
+                      : "Upload failed. Please try again."}
+                  </p>
+                ) : null}
                 <button
-                  className="rounded-md bg-[var(--accent-red)] px-4 py-3 text-sm font-semibold text-[var(--foreground)]"
+                  className="rounded-md bg-[var(--accent-red)] px-4 py-3 text-sm font-semibold text-[var(--foreground)] disabled:opacity-50"
                   disabled={!selectedFile || uploadVaultFile.isPending}
                   onClick={() =>
                     selectedFile &&
@@ -427,7 +446,8 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
               ) : null}
 
               <button
-                className="mt-4 w-full rounded-md bg-[var(--accent-red)] px-4 py-3 text-sm font-semibold text-[var(--foreground)]"
+                className="mt-4 w-full rounded-md bg-[var(--accent-red)] px-4 py-3 text-sm font-semibold text-[var(--foreground)] disabled:opacity-50"
+                disabled={createVaultShare.isPending}
                 onClick={() =>
                   createVaultShare.mutate({
                     shareType,
@@ -436,8 +456,16 @@ export function VaultAssetClient({ vaultAssetId }: VaultAssetClientProps) {
                 }
                 type="button"
               >
-                Create vault share
+                {createVaultShare.isPending ? "Creating..." : "Create vault share"}
               </button>
+
+              {createVaultShare.isError ? (
+                <p className="rounded-md bg-[var(--accent-red-subtle)] border border-[var(--accent-red)] px-4 py-3 text-sm text-[var(--foreground)]">
+                  {createVaultShare.error instanceof Error
+                    ? createVaultShare.error.message
+                    : "Failed to create share. Please try again."}
+                </p>
+              ) : null}
 
               <div className="mt-5 space-y-3">
                 {vaultAsset.shares.map((share) => (
